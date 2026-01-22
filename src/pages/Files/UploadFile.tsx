@@ -16,7 +16,7 @@ const GlobalUpload = () => {
   const navigate = useNavigate();
   const [uploadFile, { isLoading: isUploading }] = useUploadFileMutation();
 
-  // Define dynamic options with translation keys for labels
+   
   const TYPE_OPTIONS = {
     DOCUMENT: [
       { value: 'PDF', label: t('type_pdf') },
@@ -35,7 +35,7 @@ const GlobalUpload = () => {
     ],
   };
 
-  // Form State
+ 
   const [selectedCatId, setSelectedCatId] = useState('');
   const [selectedSubCatId, setSelectedSubCatId] = useState('');
   const [year, setYear] = useState('2025');
@@ -43,19 +43,19 @@ const GlobalUpload = () => {
   const [contentType, setContentType] = useState('DOCUMENT'); 
   const [fileType, setFileType] = useState('PDF');
 
-  // Fetch Data
+ 
   const { data: categories = [] } = useGetCategoriesQuery(i18n.language);
   const { data: subCategories = [] } = useGetSubCategoriesQuery(
     { categoryId: selectedCatId, lang: i18n.language },
     { skip: !selectedCatId }
   );
 
-  // Auto-calculate Logical Path
+ 
   const logicalPath = `/Documents/${fileType}/${year}/${file ? file.name : t('placeholder_filename')}`;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!file) return; // Only file is strictly required for global upload
+    if (!file) return;  
 
     const formData = new FormData();
     formData.append('file', file);
@@ -74,7 +74,7 @@ const GlobalUpload = () => {
 
   return (
     <div className="p-8 max-w-3xl mx-auto relative">
-      {/* Header with Close Option */}
+      
       <div className="flex items-start justify-between mb-8">
         <div className="flex gap-4">
           <div className="p-2 bg-orange-100 rounded-lg h-fit">
@@ -82,11 +82,10 @@ const GlobalUpload = () => {
           </div>
           <div>
             <h1 className="text-lg font-bold text-slate-800">{t('ingestion_mapping')}</h1>
-            <p className="text-xs text-slate-400 font-medium italic">{t('global_upload_desc')}</p>
           </div>
         </div>
         
-        {/* Close Button */}
+     
         <button 
           onClick={() => navigate(-1)}
           className="p-2 hover:bg-slate-100 rounded-full text-slate-400 transition-colors"
@@ -99,7 +98,7 @@ const GlobalUpload = () => {
       <form onSubmit={handleSubmit} className="space-y-8 bg-white p-8 rounded-2xl shadow-sm border border-slate-100">
         <div className="grid grid-cols-2 gap-x-8 gap-y-6">
           
-          {/* Category Dropdown (Optional) */}
+        
           <div className="space-y-2">
             <label className="text-sm font-bold text-slate-700">{t('category')}</label>
             <div className="relative">
@@ -117,8 +116,7 @@ const GlobalUpload = () => {
               <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
             </div>
           </div>
-
-          {/* SubCategory Dropdown (Optional) */}
+ 
           <div className="space-y-2">
             <label className="text-sm font-bold text-slate-700">{t('subcategory')}</label>
             <div className="relative">
@@ -135,11 +133,11 @@ const GlobalUpload = () => {
             </div>
           </div>
 
-          {/* Content Type Dropdown */}
+        
           <div className="space-y-2">
             <div className="flex justify-between">
               <label className="text-sm font-bold text-slate-700">{t('content_type')}</label>
-              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">{t('system_taxonomy')}</span>
+              
             </div>
             <div className="relative">
               <select 
@@ -159,13 +157,10 @@ const GlobalUpload = () => {
             </div>
           </div>
 
-          {/* Type Dropdown (Filtered) */}
+         
           <div className="space-y-2">
             <div className="flex justify-between">
               <label className="text-sm font-bold text-slate-700">{t('type')}</label>
-              <span className="text-[10px] text-orange-500 font-black uppercase tracking-tighter italic">
-                {t('driven_by')} {t(`option_${contentType.toLowerCase()}`)}
-              </span>
             </div>
             <div className="relative">
               <select 
@@ -183,7 +178,7 @@ const GlobalUpload = () => {
             </div>
           </div>
 
-          {/* Data Year Dropdown */}
+         
           <div className="space-y-2">
             <label className="text-sm font-bold text-slate-700">{t('data_year')}</label>
             <div className="relative">
@@ -199,7 +194,7 @@ const GlobalUpload = () => {
             </div>
           </div>
 
-          {/* Logical Path */}
+        
           <div className="space-y-2">
             <div className="flex justify-between">
               <label className="text-sm font-bold text-slate-700">{t('logical_path')}</label>
@@ -213,8 +208,7 @@ const GlobalUpload = () => {
             </div>
           </div>
         </div>
-
-        {/* File Selection Area */}
+ 
         <div className="border-t border-slate-100 pt-8">
           <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">{t('file_selection')}</p>
           <div className={`relative border-2 border-dashed rounded-2xl p-8 text-center transition-all ${file ? 'border-orange-400 bg-orange-50/20' : 'border-slate-200 hover:border-orange-200'}`}>
@@ -235,7 +229,7 @@ const GlobalUpload = () => {
           </div>
         </div>
 
-        {/* Actions */}
+     
         <div className="flex items-center justify-end pt-4">
           <button 
             type="submit"

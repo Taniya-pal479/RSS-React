@@ -105,7 +105,7 @@ const NavigationSidebar = () => {
             </div>
           )}
 
-          {/* DATA LIST STATE */}
+         
           {!isLoading && !isError && (
             <div className="space-y-1">
               {categories.length > 0 ? (

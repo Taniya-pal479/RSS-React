@@ -32,33 +32,25 @@ const EditModal = ({ type, data, onClose }: EditModalProps) => {
   const [isLangOpen, setIsLangOpen] = useState(false);
 
   // Initialize translations with existing data
-  const [translations, setTranslations] = useState(()=>
-   {const initialData: Record<string, { name: string; description: string }> = {
+  const [translations, setTranslations] = useState(() => {
+    const initialData: Record<string, { name: string; description: string }> = {
       en: { name: "", description: "" },
       hi: { name: "", description: "" },
     };
- if (data?.translations && Array.isArray(data.translations)) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    data.translations.forEach((item: any) => {
-      if (item.languageCode === 'en') {
-       initialData.en = { name: item.name, description: item.description };
-      } 
-      else if (item.languageCode === 'hi') {
-        initialData.hi = { name: item.name, description: item.description };
-      }
-    });
-  } 
-   
-  else {
-    initialData.en = { name:  '', description: '' };
-  }
 
-  return initialData;
-}
-  )
-     
-
-  
+    if (data?.translations && Array.isArray(data.translations)) {
+      data.translations.forEach((item: any) => {
+        const code = item.lang;
+        if (initialData[code]) {
+          initialData[code] = {
+            name: item.name || "",
+            description: item.description || "",
+          };
+        }
+      });
+    }
+    return initialData;
+  });
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -101,7 +93,6 @@ const EditModal = ({ type, data, onClose }: EditModalProps) => {
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
       <div className="bg-white w-full max-w-[550px] rounded-[32px] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
-        
         <div className="px-8 py-6 border-b border-gray-50 flex items-center justify-between">
           <h2 className="text-xl font-black text-gray-800">
             {type === "category" ? t("edit_category") : t("edit_subcategory")}
@@ -121,7 +112,6 @@ const EditModal = ({ type, data, onClose }: EditModalProps) => {
                 <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-100 rounded-2xl shadow-2xl z-50 py-2 overflow-hidden animate-in fade-in zoom-in duration-200">
                   {SUPPORTED_LANGS.map((lang) => {
                     const isActive = currentLangCode === lang.code;
-                 
 
                     return (
                       <button
@@ -136,7 +126,6 @@ const EditModal = ({ type, data, onClose }: EditModalProps) => {
           `}
                       >
                         <div className="flex items-center gap-2">
-                          
                           {lang.name}
                         </div>
 
@@ -171,18 +160,20 @@ const EditModal = ({ type, data, onClose }: EditModalProps) => {
               </label>
               <input
                 type="text"
-                value={translations[currentLangCode]?.name || ""}
-                onChange={(e) =>
-                  setTranslations({
-                    ...translations,
+              value={translations[currentLangCode]?.name || ""}
+                onChange={(e) => {
+                  const newName = e.target.value;
+                  setTranslations((prev) => ({
+                    ...prev,
                     [currentLangCode]: {
-                      ...translations[currentLangCode],
-                      name: e.target.value,
+                      ...prev[currentLangCode],
+                      name: newName,
                     },
-                  })
-                }
+                  }));
+                }}
                 className="w-full px-5 py-4 bg-[#f9fafb] border border-gray-200 rounded-2xl text-sm outline-none focus:border-[#f97316] font-bold"
                 required={currentLangCode === "hi"}
+                
               />
             </div>
             <div>
@@ -190,17 +181,19 @@ const EditModal = ({ type, data, onClose }: EditModalProps) => {
                 {t("description")}
               </label>
               <textarea
-                value={translations[currentLangCode]?.description || ""}
-                onChange={(e) =>
-                  setTranslations({
-                    ...translations,
+                value={translations[currentLangCode].description} // Changed from defaultValue to value
+                onChange={(e) => {
+                  const newDesc = e.target.value;
+                  setTranslations((prev) => ({
+                    ...prev,
                     [currentLangCode]: {
-                      ...translations[currentLangCode],
-                      description: e.target.value,
+                      ...prev[currentLangCode],
+                      description: newDesc,
                     },
-                  })
-                }
+                  }));
+                }}
                 className="w-full px-5 py-4 bg-[#f9fafb] border border-gray-200 rounded-2xl text-sm outline-none focus:border-[#f97316] min-h-[120px] resize-none font-medium"
+                 
               />
             </div>
           </div>

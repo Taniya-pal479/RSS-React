@@ -61,7 +61,7 @@ const Dashboard = () => {
             <h4 className="text-gray-900 font-semibold mb-1">{t("no_files_title")}</h4>
             <p className="text-gray-500 text-sm max-w-sm text-center mb-4">{t("no_files_desc")}</p>
             
-            <button className="flex items-center gap-2 text-saffron-600 font-semibold text-sm hover:text-saffron-700">
+            <button  onClick={() => navigate(`/upload`)} className="flex items-center gap-2 text-saffron-600 font-semibold text-sm hover:text-saffron-700">
                 {t("browse_cta")} <ArrowRight size={16} />
             </button>
         </div>
@@ -70,7 +70,7 @@ const Dashboard = () => {
   );
 };
 
-// Reusable Card Component
+ 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const StatsCard = ({ label, value, icon, trend, subText, color, trendColor }: any) => (
   <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-card hover:-translate-y-1 transition-all duration-300">

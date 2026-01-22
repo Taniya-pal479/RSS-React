@@ -11,7 +11,7 @@ import type { RootState } from '../store/store';
 export const rssApi = createApi({
   reducerPath: 'rssApi',
   baseQuery: fetchBaseQuery({ 
-    baseUrl: 'http://localhost:3000',
+    baseUrl: 'https://rss-server-7wyx.onrender.com/',
     prepareHeaders: (headers, { getState }) => {
       const token = (getState() as RootState).auth.accessToken;
       if (token) {

@@ -68,6 +68,7 @@ const DataTable = <T extends { id: string | number }>({
                         if (isNameColumn) onRowClick?.(item);
                       }}
                     >
+                  
                       {col.render ? col.render(item) : (item as any)[col.key]}
                     </td>
                   );
