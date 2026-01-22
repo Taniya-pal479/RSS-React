@@ -17,7 +17,7 @@ import PublicRoute from './components/common/ProtectedRoute/PublicRoute';
 import SubCategoryDetail from './pages/Subcategory.tsx/SubCategoryDetail';
 import UploadFile from './pages/Files/UploadFile';
 
-import { ContentManager } from './pages/ContentType/ContentTypeManger';
+import { ContentTypeManager } from './pages/ContentType/ContentTypeManger';
 
 const App = () => {
   return (
@@ -54,7 +54,7 @@ const App = () => {
              <Route path="/category/:categoryId/subcategory/:subCategoryId" element={<SubCategoryDetail />} />
              <Route path="/upload" element={<UploadFile />} />
 
-             <Route path="/content" element={<ContentManager/>} />
+             <Route path="/content" element={<ContentTypeManager/>} />
             </Route>
           </Route>
 

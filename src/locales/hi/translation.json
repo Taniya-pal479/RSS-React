@@ -162,7 +162,15 @@
   "error_name_required": "कृपया कम से कम एक नाम दर्ज करें।",
   "error_fetch_failed": "सर्वर से डेटा लोड करने में विफल।",
 
-  "sidebar_content_type": "सामग्री का प्रकार"
+  "sidebar_content_type": "सामग्री का प्रकार",
+  "content_type_name": "सामग्री प्रकार का नाम",
+  "content_type_subtitle": "यह तालिका आपके द्वारा परिभाषित सभी कस्टम सामग्री प्रकारों को सूचीबद्ध करती है।",
+  
+  "edit": "संपादन",
+   
+  "add_new": "नया जोड़ें",
+  "previous": "पिछला",
+  "next": "अगला"
    
 
 

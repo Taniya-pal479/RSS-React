@@ -6,6 +6,11 @@ import { ArrowLeft, Save, Loader2, Globe, ChevronDown, Check } from 'lucide-reac
 import type { Translation } from '../../types';
 import { toast } from 'react-toastify';
 
+interface ApiError {
+  data?: {
+    message?: string;
+  };
+}
 
 const SUPPORTED_LANGS = [
   { code: 'en', name: 'English', filename: "Category Name", description: "Description" },
@@ -39,8 +44,7 @@ const CategoryForm = ({ mode }: { mode: 'category' | 'subcategory' }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    // 1. Prepare translations array from state
+ 
     const translationPayload: Translation[] = Object.entries(translations)
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       .filter(([_, data]) => data.name.trim() !== '') // Only send languages that have a name
@@ -54,8 +58,7 @@ const CategoryForm = ({ mode }: { mode: 'category' | 'subcategory' }) => {
       alert("Please enter at least one name.");
       return;
     }
-
-    // 2. Generate slug (usually from English name)
+ 
     const slug = (translations.en.name || translations.hi.name)
       .toLowerCase()
       .replace(/\s+/g, '-')
@@ -65,13 +68,13 @@ try {
   let targetId: string | number;
 
   if (mode === 'category') {
-    // result will now have the 'id' because we fixed the type above
+   
     const result = await addCategory({ 
       slug, 
       translations: translationPayload 
     }).unwrap();
     
-    targetId = result.id; // Get the new ID from the server
+    targetId = result.id;  
   } else {
     await addSubCategory({
       categoryId: Number(categoryId),
@@ -79,12 +82,12 @@ try {
       translations: translationPayload
     }).unwrap();
     
-    targetId = categoryId!; // Stay on the parent category page
+    targetId = categoryId!;  
   }
 
   toast.success(t("save_success"));
 
-  // This passes the name to the next page INSTANTLY
+   
   navigate(`/category/${targetId}`, { 
     state: { name: translations[currentLangCode].name } 
   });
