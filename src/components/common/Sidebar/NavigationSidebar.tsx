@@ -67,6 +67,22 @@ const NavigationSidebar = () => {
           </button>
         </div>
 
+        <div className="space-y-1 mb-8">
+          <button
+            onClick={() => navigate("/content")}
+            className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium transition-all ${
+              isActive("/content")
+                ? "bg-[#FFF7ED] text-[#F97316]"
+                : "text-gray-500 hover:bg-gray-50"
+            }`}
+          >
+            <LayoutDashboard size={20} />
+            <span>{t("sidebar_content_type")}</span>
+          </button>
+        </div>
+
+        
+
         <div className="mb-4">
           <div className="flex items-center justify-between px-4 mb-3">
             <h2 className="text-[11px] font-black text-gray-400 uppercase tracking-widest">

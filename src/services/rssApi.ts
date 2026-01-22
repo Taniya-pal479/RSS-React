@@ -41,7 +41,7 @@ export const rssApi = createApi({
       invalidatesTags: ['Category'],  
     }),
 
-    addCategory: builder.mutation<void, CreateCategoryPayload>({
+    addCategory: builder.mutation<Category,CreateCategoryPayload>({
       query: (body) => ({ 
         url: '/categories', 
         method: 'POST', 
@@ -50,7 +50,7 @@ export const rssApi = createApi({
       invalidatesTags: ['Category'],
     }),
 
-    addSubCategory: builder.mutation<void, CreateSubCategoryPayload>({
+    addSubCategory: builder.mutation<SubCategory, CreateSubCategoryPayload>({
       query: (body) => ({ 
         url: '/subcategories', 
         method: 'POST', 

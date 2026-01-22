@@ -17,6 +17,8 @@ import PublicRoute from './components/common/ProtectedRoute/PublicRoute';
 import SubCategoryDetail from './pages/Subcategory.tsx/SubCategoryDetail';
 import UploadFile from './pages/Files/UploadFile';
 
+import { ContentManager } from './pages/ContentType/ContentTypeManger';
+
 const App = () => {
   return (
     <Provider store={store}>
@@ -51,6 +53,8 @@ const App = () => {
               />
              <Route path="/category/:categoryId/subcategory/:subCategoryId" element={<SubCategoryDetail />} />
              <Route path="/upload" element={<UploadFile />} />
+
+             <Route path="/content" element={<ContentManager/>} />
             </Route>
           </Route>
 

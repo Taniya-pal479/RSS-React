@@ -142,8 +142,28 @@
   "type_audio_wav": "ऑडियो - हाई क्वालिटी",
   "type_images": "इमेज - JPG/PNG",
   "type_excel": "एक्सेल - स्प्रेडशीट",
-  "type_csv": "डेटा - CSV"
+  "type_csv": "डेटा - CSV",
 
-  
+  "content_type": "सामग्री का प्रकार",
+  "documents": "दस्तावेज़",
+  "media": "मीडिया",
+  "reports": "रिपोर्ट्स",
+  "fileName": "फ़ाइल का नाम",
+  "category_path": "श्रेणी / पथ",
+  "last_updated": "अंतिम अपडेट",
+  "no_data_found": "कोई डेटा नहीं मिला",
+
+  "category_added_success": "श्रेणी सफलतापूर्वक बनाई गई!",
+  "subcategory_added_success": "उप-श्रेणी सफलतापूर्वक बनाई गई!",
+  "save_success": "रिकॉर्ड सफलतापूर्वक सहेजा गया!",
+  "delete_success": "सफलतापूर्वक हटा दिया गया!",
+  "update_success": "सफलतापूर्वक अपडेट किया गया!",
+  "error_generic": "कुछ गलत हो गया। कृपया पुन: प्रयास करें।",
+  "error_name_required": "कृपया कम से कम एक नाम दर्ज करें।",
+  "error_fetch_failed": "सर्वर से डेटा लोड करने में विफल।",
+
+  "sidebar_content_type": "सामग्री का प्रकार"
+   
+
 
 }

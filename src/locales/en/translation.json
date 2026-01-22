@@ -141,9 +141,27 @@
   "type_audio_wav": "Audio - High Quality",
   "type_images": "Images - JPG/PNG",
   "type_excel": "Excel - Spreadsheet",
-  "type_csv": "Data - CSV"
+  "type_csv": "Data - CSV",
  
+  "content_type": "Content Type",
+  "documents": "Documents",
+  "media": "Media",
+  "reports": "Reports",
+  "fileName": "File Name",
+  "category_path": "Category / Path",
+  "last_updated": "Last Updated",
+  "no_data_found": "No items found",
 
+
+  "category_added_success": "Category created successfully!",
+  "subcategory_added_success": "Sub-category created successfully!",
+  "save_success": "Record saved successfully!",
+  "delete_success": "Deleted successfully!",
+  "update_success": "Updated successfully!",
+  "error_generic": "Something went wrong. Please try again.",
+  "error_name_required": "Please enter at least one name.",
+  "error_fetch_failed": "Failed to load data from server.",
+  "sidebar_content_type": "Content Type"
    
   
 }

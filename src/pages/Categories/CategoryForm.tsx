@@ -6,11 +6,6 @@ import { ArrowLeft, Save, Loader2, Globe, ChevronDown, Check } from 'lucide-reac
 import type { Translation } from '../../types';
 import { toast } from 'react-toastify';
 
-interface ApiError {
-  data?: {
-    message?: string;
-  };
-}
 
 const SUPPORTED_LANGS = [
   { code: 'en', name: 'English', filename: "Category Name", description: "Description" },
@@ -66,27 +61,38 @@ const CategoryForm = ({ mode }: { mode: 'category' | 'subcategory' }) => {
       .replace(/\s+/g, '-')
       .replace(/[^\w-]+/g, '');
 
-    try {
-      if (mode === 'category') {
-        // MATCHES: CreateCategoryPayload { slug, translations }
-        await addCategory({ 
-          slug, 
-          translations: translationPayload 
-        }).unwrap();
-      } else if (categoryId) {
-        // MATCHES: CreateSubCategoryPayload { categoryId, slug, translations }
-        await addSubCategory({
-          categoryId: Number(categoryId),
-          slug,
-          translations: translationPayload
-        }).unwrap();
-      }
-      navigate('/dashboard');
-    } catch (err) {
-      const error = err as ApiError;
-      console.error("Submission Error:", err );
-      toast.error(error?.data?.message)
-    }
+try {
+  let targetId: string | number;
+
+  if (mode === 'category') {
+    // result will now have the 'id' because we fixed the type above
+    const result = await addCategory({ 
+      slug, 
+      translations: translationPayload 
+    }).unwrap();
+    
+    targetId = result.id; // Get the new ID from the server
+  } else {
+    await addSubCategory({
+      categoryId: Number(categoryId),
+      slug,
+      translations: translationPayload
+    }).unwrap();
+    
+    targetId = categoryId!; // Stay on the parent category page
+  }
+
+  toast.success(t("save_success"));
+
+  // This passes the name to the next page INSTANTLY
+  navigate(`/category/${targetId}`, { 
+    state: { name: translations[currentLangCode].name } 
+  });
+
+} catch (err) {
+  console.log(err)
+  toast.error("Failed to save");
+}
   };
 
   const currentLang = SUPPORTED_LANGS.find(l => l.code === currentLangCode);
