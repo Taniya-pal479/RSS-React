@@ -123,37 +123,43 @@ export const rssApi = createApi({
       ContentTypeMapped[],
       { categoryId: string | number; lang: string }
     >({
-      query: () => "/content-types",
-      providesTags: (result) =>
-        result
-          ? [
-              ...result.map(({ id }) => ({ type: "ContentType" as const, id })),
-              { type: "ContentType", id: "LIST" },
-            ]
-          : [{ type: "ContentType", id: "LIST" }],
+ query: ({ categoryId, lang }) => `/content-types?categoryId=${categoryId}&lang=${lang}`, 
+  providesTags: (result) =>
+    result
+      ? [
+          ...result.map(({ id }) => ({ type: "ContentType" as const, id })),
+          { type: "ContentType", id: "LIST" },
+        ]
+      : [{ type: "ContentType", id: "LIST" }],
 
-      transformResponse: (
-        response: ContentTypeRawResponse[],
-      ): ContentTypeMapped[] => {
-        if (!Array.isArray(response)) return [];
-        return response.map((item) => ({
-          id: item.id,
-          categoryId: item.categoryId,
-          name: item.name,
-          description: item.description,
-          year: item.contentYear,
-          status: item.status,
-        }));
-      },
-    }),
+  transformResponse: (
+    response: any[], // Use any temporarily to see full structure
+  ): ContentTypeMapped[] => {
+    if (!Array.isArray(response)) return [];
+    return response.map((item) => ({
+      id: item.id,
+      categoryId: item.categoryId,
+      name: item.name,
+      description: item.description,
+      year: item.contentYear,
+      status: item.status,
+      translations: item.translations, // MUST INCLUDE THIS to fix the UI display
+    }));
+  },
+}),
 
- updateContentType: builder.mutation<void, { id: number; body: any }>({
+// 2. Update PATCH to ensure URL is correct
+updateContentType: builder.mutation<void, { id: string | number; body: any }>({
   query: ({ id, body }) => ({
-    url: `content-types/${id}`,  
+    url: `/content-types/${id}`, // Added leading slash for safety
     method: "PATCH",
     body: body,
   }),
-  invalidatesTags: ["ContentType"],
+  // Invalidate LIST to trigger a refetch in the Manager
+  invalidatesTags: (result, error, { id }) => [
+    { type: "ContentType", id },
+    { type: "ContentType", id: "LIST" }
+  ],
 }),
     deleteContentType: builder.mutation<
       { success: boolean },

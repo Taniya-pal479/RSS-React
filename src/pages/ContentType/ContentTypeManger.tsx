@@ -74,50 +74,51 @@ export const ContentTypeManager = () => {
   };
 
  const columns = [
-   { 
-    header: t("id"), 
-    key: "id", 
-    className: "w-16",
-    render: (item: ContentTypeMapped) => (
-      <span className="text-gray-400 text-[14px]">#{item.id}</span>
-    )
-  },
-  { 
-    header: t("content_type_name"), 
-    key: "name", 
-    className: "w-1/4",
-    render: (item: ContentTypeMapped) => {
-  
-      const activeTranslation = item.translations?.find(
-        (tr: any) => tr.languageCode === i18n.language
-      );
+    { 
+      header: t("id"), 
+      key: "id", 
+      className: "w-16",
+      render: (item: ContentTypeMapped) => (
+        <span className="text-gray-400 text-[14px]">#{item.id}</span>
+      )
+    },
+    { 
+      header: t("content_type_name"), 
+      key: "name", 
+      className: "w-1/4",
+      render: (item: ContentTypeMapped) => {
+      
+        const activeTranslation = item.translations?.find(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (tr: any) => tr.languageCode === i18n.language
+        );
 
-    
-      const displayName = activeTranslation?.name || item.name || "---";
+        
+        const displayName = activeTranslation?.name || item.name || "---";
 
-      return (
-        <span className="font-bold text-[#1a1a1a] text-[15px]">
-          {displayName}
-        </span>
-      );
-    }
-  },
-  { 
-    header: t("description"), 
-    key: "description",
-    render: (item: ContentTypeMapped) => {
-      const activeTranslation = item.translations?.find(
-        (tr: any) => tr.languageCode === i18n.language
-      );
-      const displayDesc = activeTranslation?.description || item.description || "---";
+        return (
+          <span className="font-bold text-[#1a1a1a] text-[15px]">
+            {displayName}
+          </span>
+        );
+      }
+    },
+    { 
+      header: t("description"), 
+      key: "description",
+      render: (item: ContentTypeMapped) => {
+        const activeTranslation = item.translations?.find(
+          (tr: any) => tr.languageCode === i18n.language
+        );
+        const displayDesc = activeTranslation?.description || item.description || "---";
 
-      return (
-        <span className="text-gray-400 text-[14px] line-clamp-1">
-          {displayDesc}
-        </span>
-      );
-    }
-  },
+        return (
+          <span className="text-gray-400 text-[14px] line-clamp-1">
+            {displayDesc}
+          </span>
+        );
+      }
+    },
     {
       header: t("actions"),
       key: "actions",

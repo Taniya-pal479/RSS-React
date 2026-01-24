@@ -24,6 +24,8 @@ const EditModal = ({ type, data, onClose }: EditModalProps) => {
   const { t } = useTranslation();
   const [updateCategory, { isLoading: isUpdatingCat }] =
     useUpdateCategoryMutation();
+
+     console.log("Category",updateCategory)
   const [updateSubCategory, { isLoading: isUpdatingSub }] =
     useUpdateSubCategoryMutation();
   const isLoading = isUpdatingCat || isUpdatingSub;

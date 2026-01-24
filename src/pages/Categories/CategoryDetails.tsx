@@ -34,6 +34,8 @@ const CategoryDetail = () => {
   const { data: categories = [] } = useGetCategoriesQuery(i18n.language);
   const currentCategory = categories.find((c: Category) => Number(c.id) === Number(categoryId));
 
+ 
+
   const { data: subCatResponse, isLoading } = useGetSubCategoriesQuery({
     categoryId: categoryId as string,
     lang: i18n.language

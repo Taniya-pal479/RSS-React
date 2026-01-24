@@ -22,11 +22,11 @@ const EditContentTypeModal = ({ data, onClose }: EditContentTypeModalProps) => {
   const [currentLangCode, setCurrentLangCode] = useState("en");
   const [isLangOpen, setIsLangOpen] = useState(false);
   
-  // State for non-translatable fields
+ 
   const [contentYear, setContentYear] = useState(data?.contentYear || "");
   const [status, setStatus] = useState(data?.status || "PUBLISHED");
 
-  // Initialize translations state EXACTLY like your Category EditModal
+ 
   const [translations, setTranslations] = useState(() => {
     const initialData: Record<string, { name: string; description: string }> = {
       en: { name: "", description: "" },
@@ -46,10 +46,11 @@ const EditContentTypeModal = ({ data, onClose }: EditContentTypeModalProps) => {
     }
     return initialData;
   });
- console.log(data.transitions)
+
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
- 
+
+    
     const translationPayload: Translation[] = Object.entries(translations)
       .filter(([_, d]) => d.name.trim() !== "")  
       .map(([code, d]) => ({
@@ -70,17 +71,16 @@ const EditContentTypeModal = ({ data, onClose }: EditContentTypeModalProps) => {
       
       toast.success(t("CONTENT_TYPE_UPDATED"));
       onClose();
-    } catch (err: any) {
-      console.error("Update Error:", err);
-      const errorCode = err?.data?.message || "DEFAULT_ERROR";
-      toast.error(t(`${errorCode}`));
+    } catch (err) {
+      console.error("Update Error:", err); 
+      toast.error(t("ERROR_DELETING"));
     }
   };
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
       <div className="bg-white w-full max-w-[550px] rounded-[32px] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
-       
+         
         <div className="px-8 py-6 border-b border-gray-50 flex items-center justify-between">
           <h2 className="text-xl font-black text-gray-800">
             {t("edit_content_type")}
@@ -123,10 +123,8 @@ const EditContentTypeModal = ({ data, onClose }: EditContentTypeModalProps) => {
             </button>
           </div>
         </div>
-
-  
+ 
         <form onSubmit={handleUpdate} className="p-8 space-y-5">
-         
           <div>
             <label className="block text-[11px] font-black text-gray-400 uppercase mb-2 ml-1 flex items-center gap-1">
               <Calendar size={12} /> {t("contentYear")}
@@ -142,7 +140,7 @@ const EditContentTypeModal = ({ data, onClose }: EditContentTypeModalProps) => {
 
           <hr className="border-gray-100" />
 
-        
+ 
           <div className="space-y-4">
             <div>
               <label className="block text-[11px] font-black text-gray-400 uppercase mb-2 ml-1">
