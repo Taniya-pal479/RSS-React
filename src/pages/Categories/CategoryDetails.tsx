@@ -41,7 +41,7 @@ const CategoryDetail = () => {
 
   const subCategories = subCatResponse || [];
 
-  // --- Column Configuration ---
+   
   const columns = [
     { 
       header: t("id"), 

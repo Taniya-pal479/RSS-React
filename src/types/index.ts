@@ -52,6 +52,55 @@ export interface FileResponse {
   url: string;
 }
 
+export interface ContentTypeTranslation {
+  id: number;
+  contentTypeId: number;
+  languageCode: string;
+  name: string;
+  description: string;
+}
+
+export interface ContentTypeRawResponse {
+id: number;
+  categoryId: number;
+  subcategoryId: number | null;
+  categorySlug: string;
+  subcategorySlug: string | null;
+  contentYear: number;
+  status: string;
+  lang: string;
+  name: string;
+  description: string;
+  createdAt: string;
+  
+}
+
+export interface ContentTypeMapped {
+  id: string | number; // Allow both to prevent conflicts
+  name: string;
+  description: string;
+  contentYear?: number;
+  status?: string;
+  categoryId?: string | number;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  translations?: any[];
+}
+
+export interface CreateContentTypePayload {
+  categoryId: number;
+  subcategoryId: number | null;
+  contentYear: number;
+  translations: Array<{
+    languageCode: string;
+    name: string;
+    description: string;
+  }>;
+}
+export interface UpdateTranslationPayload {
+  languageCode: string;
+  name: string;
+  description: string;  
+}
 export interface PaginatedResponse<T> {
   data: T[];
   page: number;

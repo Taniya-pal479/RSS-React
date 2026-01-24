@@ -6,11 +6,6 @@ import { ArrowLeft, Save, Loader2, Globe, ChevronDown, Check } from 'lucide-reac
 import type { Translation } from '../../types';
 import { toast } from 'react-toastify';
 
-interface ApiError {
-  data?: {
-    message?: string;
-  };
-}
 
 const SUPPORTED_LANGS = [
   { code: 'en', name: 'English', filename: "Category Name", description: "Description" },
@@ -47,7 +42,7 @@ const CategoryForm = ({ mode }: { mode: 'category' | 'subcategory' }) => {
  
     const translationPayload: Translation[] = Object.entries(translations)
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      .filter(([_, data]) => data.name.trim() !== '') // Only send languages that have a name
+      .filter(([_, data]) => data.name.trim() !== '') 
       .map(([code, data]) => ({
         languageCode: code,
         name: data.name.trim(),

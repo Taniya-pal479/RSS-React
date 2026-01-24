@@ -7,6 +7,7 @@ import {
   PlusCircle,
   Loader2,
   AlertCircle,
+  TagIcon,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useGetCategoriesQuery } from "../../../services/rssApi";
@@ -20,7 +21,7 @@ const NavigationSidebar = () => {
     null,
   );
 
-  // 1. Fetch the response object from RTK Query
+ 
   const {
     data: categories = [],
     isLoading,
@@ -53,7 +54,7 @@ const NavigationSidebar = () => {
       </div>
 
       <div className="flex-1 overflow-y-auto px-3 custom-scrollbar">
-        <div className="space-y-1 mb-8">
+        <div className="space-y-1 mb-2">
           <button
             onClick={() => navigate("/dashboard")}
             className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium transition-all ${
@@ -62,7 +63,7 @@ const NavigationSidebar = () => {
                 : "text-gray-500 hover:bg-gray-50"
             }`}
           >
-            <LayoutDashboard size={20} />
+            <LayoutDashboard size={20} className="text-[#F97316]"/>
             <span>{t("dashboard")}</span>
           </button>
         </div>
@@ -76,7 +77,7 @@ const NavigationSidebar = () => {
                 : "text-gray-500 hover:bg-gray-50"
             }`}
           >
-            <LayoutDashboard size={20} />
+            <TagIcon size={20} className="text-[#F97316]"/>
             <span>{t("sidebar_content_type")}</span>
           </button>
         </div>
@@ -97,7 +98,7 @@ const NavigationSidebar = () => {
             </button>
           </div>
 
-          {/* LOADING STATE */}
+      
           {isLoading && (
             <div className="flex flex-col items-center justify-center py-8 gap-2 text-gray-400">
               <Loader2 className="animate-spin text-[#F97316]" size={20} />
@@ -105,7 +106,7 @@ const NavigationSidebar = () => {
             </div>
           )}
 
-          {/* ERROR STATE */}
+       
           {isError && (
             <div className="px-4 py-3 bg-red-50 rounded-xl border border-red-100 text-center">
               <AlertCircle className="mx-auto text-red-500 mb-1" size={18} />

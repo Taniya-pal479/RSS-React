@@ -1,61 +1,139 @@
 import React, { useState, useMemo } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from "react-i18next";
 import { Edit2, Trash2, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 import DataTable from '../../components/common/DataTable';
+import { useDeleteContentTypeMutation, useGetContentTypesQuery } from '../../services/rssApi';
+import { toast } from 'react-toastify';
+import EditContentTypeModal from '../../components/common/EditContentTypeModal';
+import ConfirmToast from '../../components/ui/ConfirmToast'; // Import your reusable component
+
+export interface ContentTypeMapped {
+  categoryId?: any;
+  id: number;
+  name: string;
+  description: string;
+  year: number;
+  status: string;
+  translations?: any[];
+}
 
 export const ContentTypeManager = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
+  const { categoryId } = useParams<{ categoryId: string }>();
+  const CategoryId = categoryId || "1";
+  
+  const [selectedItem, setSelectedItem] = useState<ContentTypeMapped | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 7;
+  const itemsPerPage = 5;
 
-  // Example data (Add at least 10 items to test pagination)
-  const allData = [
-    { id: 1, name: "Customer Playbook", description: "Structured guides and manuals." },
-    { id: 2, name: "Legal Contract", description: "Signed agreements and NDAs." },
-    { id: 3, name: "Analytics Export", description: "CSV or parquet exports." },
-    { id: 4, name: "Internal Memo", description: "Communication notes." },
-    { id: 5, name: "Brand Guidelines", description: "Logos and color palettes." },
-    { id: 6, name: "Technical Spec", description: "Architecture and API docs." },
-    { id: 7, name: "Marketing Plan", description: "Social media and SEO strategy." },
-  ];
+  const { data: contentTypes = [], isLoading } = useGetContentTypesQuery({
+    categoryId: CategoryId, 
+    lang: i18n.language
+  });
+   
+  console.log(contentTypes)
+  const [deleteContentType] = useDeleteContentTypeMutation();
 
-  // --- FIXED PAGINATION LOGIC ---
-  const totalPages = Math.ceil(allData.length / itemsPerPage);
+  const totalPages = Math.ceil(contentTypes.length / itemsPerPage);
 
   const paginatedData = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage; // Page 1: 0, Page 2: 5
-    const endIndex = startIndex + itemsPerPage;         // Page 1: 5, Page 2: 10
-    return allData.slice(startIndex, endIndex);
-  }, [currentPage, allData]);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return contentTypes.slice(startIndex, startIndex + itemsPerPage);
+  }, [currentPage, contentTypes]);
 
-  const columns = [
-    { 
-      header: t("id"), 
-      key: "id", 
-      className: "w-16",
-      render: (item: any) => <span className="text-gray-400 text-[14px]">#{item.id}</span>
-    },
-    { 
-      header: t("content_type_name"), 
-      key: "name", 
-      className: "w-1/4",
-      render: (item: any) => <span className="font-bold text-[#1a1a1a] text-[15px]">{item.name}</span>
-    },
-    { 
-      header: t("description"), 
-      key: "description",
-      render: (item: any) => <span className="text-gray-400 text-[14px]">{item.description}</span>
-    },
+   
+  const handleDeleteClick = (id: number) => {
+    toast(
+      ({ closeToast }) => (
+        <ConfirmToast
+          message={t("confirm_delete_msg")}
+          onConfirm={() => executeDelete(id)}
+          closeToast={closeToast}
+        />
+      ),
+      {
+        position: "top-center",
+        autoClose: false,  
+        closeOnClick: false,
+        draggable: false,
+        className: 'rounded-2xl shadow-2xl border border-gray-100',
+      }
+    );
+  };
+
+  const executeDelete = async (id: number) => {
+    try {
+      await deleteContentType({ id: id.toString(), categoryId: CategoryId }).unwrap();
+      toast.success(t("DELETED_SUCCESSFULLY"));
+    } catch (err) {
+      console.log(err)
+      toast.error(t("ERROR_DELETING"));
+    }
+  };
+
+ const columns = [
+   { 
+    header: t("id"), 
+    key: "id", 
+    className: "w-16",
+    render: (item: ContentTypeMapped) => (
+      <span className="text-gray-400 text-[14px]">#{item.id}</span>
+    )
+  },
+  { 
+    header: t("content_type_name"), 
+    key: "name", 
+    className: "w-1/4",
+    render: (item: ContentTypeMapped) => {
+  
+      const activeTranslation = item.translations?.find(
+        (tr: any) => tr.languageCode === i18n.language
+      );
+
+    
+      const displayName = activeTranslation?.name || item.name || "---";
+
+      return (
+        <span className="font-bold text-[#1a1a1a] text-[15px]">
+          {displayName}
+        </span>
+      );
+    }
+  },
+  { 
+    header: t("description"), 
+    key: "description",
+    render: (item: ContentTypeMapped) => {
+      const activeTranslation = item.translations?.find(
+        (tr: any) => tr.languageCode === i18n.language
+      );
+      const displayDesc = activeTranslation?.description || item.description || "---";
+
+      return (
+        <span className="text-gray-400 text-[14px] line-clamp-1">
+          {displayDesc}
+        </span>
+      );
+    }
+  },
     {
       header: t("actions"),
       key: "actions",
       className: "text-right",
-      render: (item: any) => (
+      render: (item: ContentTypeMapped) => (
         <div className="flex justify-end gap-3">
-          <button className="flex items-center gap-2 px-3 py-1.5 border border-gray-100 rounded-lg text-sm font-semibold text-gray-500 hover:text-[#f97316]">
+          <button 
+            onClick={() => setSelectedItem(item)}
+            className="flex items-center gap-2 px-3 py-1.5 border border-gray-100 rounded-lg text-sm font-semibold text-gray-500 hover:text-[#f97316] hover:border-[#f97316]/30 transition-all"
+          >
             <Edit2 size={14} /> {t("edit")}
           </button>
-          <button className="flex items-center gap-2 px-3 py-1.5 bg-red-50 text-red-500 rounded-lg text-sm font-semibold hover:bg-red-100">
+          <button 
+            onClick={() => handleDeleteClick(item.id)}
+            className="flex items-center gap-2 px-3 py-1.5 bg-red-50 text-red-500 rounded-lg text-sm font-semibold hover:bg-red-100 transition-colors"
+          >
             <Trash2 size={14} /> {t("delete")}
           </button>
         </div>
@@ -63,14 +141,25 @@ export const ContentTypeManager = () => {
     }
   ];
 
+  if (isLoading) {
+    return (
+      <div className="p-8 flex justify-center items-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#f97316]"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-8 bg-[#fdfcfb] min-h-screen">
       <div className="flex justify-between items-end mb-8">
         <div>
-           <h2 className="text-2xl font-bold text-[#1a1a1a] mb-1">{t("sidebar_content_type")}</h2>
-           <p className="text-gray-400 text-sm">{t("content_type_subtitle")}</p>
+          <h2 className="text-2xl font-bold text-[#1a1a1a] mb-1">{t("sidebar_content_type")}</h2>
+          <p className="text-gray-400 text-sm">{t("content_type_subtitle")}</p>
         </div>
-        <button className="flex items-center gap-2 px-6 py-3 bg-[#f97316] text-white font-bold rounded-xl shadow-lg shadow-orange-100 transition-all active:scale-95">
+        <button 
+          onClick={() => navigate("/content/add")} 
+          className="flex items-center gap-2 px-6 py-3 bg-[#f97316] text-white font-bold rounded-xl shadow-lg shadow-orange-100 transition-all active:scale-95"
+        >
           <Plus size={20} /> {t("add_new")}
         </button>
       </div>
@@ -79,7 +168,7 @@ export const ContentTypeManager = () => {
         <DataTable columns={columns} data={paginatedData} />
       </div>
 
-      {/* Pagination Footer */}
+ 
       <div className="mt-8 flex items-center justify-between">
         <button 
           disabled={currentPage === 1}
@@ -95,7 +184,9 @@ export const ContentTypeManager = () => {
               key={i + 1}
               onClick={() => setCurrentPage(i + 1)}
               className={`w-10 h-10 rounded-xl font-bold transition-all ${
-                currentPage === i + 1 ? 'bg-[#f97316] text-white shadow-md' : 'text-gray-400 hover:bg-orange-50'
+                currentPage === i + 1 
+                  ? 'bg-[#f97316] text-white shadow-md' 
+                  : 'text-gray-400 hover:bg-orange-50'
               }`}
             >
               {i + 1}
@@ -104,13 +195,20 @@ export const ContentTypeManager = () => {
         </div>
 
         <button 
-          disabled={currentPage === totalPages}
+          disabled={currentPage === totalPages || totalPages === 0}
           onClick={() => setCurrentPage(p => p + 1)}
           className="flex items-center gap-1 text-sm font-bold text-[#f97316] hover:underline disabled:opacity-30"
         >
           {t("next")} <ChevronRight size={18} />
         </button>
       </div>
+
+      {selectedItem && (
+        <EditContentTypeModal 
+          data={selectedItem} 
+          onClose={() => setSelectedItem(null)} 
+        />
+      )}
     </div>
   );
 };

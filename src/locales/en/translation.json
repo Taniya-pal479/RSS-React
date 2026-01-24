@@ -164,10 +164,20 @@
 
   "content_type_name": "Content type name",
   "content_type_subtitle": "This table lists all custom content types you have defined.",
-
   "edit": "Edit",
-
   "add_new": "Add new",
   "previous": "Previous",
-  "next": "Next"
+  "next": "Next",
+
+  "add_new_content_type": "Add Custom Content Type",
+  "content_type_name": "Content type name",
+  "save_content_type": "Save Content Type",
+  "error_name_required": "Please provide a name for this content type.",
+
+  "edit_content_type": "Edit Content Type",
+  "contentYear": "Content Year",
+ 
+  "CONTENT_TYPE_UPDATED": "Content Type updated successfully!",
+  "DELETED_SUCCESSFULLY": "Deleted successfully!",
+  "ERROR_DELETING": "Error: Could not delete the content type. Please try again."
 }

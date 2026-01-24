@@ -1,11 +1,8 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { X, Globe, Check, ChevronDown, Save, Loader2 } from "lucide-react";
+import { X, Globe, Check, ChevronDown, Save, Loader2, Calendar } from "lucide-react";
 import { toast } from "react-toastify";
-import {
-  useUpdateCategoryMutation,
-  useUpdateSubCategoryMutation,
-} from "../../services/rssApi";
+import { useUpdateContentTypeMutation } from "../../services/rssApi";
 import type { Translation } from "../../types";
 
 const SUPPORTED_LANGS = [
@@ -13,25 +10,23 @@ const SUPPORTED_LANGS = [
   { code: "hi", name: "हिन्दी" },
 ];
 
-interface EditModalProps {
-  type: "category" | "subcategory";
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  data:any;
+interface EditContentTypeModalProps {
+  data: any;
   onClose: () => void;
 }
 
-const EditModal = ({ type, data, onClose }: EditModalProps) => {
+const EditContentTypeModal = ({ data, onClose }: EditContentTypeModalProps) => {
   const { t } = useTranslation();
-  const [updateCategory, { isLoading: isUpdatingCat }] =
-    useUpdateCategoryMutation();
-  const [updateSubCategory, { isLoading: isUpdatingSub }] =
-    useUpdateSubCategoryMutation();
-  const isLoading = isUpdatingCat || isUpdatingSub;
+  const [updateContentType, { isLoading }] = useUpdateContentTypeMutation();
 
   const [currentLangCode, setCurrentLangCode] = useState("en");
   const [isLangOpen, setIsLangOpen] = useState(false);
+  
+  // State for non-translatable fields
+  const [contentYear, setContentYear] = useState(data?.contentYear || "");
+  const [status, setStatus] = useState(data?.status || "PUBLISHED");
 
-  // Initialize translations with existing data
+  // Initialize translations state EXACTLY like your Category EditModal
   const [translations, setTranslations] = useState(() => {
     const initialData: Record<string, { name: string; description: string }> = {
       en: { name: "", description: "" },
@@ -51,13 +46,12 @@ const EditModal = ({ type, data, onClose }: EditModalProps) => {
     }
     return initialData;
   });
-
+ console.log(data.transitions)
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
-
+ 
     const translationPayload: Translation[] = Object.entries(translations)
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      .filter(([_, d]) => d.name.trim() !== "")
+      .filter(([_, d]) => d.name.trim() !== "")  
       .map(([code, d]) => ({
         languageCode: code,
         name: d.name.trim(),
@@ -65,26 +59,19 @@ const EditModal = ({ type, data, onClose }: EditModalProps) => {
       }));
 
     try {
-      if (type === "category") {
-        await updateCategory({
-          id: data.id.toString(),
-          body: { slug: data.slug, translations: translationPayload },
-        }).unwrap();
-        toast.success(t("CATEGORY_UPDATED"));
-      } else {
-        await updateSubCategory({
-          id: data.id.toString(),
-          body: {
-            slug: data.slug,
-            translations: translationPayload,
-            categoryId: data.categoryId,
-          },
-        }).unwrap();
-        toast.success(t("SUBCATEGORY_UPDATED"));
-      }
+      await updateContentType({
+        id: data.id.toString(),
+        body: { 
+          contentYear: Number(contentYear),
+          status: status,
+          translations: translationPayload  
+        },
+      }).unwrap();
+      
+      toast.success(t("CONTENT_TYPE_UPDATED"));
       onClose();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
+      console.error("Update Error:", err);
       const errorCode = err?.data?.message || "DEFAULT_ERROR";
       toast.error(t(`${errorCode}`));
     }
@@ -93,9 +80,10 @@ const EditModal = ({ type, data, onClose }: EditModalProps) => {
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
       <div className="bg-white w-full max-w-[550px] rounded-[32px] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+       
         <div className="px-8 py-6 border-b border-gray-50 flex items-center justify-between">
           <h2 className="text-xl font-black text-gray-800">
-            {type === "category" ? t("edit_category") : t("edit_subcategory")}
+            {t("edit_content_type")}
           </h2>
           <div className="flex items-center gap-3">
             <div className="relative">
@@ -108,59 +96,61 @@ const EditModal = ({ type, data, onClose }: EditModalProps) => {
                 {SUPPORTED_LANGS.find((l) => l.code === currentLangCode)?.name}
                 <ChevronDown size={14} />
               </button>
+              
               {isLangOpen && (
                 <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-100 rounded-2xl shadow-2xl z-50 py-2 overflow-hidden animate-in fade-in zoom-in duration-200">
-                  {SUPPORTED_LANGS.map((lang) => {
-                    const isActive = currentLangCode === lang.code;
-
-                    return (
-                      <button
-                        key={lang.code}
-                        type="button"
-                        onClick={() => {
-                          setCurrentLangCode(lang.code);
-                          setIsLangOpen(false);
-                        }}
-                        className={`w-full flex items-center justify-between px-4 py-2.5 text-xs font-bold transition-colors
-            ${isActive ? "bg-orange-50 text-[#f97316]" : "hover:bg-gray-50 text-gray-600"}
-          `}
-                      >
-                        <div className="flex items-center gap-2">
-                          {lang.name}
-                        </div>
-
-                        {isActive && (
-                          <Check
-                            size={14}
-                            className="text-green-500"
-                            strokeWidth={3}
-                          />
-                        )}
-                      </button>
-                    );
-                  })}
+                  {SUPPORTED_LANGS.map((lang) => (
+                    <button
+                      key={lang.code}
+                      type="button"
+                      onClick={() => {
+                        setCurrentLangCode(lang.code);
+                        setIsLangOpen(false);
+                      }}
+                      className={`w-full flex items-center justify-between px-4 py-2.5 text-xs font-bold transition-colors
+                        ${currentLangCode === lang.code ? "bg-orange-50 text-[#f97316]" : "hover:bg-gray-50 text-gray-600"}
+                      `}
+                    >
+                      {lang.name}
+                      {currentLangCode === lang.code && <Check size={14} className="text-green-500" strokeWidth={3} />}
+                    </button>
+                  ))}
                 </div>
               )}
             </div>
-            <button
-              onClick={onClose}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-400"
-            >
+            <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-400">
               <X size={20} />
             </button>
           </div>
         </div>
 
-        {/* Form Body */}
-        <form onSubmit={handleUpdate} className="p-8 space-y-6">
+  
+        <form onSubmit={handleUpdate} className="p-8 space-y-5">
+         
+          <div>
+            <label className="block text-[11px] font-black text-gray-400 uppercase mb-2 ml-1 flex items-center gap-1">
+              <Calendar size={12} /> {t("contentYear")}
+            </label>
+            <input
+              type="number"
+              value={contentYear}
+              onChange={(e) => setContentYear(e.target.value)}
+              className="w-full px-5 py-4 bg-[#f9fafb] border border-gray-200 rounded-2xl text-sm outline-none focus:border-[#f97316] font-bold"
+              required
+            />
+          </div>
+
+          <hr className="border-gray-100" />
+
+        
           <div className="space-y-4">
             <div>
               <label className="block text-[11px] font-black text-gray-400 uppercase mb-2 ml-1">
-                {t("fileName")}
+                {t("name")} ({currentLangCode.toUpperCase()})
               </label>
               <input
                 type="text"
-              value={translations[currentLangCode]?.name || ""}
+                value={translations[currentLangCode]?.name || ""}
                 onChange={(e) => {
                   const newName = e.target.value;
                   setTranslations((prev) => ({
@@ -172,16 +162,15 @@ const EditModal = ({ type, data, onClose }: EditModalProps) => {
                   }));
                 }}
                 className="w-full px-5 py-4 bg-[#f9fafb] border border-gray-200 rounded-2xl text-sm outline-none focus:border-[#f97316] font-bold"
-                required={currentLangCode === "hi"}
-                
+                required={currentLangCode === "en"} 
               />
             </div>
             <div>
               <label className="block text-[11px] font-black text-gray-400 uppercase mb-2 ml-1">
-                {t("description")}
+                {t("description")} ({currentLangCode.toUpperCase()})
               </label>
               <textarea
-                value={translations[currentLangCode].description} 
+                value={translations[currentLangCode]?.description || ""}
                 onChange={(e) => {
                   const newDesc = e.target.value;
                   setTranslations((prev) => ({
@@ -192,13 +181,13 @@ const EditModal = ({ type, data, onClose }: EditModalProps) => {
                     },
                   }));
                 }}
-                className="w-full px-5 py-4 bg-[#f9fafb] border border-gray-200 rounded-2xl text-sm outline-none focus:border-[#f97316] min-h-[120px] resize-none font-medium"
-                 
+                className="w-full px-5 py-4 bg-[#f9fafb] border border-gray-200 rounded-2xl text-sm outline-none focus:border-[#f97316] min-h-[100px] resize-none font-medium"
               />
             </div>
           </div>
 
-          <div className="flex gap-3 pt-2">
+          {/* Action Buttons */}
+          <div className="flex gap-3 pt-4">
             <button
               type="button"
               onClick={onClose}
@@ -211,11 +200,7 @@ const EditModal = ({ type, data, onClose }: EditModalProps) => {
               disabled={isLoading}
               className="flex-1 flex items-center justify-center gap-2 py-4 bg-[#f97316] text-white font-bold rounded-2xl hover:bg-[#ea580c] shadow-lg shadow-orange-100 disabled:opacity-50 active:scale-95 transition-all"
             >
-              {isLoading ? (
-                <Loader2 className="animate-spin" size={20} />
-              ) : (
-                <Save size={20} />
-              )}
+              {isLoading ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
               {t("save_changes")}
             </button>
           </div>
@@ -225,4 +210,4 @@ const EditModal = ({ type, data, onClose }: EditModalProps) => {
   );
 };
 
-export default EditModal;
+export default EditContentTypeModal;
