@@ -151,8 +151,8 @@ export const ContentTypeManager = () => {
   }
 
   return (
-    <div className="p-8 bg-[#fdfcfb] min-h-screen">
-      <div className="flex justify-between items-end mb-8">
+    <div className="p-2 bg-[#fdfcfb] min-h-screen">
+      <div className="flex justify-between items-end mb-5">
         <div>
           <h2 className="text-2xl font-bold text-[#1a1a1a] mb-1">{t("sidebar_content_type")}</h2>
           <p className="text-gray-400 text-sm">{t("content_type_subtitle")}</p>

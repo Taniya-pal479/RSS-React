@@ -27,9 +27,9 @@ const DataTable = <T extends { id: string | number }>({
   const { t } = useTranslation();
 
   return (
-    <div className="bg-white rounded-[32px] border border-gray-100 shadow-sm overflow-hidden">
-      <table className="w-full text-left border-separate border-spacing-0">
-        <thead>
+    <div className="bg-white rounded-[32px] border border-gray-100 shadow-sm overflow-y-auto max-h-[600px] relative">
+      <table className="w-full text-left border-separate border-spacing-0 overflow-y-auto max-h-[600px]">
+        <thead className="sticky top-0 z-10">
           <tr className="bg-[#f9fafb]/50 border-b border-gray-50">
             {columns.map((col, idx) => (
               <th
@@ -69,6 +69,7 @@ const DataTable = <T extends { id: string | number }>({
                       }}
                     >
                   
+                   
                       {col.render ? col.render(item) : (item as any)[col.key]}
                     </td>
                   );

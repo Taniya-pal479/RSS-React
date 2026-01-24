@@ -11,14 +11,14 @@ const Dashboard = () => {
   return (
     <div className="space-y-8 animate-fade-in">
       
-      {/* Header Text */}
+      
       <div>
          <h2 className="text-3xl font-bold text-rose-800 tracking-tight">{t("overview")}</h2>
-         {/* Using welcome_admin or welcome key from your JSON */}
+        
          <p className="text-gray-500 mt-1">{t("welcome_admin")}</p>
       </div>
 
-      {/* Stats Cards */}
+   
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <StatsCard 
             label={t("total_documents")} 
@@ -47,7 +47,7 @@ const Dashboard = () => {
         />
       </div>
 
-      {/* Recent Files Empty State */}
+      
       <div className="bg-white rounded-2xl border border-gray-100 shadow-card p-8 min-h-[400px]">
         <div className="flex justify-between items-center mb-6">
             <h3 className="font-bold text-gray-900 text-lg">{t("recently_added")}</h3>

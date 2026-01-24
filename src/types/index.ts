@@ -76,11 +76,13 @@ id: number;
 }
 
 export interface ContentTypeMapped {
-  id: string | number; // Allow both to prevent conflicts
+  id: string | number; 
   name: string;
   description: string;
   contentYear?: number;
   status?: string;
+  category: string;    
+  subcategory?: string;
   categoryId?: string | number;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   translations?: any[];

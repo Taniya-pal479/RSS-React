@@ -23,7 +23,7 @@ const EditContentTypeModal = ({ data, onClose }: EditContentTypeModalProps) => {
   const [isLangOpen, setIsLangOpen] = useState(false);
   
  
-  const [contentYear, setContentYear] = useState(data?.contentYear || "");
+  const [contentYear, setContentYear] = useState(data?.contentYear || data?.year || "");
   const [status, setStatus] = useState(data?.status || "PUBLISHED");
 
  
@@ -132,6 +132,7 @@ const EditContentTypeModal = ({ data, onClose }: EditContentTypeModalProps) => {
             <input
               type="number"
               value={contentYear}
+              readOnly
               onChange={(e) => setContentYear(e.target.value)}
               className="w-full px-5 py-4 bg-[#f9fafb] border border-gray-200 rounded-2xl text-sm outline-none focus:border-[#f97316] font-bold"
               required
@@ -183,8 +184,7 @@ const EditContentTypeModal = ({ data, onClose }: EditContentTypeModalProps) => {
               />
             </div>
           </div>
-
-          {/* Action Buttons */}
+ 
           <div className="flex gap-3 pt-4">
             <button
               type="button"

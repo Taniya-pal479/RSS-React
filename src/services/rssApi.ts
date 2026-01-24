@@ -4,7 +4,6 @@ import type {
   SubCategory,
   CreateCategoryPayload,
   CreateSubCategoryPayload,
-  ContentTypeRawResponse,
   ContentTypeMapped,
   CreateContentTypePayload,
 } from "../types";
@@ -133,7 +132,7 @@ export const rssApi = createApi({
       : [{ type: "ContentType", id: "LIST" }],
 
   transformResponse: (
-    response: any[], // Use any temporarily to see full structure
+    response: any[],  
   ): ContentTypeMapped[] => {
     if (!Array.isArray(response)) return [];
     return response.map((item) => ({
@@ -143,19 +142,18 @@ export const rssApi = createApi({
       description: item.description,
       year: item.contentYear,
       status: item.status,
-      translations: item.translations, // MUST INCLUDE THIS to fix the UI display
+      translations: item.translations,  
     }));
   },
 }),
-
-// 2. Update PATCH to ensure URL is correct
+ 
 updateContentType: builder.mutation<void, { id: string | number; body: any }>({
   query: ({ id, body }) => ({
-    url: `/content-types/${id}`, // Added leading slash for safety
+    url: `/content-types/${id}`, 
     method: "PATCH",
     body: body,
   }),
-  // Invalidate LIST to trigger a refetch in the Manager
+ 
   invalidatesTags: (result, error, { id }) => [
     { type: "ContentType", id },
     { type: "ContentType", id: "LIST" }
