@@ -142,7 +142,8 @@ export const rssApi = createApi({
       description: item.description,
       year: item.contentYear,
       status: item.status,
-      translations: item.translations,  
+      translations: item.translations, 
+      category:item.category, 
     }));
   },
 }),
@@ -174,12 +175,21 @@ updateContentType: builder.mutation<void, { id: string | number; body: any }>({
 
     uploadFile: builder.mutation<void, FormData>({
       query: (formData) => ({
-        url: "files/upload",
+        url: "/ingestion",
         method: "POST",
         body: formData,
       }),
       invalidatesTags: [{ type: "Files", id: "LIST" }],
     }),
+
+    getFiles: builder.query<any[], string | number>({
+  query: (contentTypeId) => `/files/content-types/${contentTypeId}`,
+  providesTags: (result, error, arg) => [
+    { type: 'Files', id: arg },
+    { type: 'Files', id: 'LIST' }
+  ],
+}),
+
   }),
 });
 
@@ -198,4 +208,5 @@ export const {
   useDeleteContentTypeMutation,
   useAddContentTypeMutation,
   useUpdateContentTypeMutation,
+   useGetFilesQuery ,
 } = rssApi;

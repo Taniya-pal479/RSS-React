@@ -81,7 +81,7 @@ export interface ContentTypeMapped {
   description: string;
   contentYear?: number;
   status?: string;
-  category: string;    
+  category?: string;    
   subcategory?: string;
   categoryId?: string | number;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

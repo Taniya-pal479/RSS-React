@@ -49,7 +49,8 @@ const CategoryDetail = () => {
       header: t("id"), 
       key: "id", 
       className: "px-10 py-6 text-sm font-bold text-gray-300",
-      render: (sub: SubCategory) => `#${sub.id}`
+     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     render: (_: any, index: number) => `#${index + 1}`
     },
     { 
       header: t("name_label"), 

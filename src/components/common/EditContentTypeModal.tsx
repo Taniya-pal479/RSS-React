@@ -11,6 +11,7 @@ const SUPPORTED_LANGS = [
 ];
 
 interface EditContentTypeModalProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any;
   onClose: () => void;
 }
@@ -24,7 +25,7 @@ const EditContentTypeModal = ({ data, onClose }: EditContentTypeModalProps) => {
   
  
   const [contentYear, setContentYear] = useState(data?.contentYear || data?.year || "");
-  const [status, setStatus] = useState(data?.status || "PUBLISHED");
+  //const [status, setStatus] = useState(data?.status || "PUBLISHED");
 
  
   const [translations, setTranslations] = useState(() => {
@@ -52,6 +53,7 @@ const EditContentTypeModal = ({ data, onClose }: EditContentTypeModalProps) => {
 
     
     const translationPayload: Translation[] = Object.entries(translations)
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       .filter(([_, d]) => d.name.trim() !== "")  
       .map(([code, d]) => ({
         languageCode: code,
@@ -78,8 +80,8 @@ const EditContentTypeModal = ({ data, onClose }: EditContentTypeModalProps) => {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-      <div className="bg-white w-full max-w-[550px] rounded-[32px] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+    <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+      <div className="bg-white w-full max-w-137.5 rounded-4xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
          
         <div className="px-8 py-6 border-b border-gray-50 flex items-center justify-between">
           <h2 className="text-xl font-black text-gray-800">

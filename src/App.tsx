@@ -19,6 +19,7 @@ import UploadFile from "./pages/Files/UploadFile";
 import { ContentTypeManager } from "./pages/ContentType/ContentTypeManger";
 import ContentTypeForm from "./components/common/ContentTypeForm";
 import EditContentTypeModal from "./components/common/EditContentTypeModal";
+import ContentTypeDetail from "./pages/ContentType/ContentTypeDetail";
 
 const App = () => {
   return (
@@ -62,6 +63,9 @@ const App = () => {
               <Route path="/category/:categoryId/content-type/edit/:id" element={<EditContentTypeModal data={undefined} onClose={function (): void {
                 throw new Error("Function not implemented.");
               } }/>} />
+
+
+             <Route path="/category/:categoryId/content-type/:contentTypeId" element={<ContentTypeDetail />} />
             </Route>
           </Route>
         </Routes>

@@ -7,15 +7,16 @@ import { useDeleteContentTypeMutation, useGetContentTypesQuery } from '../../ser
 import { toast } from 'react-toastify';
 import EditContentTypeModal from '../../components/common/EditContentTypeModal';
 import ConfirmToast from '../../components/ui/ConfirmToast'; // Import your reusable component
+import type { Translation } from '../../types';
 
 export interface ContentTypeMapped {
-  categoryId?: any;
+  categoryId?: number;
   id: number;
   name: string;
   description: string;
   year: number;
   status: string;
-  translations?: any[];
+  translations?: Translation[];
 }
 
 export const ContentTypeManager = () => {
@@ -65,7 +66,7 @@ export const ContentTypeManager = () => {
 
   const executeDelete = async (id: number) => {
     try {
-      await deleteContentType({ id: id.toString(), categoryId: CategoryId }).unwrap();
+      await deleteContentType({ id: Number(id), categoryId: CategoryId }).unwrap();
       toast.success(t("DELETED_SUCCESSFULLY"));
     } catch (err) {
       console.log(err)
@@ -78,9 +79,13 @@ export const ContentTypeManager = () => {
       header: t("id"), 
       key: "id", 
       className: "w-16",
-      render: (item: ContentTypeMapped) => (
-        <span className="text-gray-400 text-[14px]">#{item.id}</span>
-      )
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      render: (_: any, index: number) => {
+      const serialNumber = (currentPage - 1) * itemsPerPage + (index + 1);
+      return (
+        <span className="text-gray-400 text-[14px]">#{serialNumber}</span>
+      );
+    }
     },
     { 
       header: t("content_type_name"), 
@@ -97,7 +102,8 @@ export const ContentTypeManager = () => {
         const displayName = activeTranslation?.name || item.name || "---";
 
         return (
-          <span className="font-bold text-[#1a1a1a] text-[15px]">
+          <span className="font-bold text-[#1a1a1a] text-[15px]"
+          onClick={()=>navigate(`/category/${categoryId}/content-type/${item.id}`)}>
             {displayName}
           </span>
         );
@@ -108,6 +114,7 @@ export const ContentTypeManager = () => {
       key: "description",
       render: (item: ContentTypeMapped) => {
         const activeTranslation = item.translations?.find(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (tr: any) => tr.languageCode === i18n.language
         );
         const displayDesc = activeTranslation?.description || item.description || "---";
