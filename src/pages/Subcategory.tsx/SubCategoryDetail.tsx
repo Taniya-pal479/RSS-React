@@ -1,145 +1,179 @@
-import React from 'react';
-import { useParams  } from 'react-router-dom';
+import React, { useMemo } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { FileText, Music, Image as ImageIcon, Download, MoreVertical, FileCode } from 'lucide-react';
+import { 
+  FileText, Music, Image as ImageIcon, Download, 
+  FileCode, Home, ChevronRight, HardDrive, Calendar, Trash2 
+} from 'lucide-react';
 import DataTable, { type Column } from '../../components/common/DataTable';
-import { useGetSubCategoriesQuery } from '../../services/rssApi';
-import type { SubCategory,FileResponse } from '../../types';
-
- 
- 
+import { 
+  useGetSubCategoriesQuery, 
+  useGetFilesQuery,
+  useDeleteFileMutation // Added this
+} from '../../services/rssApi';
+import { format } from 'date-fns';
+import { toast } from 'react-toastify';
+import ConfirmToast from '../../components/ui/ConfirmToast';
+import type { SubCategory } from '../../types';
 
 const SubCategoryDetail = () => {
-  const { subCategoryId } = useParams();
-    const { categoryId } = useParams();
-  const { t,i18n } = useTranslation();
-  
-  
-  // const { data: files = [], isLoading } = useGetFilesQuery({ subCategoryId, lang: i18n.language });
-  
-  const isLoading = false;  
-  const files: FileResponse[] = [];  
-   const { data: Subcategories = [] } = useGetSubCategoriesQuery( { categoryId: categoryId as string,
-    lang: i18n.language});
-  const currentSubCategory = Subcategories.find((c: SubCategory) => Number(c.id) === Number(subCategoryId));
+  const { subCategoryId, categoryId } = useParams<{ subCategoryId: string; categoryId: string }>();
+  const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
 
-  //type base icon selection
-  const getFileIcon = (extension: string) => {
-    const ext = extension.toLowerCase();
-    if (ext === 'pdf') return <FileText className="text-red-500" />;
-    if (ext === 'mp3' || ext === 'wav') return <Music className="text-purple-500" />;
-    if (['png', 'jpg', 'jpeg', 'svg'].includes(ext)) return <ImageIcon className="text-blue-500" />;
-    return <FileCode className="text-gray-500" />;
+  const { data: files = [], isLoading: filesLoading } = useGetFilesQuery(subCategoryId!, {
+    skip: !subCategoryId || subCategoryId === ':subCategoryId',
+  });
+
+  const { data: subCategories = [], isLoading: subCatLoading } = useGetSubCategoriesQuery({ 
+    categoryId: categoryId as string, 
+    lang: i18n.language 
+  });
+
+  const [deleteFile] = useDeleteFileMutation();
+
+  const handleDeleteClick = (id: number) => {
+    toast(
+      ({ closeToast }) => (
+        <ConfirmToast
+          message={t("confirm_delete_msg")}
+          onConfirm={() => executeDelete(id)}
+          closeToast={closeToast}
+        />
+      ),
+      {
+        position: "top-center",
+        autoClose: false,
+        closeOnClick: false,
+        draggable: false,
+        className: 'rounded-2xl shadow-2xl border border-gray-100',
+      }
+    );
   };
 
- 
- const columns: Column<FileResponse>[] = [
-  {
-    header: t("name"),
-    key: "name",
-    className: "w-[40%]", 
-    render: (file) => (
-      <div className="flex items-center gap-4">
-        <div className="p-3 bg-orange-50 rounded-2xl group-hover:bg-white transition-colors">
-          {getFileIcon(file.extension)}
-        </div>
-        <div className="flex flex-col">
-          <span className="font-bold text-gray-700 truncate max-w-[250px]">{file.name}</span>
-          <span className="text-[10px] text-gray-400 font-medium italic">{t('added_recently')}</span>
-        </div>
-      </div>
-    )
-  },
-  {
-    header: t("extension"),
-    key: "extension",
-    className: "w-[10%] text-center",  
-    render: (file) => (
-      <span className="uppercase text-xs font-black text-gray-400 tracking-widest">
-        {file.extension}
-      </span>
-    )
-  },
-  {
-    header: t("size"),
-    key: "size",
-    className: "w-[10%] text-center",  
-    render: (file) => (
-      <span className="text-sm font-bold text-gray-500">
-        {file.size}
-      </span>
-    )
-  },
-  {
-    header: t("data_year"),
-    key: "year",
-    className: "w-[15%] text-center",
-    render: (file) => (
-      <div className="relative inline-block">
-        <span className="px-4 py-1.5 bg-orange-100/50 text-orange-700 text-xs font-black rounded-full border border-orange-100">
-          {file.year}
-        </span>
-      </div>
-    )
-  },
-  {
-    header: t("latest_update"),
-    key: "updated_at",
-    className: "w-[20%]",  
-    render: (file) => (
-      <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 border border-white shadow-sm flex items-center justify-center text-[10px] font-black text-gray-500 uppercase shrink-0">
-          {file.updated_at.substring(0, 2)}
-        </div>
-        <span className="text-sm font-bold text-gray-600 truncate">{file.updated_at}</span>
-      </div>
-    )
-  },
-  {
-    header: "",
-    key: "actions",
-    className: "w-[5%] text-right",  
-    render: (file) => (
-      <div className="flex justify-end items-center gap-1" onClick={(e) => e.stopPropagation()}>
-        <button 
-          onClick={() => window.open(file.url, '_blank')}
-          className="p-2 text-gray-400 hover:text-orange-500 hover:bg-orange-50 rounded-xl transition-all"
-        >
-          <Download size={18} />
-        </button>
-        <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-all">
-          <MoreVertical size={18} />
-        </button>
-      </div>
-    )
-  }
-];
-  return (
-    <div className="p-8 bg-[#fafafa] min-h-screen">
-      {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
-        <div className="flex items-center gap-5">
-          <div className="w-3 h-14 bg-gradient-to-b from-orange-400 to-orange-600 rounded-full shadow-lg shadow-orange-200" />
-          <div>
-            <h1 className="text-[34px] font-black text-[#1a1a1a] tracking-tight leading-tight">
-               {currentSubCategory ? t(currentSubCategory.slug, { defaultValue: currentSubCategory.name }) : t('loading')}
-            </h1>
-            <p className="text-gray-400 font-bold text-sm">
-              {files.length} {t('items_found_in_database')}
-            </p>
+  const executeDelete = async (id: number) => {
+    try {
+      await deleteFile(id).unwrap();
+      toast.success(t("DELETED_SUCCESSFULLY"));
+    } catch (err) {
+      toast.error(t("ERROR_DELETING"));
+    }
+  };
+
+  const currentSubCategory = useMemo(() => 
+    subCategories.find((c: SubCategory) => String(c.id) === String(subCategoryId)), 
+  [subCategories, subCategoryId]);
+
+  const getFileIcon = (fileName: string) => {
+    const ext = fileName?.split('.').pop()?.toLowerCase();
+    if (ext === 'pdf') return <FileText size={20} className="text-red-500" />;
+    if (ext === 'mp3' || ext === 'wav') return <Music size={20} className="text-purple-500" />;
+    if (['png', 'jpg', 'jpeg', 'svg'].includes(ext || '')) return <ImageIcon size={20} className="text-blue-500" />;
+    return <FileCode size={20} className="text-gray-500" />;
+  };
+
+  const columns: Column<any>[] = [
+    {
+      header: t("file_display_name"),
+      key: "fileName",
+      className: "w-[40%]",
+      render: (file) => (
+        <div className="flex items-center gap-4 py-2">
+          <div className="p-3 bg-orange-50 rounded-2xl shadow-sm">
+            {getFileIcon(file.fileName)}
+          </div>
+          <div className="flex flex-col">
+            <span className="font-bold text-slate-800 group-hover:text-orange-600 transition-colors">
+              {file.fileName}
+            </span>
+            <span className="text-[10px] text-slate-400 font-black tracking-widest uppercase italic">
+              {file.mimeType || t('added_recently')}
+            </span>
           </div>
         </div>
-        
-        
+      )
+    },
+    {
+      header: t("size"),
+      key: "fileSize",
+      className: "w-[15%]",
+      render: (file) => (
+        <div className="flex items-center gap-2 text-slate-500 font-bold">
+          <HardDrive size={14} className="text-slate-300" />
+          {file.fileSize ? `${(file.fileSize / 1024).toFixed(1)} KB` : '---'}
+        </div>
+      )
+    },
+    {
+      header: t("upload_date"),
+      key: "uploadedAt",
+      className: "w-[20%]",
+      render: (file) => (
+        <div className="flex items-center gap-2 text-slate-500">
+          <Calendar size={14} className="text-slate-300" />
+          <span>{file.uploadedAt ? format(new Date(file.uploadedAt), 'MMMM do, yyyy') : '---'}</span>
+        </div>
+      )
+    },
+    {
+      header: t("actions"),
+      key: "actions",
+      className: "w-[25%] text-right",
+      render: (file) => (
+        <div className="flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+          <button 
+            onClick={() => window.open(file.url, '_blank')}
+            className="p-2 bg-orange-500 text-white rounded-xl hover:bg-orange-600 transition-all shadow-md shadow-orange-100"
+          >
+            <Download size={18} />
+          </button>
+          <button 
+            onClick={() => handleDeleteClick(file.id)}
+            className="p-2 bg-red-50 text-red-500 rounded-xl hover:bg-red-100 transition-colors"
+          >
+            <Trash2 size={18} />
+          </button>
+        </div>
+      )
+    }
+  ];
+
+  return (
+    <div className="p-8 bg-[#fafafa] min-h-screen">
+      <nav className="flex items-center gap-2 mb-8 text-sm font-bold">
+        <button onClick={() => navigate('/')} className="text-slate-400 hover:text-orange-500">
+          <Home size={16} />
+        </button>
+        <ChevronRight size={14} className="text-slate-300" />
+        <button onClick={() => navigate(-1)} className="text-slate-400 hover:text-orange-500">
+          {t('back')}
+        </button>
+        <ChevronRight size={14} className="text-slate-300" />
+        <span className="text-orange-600 uppercase tracking-widest">
+          {currentSubCategory?.name || t('loading')}
+        </span>
+      </nav>
+
+      <div className="mb-10 flex items-center gap-5">
+        <div className="w-3 h-14 bg-gradient-to-b from-orange-400 to-orange-600 rounded-full shadow-lg shadow-orange-200" />
+        <div>
+          <h1 className="text-4xl font-black text-slate-900 uppercase tracking-tight">
+            {currentSubCategory ? currentSubCategory.name : t('loading')}
+          </h1>
+          <p className="text-gray-400 font-bold text-sm">
+            {files.length} {t('items_found_in_database')}
+          </p>
+        </div>
       </div>
 
-      {/* Main Table */}
-      <DataTable 
-        columns={columns} 
-        data={files} 
-        isLoading={isLoading} 
-        emptyMessage={t('no_files_uploaded_yet')} 
-      />
+      <div className="bg-white rounded-[32px] border border-slate-100 shadow-sm overflow-hidden">
+        <DataTable 
+          columns={columns} 
+          data={files} 
+          isLoading={filesLoading || subCatLoading} 
+          emptyMessage={t('no_files_uploaded_yet')} 
+        />
+      </div>
     </div>
   );
 };

@@ -160,7 +160,7 @@
   "error_generic": "Something went wrong. Please try again.",
   "error_name_required": "Please enter at least one name.",
   "error_fetch_failed": "Failed to load data from server.",
-  "sidebar_content_type": "Content Type",
+  "sidebar_content_type": "Content Types",
 
   "content_type_name": "Content type name",
   "content_type_subtitle": "This table lists all custom content types you have defined.",
@@ -179,5 +179,14 @@
  
   "CONTENT_TYPE_UPDATED": "Content Type updated successfully!",
   "DELETED_SUCCESSFULLY": "Deleted successfully!",
-  "ERROR_DELETING": "Error: Could not delete the content type. Please try again."
+  "ERROR_DELETING": "Error: Could not delete the content type. Please try again.",
+  "type_png": "PNG Image",
+  "type_jpg": "JPG Image",
+  "type_jpeg": "JPEG Image",
+  "category_placeholder": "Select Category",
+  "subcategory_placeholder": "Select Subcategory",
+  "invalid_file_type": "Invalid file type. Please select a valid file for this category.",
+  "upload_date": "Upload Date",
+  "content_group": "Content Group",
+  "UPLOAD_SUCCESSFUL": "File uploaded successfully"
 }

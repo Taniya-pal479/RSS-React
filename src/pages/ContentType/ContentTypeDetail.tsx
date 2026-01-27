@@ -2,29 +2,27 @@ import React, { useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { 
-  FileText, Download, ArrowLeft, 
+  FileText, Download, Trash2, 
   Calendar, HardDrive, Home, ChevronRight 
 } from 'lucide-react';
 import DataTable, { type Column } from '../../components/common/DataTable';
 import { 
   useGetFilesQuery, 
   useGetCategoriesQuery,
-  useGetContentTypesQuery 
+  useGetContentTypesQuery,
+  useDeleteFileMutation // Added this
 } from '../../services/rssApi';
 import { format } from 'date-fns';
+import { toast } from 'react-toastify';
+import ConfirmToast from '../../components/ui/ConfirmToast';
 
 const ContentTypeDetail = () => {
-  // 1. Correctly type params to avoid TS errors
   const { categoryId, contentTypeId } = useParams<{ categoryId: string; contentTypeId: string }>();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
 
-  console.log(categoryId,contentTypeId)
-
-  // Safety Guard: Check if the ID is valid (not the literal string ":contentTypeId")
   const isValidId = contentTypeId && contentTypeId !== ':contentTypeId';
 
-  // 2. API Queries
   const { data: files = [], isLoading: filesLoading } = useGetFilesQuery(contentTypeId!, {
     skip: !isValidId,
   });
@@ -36,7 +34,36 @@ const ContentTypeDetail = () => {
     { skip: !categoryId }
   );
 
-  // 3. Memoized lookups for Header and Breadcrumbs
+  const [deleteFile] = useDeleteFileMutation();
+
+  const handleDeleteClick = (id: number) => {
+    toast(
+      ({ closeToast }) => (
+        <ConfirmToast
+          message={t("confirm_delete_msg")}
+          onConfirm={() => executeDelete(id)}
+          closeToast={closeToast}
+        />
+      ),
+      {
+        position: "top-center",
+        autoClose: false,
+        closeOnClick: false,
+        draggable: false,
+        className: 'rounded-2xl shadow-2xl border border-gray-100',
+      }
+    );
+  };
+
+  const executeDelete = async (id: number) => {
+    try {
+      await deleteFile(id).unwrap();
+      toast.success(t("DELETED_SUCCESSFULLY"));
+    } catch (err) {
+      toast.error(t("ERROR_DELETING"));
+    }
+  };
+
   const currentCategory = useMemo(() => 
     categories.find(c => String(c.id) === String(categoryId)), 
   [categories, categoryId]);
@@ -47,16 +74,16 @@ const ContentTypeDetail = () => {
 
   const columns: Column<any>[] = [
     {
-      header: t("FILE_NAME"),
+      header: t("file_display_name"),
       key: "fileName",
-      className: "w-[45%]",
+      className: "w-[40%]",
       render: (file) => (
         <div className="flex items-center gap-4 py-2">
           <div className="p-3 bg-orange-50 text-orange-600 rounded-2xl shadow-sm">
             <FileText size={20} />
           </div>
           <div className="flex flex-col">
-            <span className="font-bold text-slate-800">{file.fileName}</span>
+            <span className="font-bold text-slate-800 group-hover:text-orange-600 transition-colors">{file.fileName}</span>
             <span className="text-[10px] text-slate-400 font-black tracking-widest uppercase">
               {file.mimeType}
             </span>
@@ -65,7 +92,7 @@ const ContentTypeDetail = () => {
       )
     },
     {
-      header: t("SIZE"),
+      header: t("size"),
       key: "fileSize",
       className: "w-[15%]",
       render: (file) => (
@@ -76,9 +103,9 @@ const ContentTypeDetail = () => {
       )
     },
     {
-      header: t("UPLOAD_DATE"),
+      header: t("upload_date"),
       key: "uploadedAt",
-      className: "w-[25%]",
+      className: "w-[20%]",
       render: (file) => (
         <div className="flex items-center gap-2 text-slate-500">
           <Calendar size={14} className="text-slate-300" />
@@ -87,32 +114,36 @@ const ContentTypeDetail = () => {
       )
     },
     {
-      header: "",
+      header: t("actions"),
       key: "actions",
-      className: "w-[15%] text-right",
+      className: "w-[25%] text-right",
       render: (file) => (
-        <button 
-          onClick={() => window.open(file.url, '_blank')}
-          className="p-2 bg-orange-500 text-white rounded-xl hover:bg-orange-600 transition-all shadow-md shadow-orange-100"
-        >
-          <Download size={18} />
-        </button>
+        <div className="flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+          <button 
+            onClick={() => window.open(file.url, '_blank')}
+            className="p-2 bg-orange-500 text-white rounded-xl hover:bg-orange-600 transition-all shadow-md shadow-orange-100"
+          >
+            <Download size={18} />
+          </button>
+          <button 
+            onClick={() => handleDeleteClick(file.id)}
+            className="p-2 bg-red-50 text-red-500 rounded-xl hover:bg-red-100 transition-colors"
+          >
+            <Trash2 size={18} />
+          </button>
+        </div>
       )
     }
   ];
 
   return (
     <div className="p-8 bg-[#fafafa] min-h-screen">
- 
       <nav className="flex items-center gap-2 mb-8 text-sm font-bold">
         <button onClick={() => navigate('/')} className="text-slate-400 hover:text-orange-500">
           <Home size={16} />
         </button>
         <ChevronRight size={14} className="text-slate-300" />
-        <button 
-            onClick={() => navigate(-1)} 
-            className="text-slate-400 hover:text-orange-500"
-        >
+        <button onClick={() => navigate(-1)} className="text-slate-400 hover:text-orange-500">
           {currentCategory?.name || t('content_type')}
         </button>
         <ChevronRight size={14} className="text-slate-300" />
@@ -120,19 +151,19 @@ const ContentTypeDetail = () => {
             {currentType?.name || t('loading')}
         </span>
       </nav>
- 
+
       <div className="mb-10">
         <h1 className="text-4xl font-black text-slate-900 uppercase tracking-tight">
           {currentType ? currentType.name : t('loading')}
         </h1>
       </div>
- 
+
       <div className="bg-white rounded-[32px] border border-slate-100 shadow-sm overflow-hidden">
         <DataTable 
           columns={columns} 
           data={files} 
           isLoading={filesLoading || typesLoading} 
-          emptyMessage={t('no_files_for_this_type')} 
+          emptyMessage={t('no_files_uploaded_yet')} 
         />
       </div>
     </div>

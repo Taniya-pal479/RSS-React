@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { 
   useAddContentTypeMutation, 
+  useUpdateContentTypeMutation,
   useGetCategoriesQuery, 
-  useGetSubCategoriesQuery 
+  useGetSubCategoriesQuery,
+  useGetContentTypesQuery 
 } from '../../services/rssApi';
-import { ArrowLeft, Save, Loader2, Calendar, Layout, ChevronDown, Layers } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, Layout, ChevronDown, Layers, FileText, AlignLeft, X } from 'lucide-react';
 import { toast } from 'react-toastify';
 
 interface ApiError {
@@ -14,28 +16,67 @@ interface ApiError {
 }
 
 const ContentTypeForm: React.FC = () => {
+  const { id } = useParams(); 
   const navigate = useNavigate();
+  const location = useLocation();
   const { t, i18n } = useTranslation();
   const globalLang = i18n.language;
 
-  const [addContentType, { isLoading }] = useAddContentTypeMutation();
+  // Attempt to get categoryId from navigation state if editing
+  const queryParams = new URLSearchParams(location.search);
+  const urlCatId = queryParams.get('categoryId') || '';
 
-  // 1. Data Selection States
+  const [addContentType, { isLoading: isAdding }] = useAddContentTypeMutation();
+  const [updateContentType, { isLoading: isUpdating }] = useUpdateContentTypeMutation();
+  
+  // Fetch data (Note: this returns an array, so we find the specific ID later)
+  const { data: contentTypesList = [] } = useGetContentTypesQuery(
+    { categoryId: urlCatId, lang: globalLang }, 
+    { skip: !id || !urlCatId }
+  );
+
   const [selectedCatId, setSelectedCatId] = useState('');
   const [selectedSubCatId, setSelectedSubCatId] = useState('');
-  const [contentYear, setContentYear] = useState<number>(new Date().getFullYear());
+  const [translations, setTranslations] = useState<Record<string, { name: string; description: string }>>({
+    en: { name: '', description: '' },
+    hi: { name: '', description: '' },
+  });
 
-  // 2. Fetch Data (Mirroring GlobalUpload logic)
   const { data: categories = [] } = useGetCategoriesQuery(globalLang);
   const { data: subCategories = [] } = useGetSubCategoriesQuery(
     { categoryId: selectedCatId, lang: globalLang },
     { skip: !selectedCatId }
   );
 
-  const [translations, setTranslations] = useState<Record<string, { name: string; description: string }>>({
-    en: { name: '', description: '' },
-    hi: { name: '', description: '' },
-  });
+  // Auto-populate fields for editing
+  useEffect(() => {
+    if (id && contentTypesList.length > 0) {
+      const itemToEdit = contentTypesList.find(item => String(item.id) === String(id));
+      
+      if (itemToEdit) {
+        setSelectedCatId(String(itemToEdit.categoryId));
+        // Using optional chaining to prevent subcategoryId errors
+        setSelectedSubCatId(itemToEdit.subcategoryId ? String(itemToEdit.subcategoryId) : '');
+        
+        const newTrans = { en: { name: '', description: '' }, hi: { name: '', description: '' } };
+        if (itemToEdit.translations) {
+          itemToEdit.translations.forEach((trans: any) => {
+            newTrans[trans.languageCode as keyof typeof newTrans] = {
+              name: trans.name,
+              description: trans.description || ''
+            };
+          });
+        } else {
+            // Fallback if translations array is missing
+            newTrans[globalLang as keyof typeof newTrans] = {
+                name: itemToEdit.name || '',
+                description: itemToEdit.description || ''
+            };
+        }
+        setTranslations(newTrans);
+      }
+    }
+  }, [id, contentTypesList, globalLang]);
 
   const handleInputChange = (field: 'name' | 'description', value: string) => {
     setTranslations((prev) => ({
@@ -63,42 +104,76 @@ const ContentTypeForm: React.FC = () => {
     const payload = {
       categoryId: Number(selectedCatId),
       subcategoryId: selectedSubCatId ? Number(selectedSubCatId) : null,
-      contentYear: Number(contentYear),
       translations: translationPayload,
     };
 
     try {
-      await addContentType(payload).unwrap();
-      toast.success(t("save_success") || "Content Type added successfully!");
+      if (id) {
+        // Match the updateContentType signature: { id, body }
+        await updateContentType({ id, body: payload }).unwrap();
+        toast.success(t("update_success") || "Updated successfully!");
+      } else {
+        await addContentType(payload).unwrap();
+        toast.success(t("save_success") || "Saved successfully!");
+      }
       navigate(-1);
     } catch (err) {
       const error = err as ApiError;
-      toast.error(error?.data?.message || "Failed to save content type");
+      toast.error(error?.data?.message || "Failed to save");
     }
   };
 
+  const isLoading = isAdding || isUpdating;
+
   return (
     <div className="w-full max-w-[800px] mx-auto bg-[#fdfcfb] p-4 md:p-6 min-h-screen">
-      <div className="flex items-center gap-4 mb-10">
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          className="p-2 hover:bg-white rounded-full transition-all text-gray-400 hover:text-gray-600 shadow-sm border border-transparent hover:border-gray-100"
-        >
-          <ArrowLeft size={24} />
-        </button>
-        <h1 className="text-xl md:text-[28px] font-bold text-[#1a1a1a]">
-          {t("add_new_content_type")}
-        </h1>
+      <div className="flex items-center justify-between mb-10">
+        <div className="flex items-center gap-4">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="p-2 hover:bg-white rounded-full transition-all text-gray-400 hover:text-gray-600 shadow-sm border border-transparent hover:border-gray-100"
+          >
+            <ArrowLeft size={24} />
+          </button>
+          <h1 className="text-xl md:text-[28px] font-bold text-[#1a1a1a]">
+            {id ? t("edit_content_type") : t("add_new_content_type")}
+          </h1>
+        </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-          
-          {/* Category Select */}
-          <div className="bg-white p-6 rounded-[24px] border border-gray-100 shadow-sm">
-            <label className="flex items-center gap-2 text-[13px] font-bold text-gray-400 mb-3 uppercase tracking-wider">
-              <Layout size={16} /> {t("category")}
+        {/* SECTION 1: NAME & DESCRIPTION (AT THE TOP) */}
+        <div className="p-5 md:p-8 rounded-[24px] md:rounded-[32px] bg-white border border-gray-100 shadow-sm space-y-6">
+          <div className="space-y-2">
+            <label className="flex items-center gap-2 text-[13px] font-bold text-gray-400 uppercase tracking-wider">
+              <FileText size={16} /> {t("name")} <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={translations[globalLang]?.name || ''}
+              onChange={(e) => handleInputChange('name', e.target.value)}
+              placeholder={t("enter_name")}
+              className="w-full px-5 py-4 bg-[#f9fafb] border border-gray-200 rounded-[18px] text-[16px] outline-none focus:border-[#f97316] transition-all font-medium"
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="flex items-center gap-2 text-[13px] font-bold text-gray-400 uppercase tracking-wider">
+              <AlignLeft size={16} /> {t("description")} <span className="text-gray-300 ml-1 font-normal lowercase">({t("optional")})</span>
+            </label>
+            <textarea
+              value={translations[globalLang]?.description || ''}
+              onChange={(e) => handleInputChange('description', e.target.value)}
+              placeholder={t("enter_description")}
+              className="w-full px-5 py-4 bg-[#f9fafb] border border-gray-200 rounded-[18px] text-[16px] outline-none focus:border-[#f97316] transition-all min-h-[140px] resize-none"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+          <div className="bg-white p-6 rounded-[24px] border border-gray-100 shadow-sm space-y-3">
+            <label className="flex items-center gap-2 text-[13px] font-bold text-gray-400 uppercase tracking-wider">
+              <Layout size={16} /> {t("category")} <span className="text-red-500">*</span>
             </label>
             <div className="relative">
               <select 
@@ -117,66 +192,33 @@ const ContentTypeForm: React.FC = () => {
             </div>
           </div>
 
- 
-          <div className="bg-white p-6 rounded-[24px] border border-gray-100 shadow-sm">
-            <label className="flex items-center gap-2 text-[13px] font-bold text-gray-400 mb-3 uppercase tracking-wider">
-              <Layers size={16} /> {t("subcategoies")}
-            </label>
-            <div className="relative">
-              <select 
-                disabled={!selectedCatId}
-                className="w-full pl-4 pr-10 py-3 bg-[#f9fafb] border border-gray-100 rounded-[14px] outline-none focus:border-[#f97316] transition-all appearance-none font-bold text-slate-700 disabled:opacity-50"
-                value={selectedSubCatId}
-                onChange={(e) => setSelectedSubCatId(e.target.value)}
-              >
-                <option value="">{t('subcategory_placeholder')}</option>
-                {subCategories.map(sub => <option key={sub.id} value={sub.id}>{sub.name}</option>)}
-              </select>
-              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={18} />
+          {/* Conditional Subcategory Select */}
+          {selectedCatId && subCategories.length > 0 && (
+            <div className="bg-white p-6 rounded-[24px] border border-gray-100 shadow-sm space-y-3">
+              <label className="flex items-center gap-2 text-[13px] font-bold text-gray-400 uppercase tracking-wider">
+                <Layers size={16} /> {t("subcategory")} <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <select 
+                  className="w-full pl-4 pr-10 py-3 bg-[#f9fafb] border border-gray-100 rounded-[14px] outline-none focus:border-[#f97316] transition-all appearance-none font-bold text-slate-700"
+                  value={selectedSubCatId}
+                  onChange={(e) => setSelectedSubCatId(e.target.value)}
+                  required
+                >
+                  <option value="">{t('subcategory_placeholder')}</option>
+                  {subCategories.map(sub => <option key={sub.id} value={sub.id}>{sub.name}</option>)}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={18} />
+              </div>
             </div>
-          </div>
+          )}
+        </div>
         </div>
 
-    
-        <div className="bg-white p-6 rounded-[24px] border border-gray-100 shadow-sm">
-          <label className="flex items-center gap-2 text-[13px] font-bold text-gray-400 mb-3 uppercase tracking-wider">
-            <Calendar size={16} /> {t("content_year")}
-          </label>
-          <input
-            type="number"
-            value={contentYear}
-            onChange={(e) => setContentYear(Number(e.target.value))}
-            className="w-full px-4 py-3 bg-[#f9fafb] border border-gray-100 rounded-[14px] outline-none focus:border-[#f97316] transition-all font-bold"
-            required
-          />
-        </div>
+        {/* SECTION 2: CATEGORY & SUBCATEGORY (MAPPING GLOBAL UPLOAD LOGIC) */}
+         
 
- 
-        <div className="p-5 md:p-8 rounded-[24px] md:rounded-[32px] bg-white border border-gray-100 shadow-sm space-y-8">
-          <div>
-            <label className="block text-[13px] font-bold text-gray-400 mb-3 uppercase tracking-wider">
-              {t("name")}  
-            </label>
-            <input
-              type="text"
-              value={translations[globalLang]?.name || ''}
-              onChange={(e) => handleInputChange('name', e.target.value)}
-              className="w-full px-5 py-4 bg-[#f9fafb] border border-gray-200 rounded-[18px] text-[16px] outline-none focus:border-[#f97316] transition-all font-medium"
-              required={globalLang === 'en'}
-            />
-          </div>
-          <div>
-            <label className="block text-[13px] font-bold text-gray-400 mb-3 uppercase tracking-wider">
-              {t("description")} 
-            </label>
-            <textarea
-              value={translations[globalLang]?.description || ''}
-              onChange={(e) => handleInputChange('description', e.target.value)}
-              className="w-full px-5 py-4 bg-[#f9fafb] border border-gray-200 rounded-[18px] text-[16px] outline-none focus:border-[#f97316] transition-all min-h-[140px] resize-none"
-            />
-          </div>
-        </div>
- 
+        {/* ACTIONS */}
         <div className="flex flex-col-reverse sm:flex-row justify-end items-center gap-4 pt-4">
           <button
             type="button"
@@ -191,7 +233,7 @@ const ContentTypeForm: React.FC = () => {
             className="w-full sm:w-auto flex items-center justify-center gap-3 px-10 py-4 bg-[#f97316] text-white font-bold rounded-[18px] hover:bg-[#ea580c] transition-all shadow-lg shadow-orange-100 disabled:opacity-50 active:scale-95"
           >
             {isLoading ? <Loader2 className="animate-spin" size={22} /> : <Save size={22} />}
-            <span className="text-[17px]">{t("save_content_type")}</span>
+            <span className="text-[17px]">{id ? t("update_content_type") : t("save_content_type")}</span>
           </button>
         </div>
       </form>

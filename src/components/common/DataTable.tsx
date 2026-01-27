@@ -1,4 +1,3 @@
-// components/common/DataTable.tsx
 import React from "react";
 import { useTranslation } from "react-i18next";
 
@@ -28,11 +27,10 @@ const DataTable = <T extends { id: string | number }>({
 
   return (
     <div className="bg-white rounded-[32px] border border-gray-100 shadow-sm overflow-y-auto max-h-[600px] relative">
-      <table className="w-full text-left border-separate border-spacing-0 overflow-y-auto max-h-[600px]">
+      <table className="w-full text-left border-separate border-spacing-0">
         <thead className="sticky top-0 z-10">
           <tr className="bg-[#f9fafb]/50 border-b border-gray-50">
-            {columns.map((col, idx) =>(
-
+            {columns.map((col, idx) => (
               <th
                 key={idx}
                 className={`${col.className} px-10 py-5 text-[11px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-50`}
@@ -53,24 +51,33 @@ const DataTable = <T extends { id: string | number }>({
               </td>
             </tr>
           ) : data.length > 0 ? (
-           data.map((item, index) => ( 
-      <tr
-        key={item.id}
-        className="group transition-colors hover:bg-[#f9fafb]"
-      >
-        {columns.map((col, idx) => {
-          const isNameColumn = col.key === "name";
+            data.map((item, index) => (
+              <tr
+                key={item.id}
+                className="group transition-colors hover:bg-[#f9fafb]"
+              >
+                {columns.map((col, idx) => {
+                  // Logic changed to target the first column (idx === 0)
+                  const isFirstColumn = idx === 1;
 
-          return (
-            <td
-              key={idx}
-              className={`px-10 py-6 ${col.className} ${isNameColumn && onRowClick ? "cursor-pointer hover:text-orange-600" : ""}`}
-              onClick={() => {
-                if (isNameColumn) onRowClick?.(item);
-              }}
-            >
-              {col.render ? col.render(item, index) : (item as any)[col.key]}
-            </td>);
+                  return (
+                    <td
+                      key={idx}
+                      className={`px-10 py-6 ${col.className} ${
+                        isFirstColumn && onRowClick ? "cursor-pointer group-hover:text-orange-600 transition-colors" : ""
+                      }`}
+                      onClick={() => {
+                        if (isFirstColumn) onRowClick?.(item);
+                      }}
+                    >
+                      {/* The text color changes to orange when the row is hovered 
+                         thanks to the 'group-hover' class on the first column 
+                      */}
+                      <div className={`${isFirstColumn ? "group-hover:text-orange-600 transition-colors" : ""}`}>
+                        {col.render ? col.render(item, index) : (item as any)[col.key]}
+                      </div>
+                    </td>
+                  );
                 })}
               </tr>
             ))

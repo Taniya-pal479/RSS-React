@@ -2,13 +2,15 @@ import { createSlice,type PayloadAction } from '@reduxjs/toolkit';
 
 interface UiState {
  
-  currentLanguage: string; // 'en', 'hi', etc.
+  currentLanguage: string;  
   isSidebarOpen: boolean;
+  searchQuery: string;
 }
 
 const initialState: UiState = {
-  currentLanguage: 'en', // Default to English so UI isn't empty
+  currentLanguage: 'hi', // Default to English so UI isn't empty
   isSidebarOpen: true,
+  searchQuery: '',
 };
 
 const uiSlice = createSlice({
@@ -24,9 +26,12 @@ const uiSlice = createSlice({
     },
     openSidebar: (state) => {
       state.isSidebarOpen = true;
-    }
+    },
+    setSearchQuery: (state, action: PayloadAction<string>) => {
+      state.searchQuery = action.payload;
+    },
   },
 });
 
-export const { setLanguage, toggleSidebar, openSidebar } = uiSlice.actions;
+export const { setLanguage, toggleSidebar, openSidebar,setSearchQuery } = uiSlice.actions;
 export default uiSlice.reducer;

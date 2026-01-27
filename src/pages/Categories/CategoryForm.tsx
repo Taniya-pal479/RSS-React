@@ -14,13 +14,13 @@ const SUPPORTED_LANGS = [
 
 const CategoryForm = ({ mode }: { mode: 'category' | 'subcategory' }) => {
   const navigate = useNavigate();
-  const { t ,i18n} = useTranslation();
+  const { t, i18n } = useTranslation();
   const { categoryId } = useParams();
 
   const [addCategory, { isLoading: isCatLoading }] = useAddCategoryMutation();
   const [addSubCategory, { isLoading: isSubLoading }] = useAddSubCategoryMutation();
   const isLoading = isCatLoading || isSubLoading;
-  const globalLang=i18n.language;
+  const globalLang = i18n.language;
 
   const [currentLangCode, setCurrentLangCode] = useState(globalLang);
   const [isLangOpen, setIsLangOpen] = useState(false);
@@ -39,10 +39,9 @@ const CategoryForm = ({ mode }: { mode: 'category' | 'subcategory' }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
- 
+
     const translationPayload: Translation[] = Object.entries(translations)
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      .filter(([_, data]) => data.name.trim() !== '') 
+      .filter(([_, data]) => data.name.trim() !== '')
       .map(([code, data]) => ({
         languageCode: code,
         name: data.name.trim(),
@@ -53,44 +52,39 @@ const CategoryForm = ({ mode }: { mode: 'category' | 'subcategory' }) => {
       alert("Please enter at least one name.");
       return;
     }
- 
+
     const slug = (translations.en.name || translations.hi.name)
       .toLowerCase()
       .replace(/\s+/g, '-')
       .replace(/[^\w-]+/g, '');
 
-try {
-  let targetId: string | number;
+    try {
+      let targetId: string | number;
 
-  if (mode === 'category') {
-   
-    const result = await addCategory({ 
-      slug, 
-      translations: translationPayload 
-    }).unwrap();
-    
-    targetId = result.id;  
-  } else {
-    await addSubCategory({
-      categoryId: Number(categoryId),
-      slug,
-      translations: translationPayload
-    }).unwrap();
-    
-    targetId = categoryId!;  
-  }
+      if (mode === 'category') {
+        const result = await addCategory({
+          slug,
+          translations: translationPayload
+        }).unwrap();
+        targetId = result.id;
+      } else {
+        await addSubCategory({
+          categoryId: Number(categoryId),
+          slug,
+          translations: translationPayload
+        }).unwrap();
+        targetId = categoryId!;
+      }
 
-  toast.success(t("save_success"));
+      toast.success(t("save_success"));
+      navigate(`/category/${targetId}`, {
+        state: { name: translations[currentLangCode].name }
+      });
 
-   
-  navigate(`/category/${targetId}`, { 
-    state: { name: translations[currentLangCode].name } 
-  });
-
-} catch (err) {
-  console.log(err)
-  toast.error("Failed to save");
-}
+    } catch (err) {
+      console.log(err)
+      toast.error("Failed to save");
+    }
   };
 
   const currentLang = SUPPORTED_LANGS.find(l => l.code === currentLangCode);
@@ -103,11 +97,11 @@ try {
             <ArrowLeft size={24} />
           </button>
           <h1 className="text-[28px] font-bold text-[#1a1a1a]">
-            {mode === 'category' ? t("title") : t("Subtitle") }
+            {mode === 'category' ? t("title") : t("Subtitle")}
           </h1>
         </div>
 
-        <div className="relative  hidden">
+        <div className="relative hidden">
           <button
             type="button"
             onClick={() => setIsLangOpen(!isLangOpen)}
@@ -140,26 +134,24 @@ try {
           <div className="space-y-6">
             <div>
               <label className="block text-[13px] font-bold text-gray-400 mb-2.5 ml-1">
-                 {t("fileName")}
+                {t("fileName")} <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 value={translations[currentLangCode]?.name || ''}
                 onChange={(e) => handleInputChange('name', e.target.value)}
-                
                 className="w-full px-5 py-4 bg-[#f9fafb] border border-gray-200 rounded-[14px] text-[16px] outline-none focus:border-[#f97316] focus:ring-4 focus:ring-orange-50 transition-all"
-                required={currentLangCode === 'en'} // Require English as primary
+                required={currentLangCode === 'en'}
               />
             </div>
 
             <div>
               <label className="block text-[13px] font-bold text-gray-400 mb-2.5 ml-1">
-               {t("description")}
+                {t("description")} <span className="text-gray-300 ml-1 font-normal lowercase">({t("optional")})</span>
               </label>
               <textarea
                 value={translations[currentLangCode]?.description || ''}
                 onChange={(e) => handleInputChange('description', e.target.value)}
-                 
                 className="w-full px-5 py-4 bg-[#f9fafb] border border-gray-200 rounded-[14px] text-[16px] outline-none focus:border-[#f97316] transition-all min-h-[140px] resize-none"
               />
             </div>

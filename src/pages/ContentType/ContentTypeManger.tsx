@@ -173,7 +173,8 @@ export const ContentTypeManager = () => {
       </div>
 
       <div className="bg-white rounded-[24px] border border-gray-100 shadow-sm overflow-hidden">
-        <DataTable columns={columns} data={paginatedData} />
+        <DataTable columns={columns} data={paginatedData} 
+        onRowClick={(item) => navigate(`/category/${categoryId}/content-type/${item.id}`)}/>
       </div>
 
  

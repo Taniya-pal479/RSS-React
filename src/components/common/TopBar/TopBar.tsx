@@ -1,15 +1,27 @@
 import React from 'react';
 import { Search, Bell, Menu } from 'lucide-react';
-import { useAppDispatch } from '../../../hook/store';
-import { toggleSidebar } from '../../../store/slices/uiSlice';
+import { useAppDispatch, useAppSelector } from '../../../hook/store';
+import { setSearchQuery, toggleSidebar } from '../../../store/slices/uiSlice';
 import { useTranslation } from 'react-i18next';
 import LanguageSelector from './LanguageSelector';
 import UserSection from '../UserSection/UserSection';
-
+import { useNavigate } from 'react-router-dom';
 // eslint-disable-next-line no-empty-pattern
 const TopBar = ({ }: { title?: string }) => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
+  const navigate=useNavigate()
+  const searchQuery = useAppSelector((state) => state.ui.searchQuery);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    dispatch(setSearchQuery(value));
+  
+
+  if (value.trim().length > 0 && window.location.pathname !== '/search-results') {
+      navigate('/search-results');
+    }
+  };
 
   return (
     <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-gray-100 px-6 py-4 flex items-center justify-between">
@@ -26,6 +38,8 @@ const TopBar = ({ }: { title?: string }) => {
           {/* Replaced hardcoded search placeholder */}
           <input 
             type="text" 
+            value={searchQuery}
+            onChange={handleInputChange}
             placeholder={t("search_placeholder")} 
             className="bg-transparent border-none outline-none ml-2 text-sm w-full text-gray-700" 
           />

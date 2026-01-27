@@ -180,7 +180,16 @@
   "edit_content_type": "कंटेंट प्रकार संपादित करें",
   "contentYear": "कंटेंट वर्ष",
   "DELETED_SUCCESSFULLY": "सफलतापूर्वक हटा दिया गया!",
-  "ERROR_DELETING": "त्रुटि: कंटेंट प्रकार हटाया नहीं जा सका। कृपया पुनः प्रयास करें।"
+  "ERROR_DELETING": "त्रुटि: कंटेंट प्रकार हटाया नहीं जा सका। कृपया पुनः प्रयास करें।",
+  "type_png": "PNG छवि",
+  "type_jpg": "JPG छवि",
+  "type_jpeg": "JPEG छवि",
+  "category_placeholder": "श्रेणी चुनें",
+  "subcategory_placeholder": "उप-श्रेणी चुनें",
+  "invalid_file_type": "अमान्य फ़ाइल प्रकार। कृपया इस श्रेणी के लिए एक मान्य फ़ाइल चुनें।",
+  "upload_date": "अपलोड तिथि",
+  "content_group": "सामग्री समूह",
+  "UPLOAD_SUCCESSFUL": "फाइल सफलतापूर्वक अपलोड की गई"
    
 
 

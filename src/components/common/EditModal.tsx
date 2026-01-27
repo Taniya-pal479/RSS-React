@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { X, Globe, Check, ChevronDown, Save, Loader2 } from "lucide-react";
 import { toast } from "react-toastify";
 import {
   useUpdateCategoryMutation,
   useUpdateSubCategoryMutation,
+  useGetCategoriesQuery,
+  useGetSubCategoriesQuery,
 } from "../../services/rssApi";
 import type { Translation } from "../../types";
 
@@ -15,56 +17,57 @@ const SUPPORTED_LANGS = [
 
 interface EditModalProps {
   type: "category" | "subcategory";
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  data:any;
+  data: any;
   onClose: () => void;
 }
 
 const EditModal = ({ type, data, onClose }: EditModalProps) => {
   const { t } = useTranslation();
-  const [updateCategory, { isLoading: isUpdatingCat }] =
-    useUpdateCategoryMutation();
-
-     console.log("Category",updateCategory)
-  const [updateSubCategory, { isLoading: isUpdatingSub }] =
-    useUpdateSubCategoryMutation();
-  const isLoading = isUpdatingCat || isUpdatingSub;
-
   const [currentLangCode, setCurrentLangCode] = useState("en");
   const [isLangOpen, setIsLangOpen] = useState(false);
+  const [formData, setFormData] = useState({ name: "", description: "" });
 
-  // Initialize translations with existing data
-  const [translations, setTranslations] = useState(() => {
-    const initialData: Record<string, { name: string; description: string }> = {
-      en: { name: "", description: "" },
-      hi: { name: "", description: "" },
-    };
+  // 1. Dynamic API Fetching based on the active toggle and modal type
+  const categoryQuery = useGetCategoriesQuery(
+    currentLangCode,
+    { skip: type !== "category" }
+  );
+  
+  const subCategoryQuery = useGetSubCategoriesQuery(
+    { lang: currentLangCode, categoryId: data?.categoryId },
+    { skip: type !== "subcategory" }
+  );
 
-    if (data?.translations && Array.isArray(data.translations)) {
-      data.translations.forEach((item: Translation) => {
-        const code = item.languageCode;
-        if (initialData[code]) {
-          initialData[code] = {
-            name: item.name || "",
-            description: item.description || "",
-          };
-        }
-      });
+  const isFetching = categoryQuery.isFetching || subCategoryQuery.isFetching;
+  const refreshedList = type === "category" ? categoryQuery.data : subCategoryQuery.data;
+
+  const [updateCategory, { isLoading: isUpdatingCat }] = useUpdateCategoryMutation();
+  const [updateSubCategory, { isLoading: isUpdatingSub }] = useUpdateSubCategoryMutation();
+  const isLoading = isUpdatingCat || isUpdatingSub;
+
+  // 2. Sync fields when API returns data for the selected language
+  useEffect(() => {
+    if (refreshedList && Array.isArray(refreshedList)) {
+      const currentItem = refreshedList.find((item: any) => String(item.id) === String(data.id));
+      if (currentItem) {
+        setFormData({
+          name: currentItem.name || "",
+          description: currentItem.description || "",
+        });
+      }
     }
-    return initialData;
-  });
+  }, [refreshedList, data.id]);
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const translationPayload: Translation[] = Object.entries(translations)
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      .filter(([_, d]) => d.name.trim() !== "")
-      .map(([code, d]) => ({
-        languageCode: code,
-        name: d.name.trim(),
-        description: d.description.trim(),
-      }));
+    const translationPayload: Translation[] = [
+      {
+        languageCode: currentLangCode,
+        name: formData.name.trim(),
+        description: formData.description.trim(),
+      },
+    ];
 
     try {
       if (type === "category") {
@@ -85,7 +88,6 @@ const EditModal = ({ type, data, onClose }: EditModalProps) => {
         toast.success(t("SUBCATEGORY_UPDATED"));
       }
       onClose();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       const errorCode = err?.data?.message || "DEFAULT_ERROR";
       toast.error(t(`${errorCode}`));
@@ -111,113 +113,80 @@ const EditModal = ({ type, data, onClose }: EditModalProps) => {
                 <ChevronDown size={14} />
               </button>
               {isLangOpen && (
-                <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-100 rounded-2xl shadow-2xl z-50 py-2 overflow-hidden animate-in fade-in zoom-in duration-200">
-                  {SUPPORTED_LANGS.map((lang) => {
-                    const isActive = currentLangCode === lang.code;
-
-                    return (
-                      <button
-                        key={lang.code}
-                        type="button"
-                        onClick={() => {
-                          setCurrentLangCode(lang.code);
-                          setIsLangOpen(false);
-                        }}
-                        className={`w-full flex items-center justify-between px-4 py-2.5 text-xs font-bold transition-colors
-            ${isActive ? "bg-orange-50 text-[#f97316]" : "hover:bg-gray-50 text-gray-600"}
-          `}
-                      >
-                        <div className="flex items-center gap-2">
-                          {lang.name}
-                        </div>
-
-                        {isActive && (
-                          <Check
-                            size={14}
-                            className="text-green-500"
-                            strokeWidth={3}
-                          />
-                        )}
-                      </button>
-                    );
-                  })}
+                <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-100 rounded-2xl shadow-2xl z-50 py-2 overflow-hidden">
+                  {SUPPORTED_LANGS.map((lang) => (
+                    <button
+                      key={lang.code}
+                      type="button"
+                      onClick={() => {
+                        setCurrentLangCode(lang.code);
+                        setIsLangOpen(false);
+                      }}
+                      className={`w-full flex items-center justify-between px-4 py-2.5 text-xs font-bold transition-colors
+                        ${currentLangCode === lang.code ? "bg-orange-50 text-[#f97316]" : "hover:bg-gray-50 text-gray-600"}
+                      `}
+                    >
+                      {lang.name}
+                      {currentLangCode === lang.code && <Check size={14} className="text-green-500" strokeWidth={3} />}
+                    </button>
+                  ))}
                 </div>
               )}
             </div>
-            <button
-              onClick={onClose}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-400"
-            >
+            <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full text-gray-400">
               <X size={20} />
             </button>
           </div>
         </div>
 
-        {/* Form Body */}
         <form onSubmit={handleUpdate} className="p-8 space-y-6">
           <div className="space-y-4">
-            <div>
-              <label className="block text-[11px] font-black text-gray-400 uppercase mb-2 ml-1">
-                {t("fileName")}
-              </label>
-              <input
-                type="text"
-              value={translations[currentLangCode]?.name || ""}
-                onChange={(e) => {
-                  const newName = e.target.value;
-                  setTranslations((prev) => ({
-                    ...prev,
-                    [currentLangCode]: {
-                      ...prev[currentLangCode],
-                      name: newName,
-                    },
-                  }));
-                }}
-                className="w-full px-5 py-4 bg-[#f9fafb] border border-gray-200 rounded-2xl text-sm outline-none focus:border-[#f97316] font-bold"
-                required={currentLangCode === "hi"}
-                
-              />
-            </div>
-            <div>
-              <label className="block text-[11px] font-black text-gray-400 uppercase mb-2 ml-1">
-                {t("description")}
-              </label>
-              <textarea
-                value={translations[currentLangCode].description} 
-                onChange={(e) => {
-                  const newDesc = e.target.value;
-                  setTranslations((prev) => ({
-                    ...prev,
-                    [currentLangCode]: {
-                      ...prev[currentLangCode],
-                      description: newDesc,
-                    },
-                  }));
-                }}
-                className="w-full px-5 py-4 bg-[#f9fafb] border border-gray-200 rounded-2xl text-sm outline-none focus:border-[#f97316] min-h-[120px] resize-none font-medium"
-                 
-              />
-            </div>
+            {isFetching ? (
+              <div className="flex justify-center py-10">
+                <Loader2 className="animate-spin text-[#f97316]" size={32} />
+              </div>
+            ) : (
+              <>
+                <div>
+                  <label className="block text-[11px] font-black text-gray-400 uppercase mb-2 ml-1">
+                    {t("name")} ({currentLangCode.toUpperCase()}) <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className="w-full px-5 py-4 bg-[#f9fafb] border border-gray-200 rounded-2xl text-sm outline-none focus:border-[#f97316] font-bold"
+                    required={currentLangCode === "en"}
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-black text-gray-400 uppercase mb-2 ml-1">
+                    {t("description")} ({currentLangCode.toUpperCase()}) <span className="text-gray-300 ml-1 font-normal lowercase">({t("optional")})</span>
+                  </label>
+                  <textarea
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    className="w-full px-5 py-4 bg-[#f9fafb] border border-gray-200 rounded-2xl text-sm outline-none focus:border-[#f97316] min-h-[120px] resize-none font-medium"
+                  />
+                </div>
+              </>
+            )}
           </div>
 
           <div className="flex gap-3 pt-2">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-4 border-2 border-gray-100 text-gray-500 font-bold rounded-2xl hover:bg-gray-50 transition-colors"
+              className="flex-1 py-4 border-2 border-gray-100 text-gray-500 font-bold rounded-2xl hover:bg-gray-50"
             >
               {t("cancel")}
             </button>
             <button
               type="submit"
-              disabled={isLoading}
-              className="flex-1 flex items-center justify-center gap-2 py-4 bg-[#f97316] text-white font-bold rounded-2xl hover:bg-[#ea580c] shadow-lg shadow-orange-100 disabled:opacity-50 active:scale-95 transition-all"
+              disabled={isLoading || isFetching}
+              className="flex-1 flex items-center justify-center gap-2 py-4 bg-[#f97316] text-white font-bold rounded-2xl hover:bg-[#ea580c] shadow-lg disabled:opacity-50 transition-all"
             >
-              {isLoading ? (
-                <Loader2 className="animate-spin" size={20} />
-              ) : (
-                <Save size={20} />
-              )}
+              {isLoading ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
               {t("save_changes")}
             </button>
           </div>

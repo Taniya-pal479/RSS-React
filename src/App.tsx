@@ -20,6 +20,7 @@ import { ContentTypeManager } from "./pages/ContentType/ContentTypeManger";
 import ContentTypeForm from "./components/common/ContentTypeForm";
 import EditContentTypeModal from "./components/common/EditContentTypeModal";
 import ContentTypeDetail from "./pages/ContentType/ContentTypeDetail";
+import SearchResultsPage from "./pages/SearchResultsPage";
 
 const App = () => {
   return (
@@ -66,6 +67,8 @@ const App = () => {
 
 
              <Route path="/category/:categoryId/content-type/:contentTypeId" element={<ContentTypeDetail />} />
+             <Route path="/search-results" element={<SearchResultsPage />} />
+             
             </Route>
           </Route>
         </Routes>

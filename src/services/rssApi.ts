@@ -189,6 +189,13 @@ updateContentType: builder.mutation<void, { id: string | number; body: any }>({
     { type: 'Files', id: 'LIST' }
   ],
 }),
+deleteFile: builder.mutation<void, string | number>({
+  query: (id) => ({
+    url: `files/${id}`,
+    method: 'DELETE',
+  }),
+  invalidatesTags: ['Files'], 
+}),
 
   }),
 });
@@ -209,4 +216,5 @@ export const {
   useAddContentTypeMutation,
   useUpdateContentTypeMutation,
    useGetFilesQuery ,
+   useDeleteFileMutation,
 } = rssApi;
