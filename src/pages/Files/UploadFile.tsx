@@ -25,13 +25,16 @@ const GlobalUpload = () => {
   const [year, setYear] = useState('');
   const [files, setFiles] = useState<File[]>([]); 
 
-  // Queries
+ 
   const { data: categories = [] } = useGetCategoriesQuery(i18n.language);
   
-  const { data: subCategories = [] } = useGetSubCategoriesQuery(
-    { categoryId: selectedCatId, lang: i18n.language },
-    { skip: !selectedCatId }
-  );
+  const { 
+  data: subCategories = [], 
+  isFetching: isSubCatLoading 
+} = useGetSubCategoriesQuery(
+  { categoryId: selectedCatId, lang: i18n.language },
+  { skip: !selectedCatId }
+);
 
   const { data: contentTypes = [] } = useGetContentTypesQuery(
      

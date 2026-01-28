@@ -10,7 +10,7 @@ export interface StatsCardProps {
   label: string;
   value: string | number;
   icon: ReactNode;
-  trend: string;
+ 
   subText: string;
   color: string;
   trendColor?: string;
@@ -116,6 +116,10 @@ export interface UpdateTranslationPayload {
 
 
 export interface FileObject {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  type: any;
+ contentTypeId:number|string;
+ categoryId:number|string;
   id: number;
   fileName: string;
   fileSize: number;

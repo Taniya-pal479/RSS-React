@@ -44,14 +44,8 @@ const Dashboard = () => {
           <p className="text-gray-500 mt-1">{t("welcome_admin")}</p>
         </div>
         
-        {/* REPLACED SEE ALL WITH ADD INGESTION BUTTON */}
-        <button 
-          onClick={() => navigate('/upload')}
-          className="flex items-center gap-2 px-5 py-2.5 bg-saffron-600 text-white font-bold rounded-xl shadow-lg hover:bg-saffron-700 transition-all active:scale-95"
-        >
-          <Plus size={18} />
-          {t("add_ingestion") || "Add Ingestion"}
-        </button>
+     
+        
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -59,7 +53,6 @@ const Dashboard = () => {
           label={t("total_documents")} 
           value={isLoading ? "..." : stats.totalDocs} 
           icon={<FileText size={24} />} 
-          trend="Live" 
           subText={t("stats_subtext")}
           color="text-saffron-600" 
         />
@@ -67,7 +60,6 @@ const Dashboard = () => {
           label={t("total_media")} 
           value={isLoading ? "..." : stats.mediaCount} 
           icon={<ImageIcon size={24} />} 
-          trend="Live" 
           subText={t("stats_subtext")}
           color="text-saffron-600" 
         />
@@ -75,7 +67,7 @@ const Dashboard = () => {
           label={t("active_reports")} 
           value={isLoading ? "..." : "0"} 
           icon={<BarChart3 size={24} />} 
-          trend="0%" 
+        
           trendColor="text-gray-400 bg-gray-50"
           subText={t("no_change")}
           color="text-saffron-600" 
@@ -85,10 +77,14 @@ const Dashboard = () => {
       <div className="bg-white rounded-2xl border border-gray-100 shadow-card p-8 min-h-[400px]">
         <div className="flex justify-between items-center mb-6">
           <h3 className="font-bold text-gray-900 text-lg">{t("recently_added")}</h3>
-          {/* View All fallback if needed */}
-          <button onClick={() => navigate('/search-results')} className="text-sm font-bold text-saffron-600 hover:text-saffron-700">
-             {t("view_all")}
-          </button>
+         
+          <button 
+          onClick={() => navigate('/upload')}
+          className="flex items-center gap-2 px-5 py-2.5 bg-saffron-600 text-white font-bold rounded-xl shadow-lg hover:bg-saffron-700 transition-all active:scale-95"
+        >
+          <Plus size={18} />
+          {t("upload_file") || "Add Ingestion"}
+        </button>
         </div>
 
         {isLoading ? (
@@ -97,24 +93,35 @@ const Dashboard = () => {
           </div>
         ) : stats.recentFiles.length > 0 ? (
           <div className="space-y-4">
-            {stats.recentFiles.map((file) => (
-              <div key={file.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors cursor-pointer" onClick={() => window.open(file.url, '_blank')}>
-                <div className="flex items-center gap-4">
-                  <div className="p-2 bg-white rounded-lg shadow-sm text-saffron-600">
-                    <FileText size={20} />
-                  </div>
-                  <div>
-                    <p className="font-bold text-gray-900 text-sm">{file.fileName}</p>
-                    <p className="text-xs text-gray-500">
-                      {file.uploadedAt ? format(new Date(file.uploadedAt), 'MMM dd, yyyy') : 'Recently'}
-                    </p>
-                  </div>
-                </div>
-                <div className="p-2 text-gray-300">
-                  <ArrowRight size={18} />
-                </div>
-              </div>
-            ))}
+            {stats.recentFiles.map((file) => {
+  // 1. Define the IDs here so the navigate function can find them
+  const catId = file.categoryId;
+  const contentId = file.contentTypeId;
+
+  return (
+    <div 
+      key={file.id} 
+      className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors cursor-pointer"
+      
+      onClick={() => navigate(`/category/${catId}/content-type/${contentId}`)}
+    >
+      <div className="flex items-center gap-4">
+        <div className="p-2 bg-white rounded-lg shadow-sm text-saffron-600">
+          <FileText size={20} />
+        </div>
+        <div>
+          <p className="font-bold text-gray-900 text-sm">{file.fileName}</p>
+          <p className="text-xs text-gray-500">
+            {file.uploadedAt ? format(new Date(file.uploadedAt), 'MMM dd, yyyy') : 'Recently'}
+          </p>
+        </div>
+      </div>
+      <div className="p-2 text-gray-300">
+        <ArrowRight size={18} />
+      </div>
+    </div>
+  );
+})}
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center h-64 border-2 border-dashed border-gray-100 rounded-xl bg-gray-50/30">
@@ -133,7 +140,7 @@ const Dashboard = () => {
   );
 };
 
-const StatsCard = ({ label, value, icon, trend, subText, color, trendColor }:StatsCardProps) => (
+const StatsCard = ({ label, value, icon, subText, color}:StatsCardProps) => (
   <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-card hover:-translate-y-1 transition-all duration-300">
     <div className="flex justify-between items-start">
       <div>
@@ -143,9 +150,7 @@ const StatsCard = ({ label, value, icon, trend, subText, color, trendColor }:Sta
       <div className={`p-3 bg-saffron-50 rounded-xl ${color}`}>{icon}</div>
     </div>
     <div className="mt-4 flex items-center text-sm gap-2">
-      <span className={`px-2 py-0.5 rounded-full font-medium ${trendColor || 'bg-green-50 text-green-700'}`}>
-        {trend}
-      </span>
+       
       <span className="text-gray-400">{subText}</span>
     </div>
   </div>
