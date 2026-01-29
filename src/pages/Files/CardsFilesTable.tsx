@@ -4,7 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { 
   FileText, Download, Calendar, 
   HardDrive, Home, ChevronRight,
-  Image as ImageIcon, FileCheck, X
+  Image as ImageIcon, FileCheck, X,
+  BarChart3
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useAppSelector } from '../../hook/store';
@@ -15,32 +16,31 @@ const CardsFilesTable = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   
-  // 1. Get the 'type' from URL: e.g., /results?type=media
   const [searchParams] = useSearchParams();
   const filterType = searchParams.get('type'); 
   const searchQuery = useAppSelector((state) => state.ui.searchQuery);
 
   const { data: files = [], isLoading } = useGetAllFilesQuery();
 
-  // 2. Logic to filter data based on URL and Search Bar
   const filteredData = useMemo(() => {
     return files.filter((f) => {
       const extension = f.fileName?.split('.').pop()?.toUpperCase() || '';
       const imageExtensions = ['JPG', 'JPEG', 'PNG', 'WEBP'];
-      const docExtensions = ['PDF', 'DOC', 'DOCX', 'TXT', 'CSV', 'XLS', 'XLSX'];
+      const docExtensions = ['PDF', 'DOC', 'DOCX', 'TXT'];
+      const reportExtensions = ['CSV', 'XLS', 'XLSX'];
 
-      // filter by URL type
       let matchesType = true;
+
       if (filterType === 'media') {
         matchesType = imageExtensions.includes(extension) || f.mimeType?.startsWith('image/');
-      } else if (filterType === 'docs') {
-        matchesType = docExtensions.includes(extension);
       } else if (filterType === 'reports') {
-        // Logic for reports (e.g., specific naming convention or metadata)
-        matchesType = f.fileName?.toLowerCase().includes('report');
+        // Filter specifically for report extensions
+        matchesType = reportExtensions.includes(extension);
+      } else if (filterType === 'docs') {
+        // Filter for docs, ensuring we exclude media and reports
+        matchesType = docExtensions.includes(extension) && !reportExtensions.includes(extension);
       }
 
-      // filter by global search query
       const matchesSearch = searchQuery 
         ? f.fileName.toLowerCase().includes(searchQuery.toLowerCase()) 
         : true;
@@ -49,7 +49,6 @@ const CardsFilesTable = () => {
     });
   }, [files, filterType, searchQuery]);
 
-  // 3. Dynamic Title based on filter
   const getHeaderTitle = () => {
     switch (filterType) {
       case 'media': return t("total_media") || "Media Files";
@@ -66,16 +65,21 @@ const CardsFilesTable = () => {
       className: "w-[45%]",
       render: (file: any) => {
         const ext = file.fileName?.split('.').pop()?.toUpperCase();
-        const isImg = ['JPG', 'JPEG', 'PNG', 'WEBP'].includes(ext);
+        const isImg = ['JPG', 'JPEG', 'PNG', 'WEBP'].includes(ext || '');
+        const isReport = ['CSV', 'XLS', 'XLSX'].includes(ext || '');
 
         return (
           <div className="flex items-center gap-4 py-2 group">
-            <div className={`p-3 rounded-2xl shadow-sm transition-colors ${isImg ? 'bg-orange-50 text-orange-600' : 'bg-blue-50 text-blue-600'}`}>
-              {isImg ? <ImageIcon size={20} /> : <FileText size={20} />}
+            <div className={`p-3 rounded-2xl shadow-sm transition-colors ${
+              isImg ? 'bg-orange-50 text-orange-600' : 
+              isReport ? 'bg-green-50 text-green-600' : 
+              'bg-blue-50 text-blue-600'
+            }`}>
+              {isImg ? <ImageIcon size={20} /> : isReport ? <BarChart3 size={20} /> : <FileText size={20} />}
             </div>
             <div 
               className="flex flex-col cursor-pointer" 
-            onClick={() => navigate(`/category/${file.categoryId}/content-type/${file.contentTypeId}`)}
+              onClick={() => navigate(`/category/${file.categoryId}/content-type/${file.contentTypeId}`)}
             >
               <span className="font-bold text-slate-800 group-hover:text-orange-600 transition-colors line-clamp-1">
                 {file.fileName}
@@ -131,7 +135,6 @@ const CardsFilesTable = () => {
 
   return (
     <div className="p-8 bg-[#fafafa] min-h-screen">
-      {/* Breadcrumbs */}
       <nav className="flex items-center gap-2 mb-8 text-sm font-bold">
         <button onClick={() => navigate('/')} className="text-slate-400 hover:text-orange-500 transition-colors">
           <Home size={16} />
@@ -142,7 +145,6 @@ const CardsFilesTable = () => {
         </span>
       </nav>
 
-      {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
         <div>
           <h1 className="text-4xl font-black text-slate-900 uppercase tracking-tight flex items-center gap-4">
@@ -157,7 +159,6 @@ const CardsFilesTable = () => {
           </p>
         </div>
 
-        {/* Clear Filter button if type exists */}
         {filterType && (
           <button 
             onClick={() => navigate('/results')} 
@@ -169,7 +170,6 @@ const CardsFilesTable = () => {
         )}
       </div>
 
-      {/* Table Section */}
       <div className="bg-white rounded-[32px] border border-slate-100 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
         <DataTable 
           columns={columns} 
