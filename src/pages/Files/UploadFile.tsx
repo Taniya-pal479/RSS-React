@@ -18,44 +18,40 @@ const GlobalUpload = () => {
   const navigate = useNavigate();
   const [ingestFile, { isLoading: isUploading }] = useUploadFileMutation();
 
- 
   const [selectedCatId, setSelectedCatId] = useState('');
   const [selectedSubCatId, setSelectedSubCatId] = useState('');
   const [selectedContentTypeId, setSelectedContentTypeId] = useState('');
   const [year, setYear] = useState('');
   const [files, setFiles] = useState<File[]>([]); 
 
- 
+  // Queries
   const { data: categories = [] } = useGetCategoriesQuery(i18n.language);
   
   const { 
-  data: subCategories = [], isFetching: isFetchingSubCats
-} = useGetSubCategoriesQuery(
-  { categoryId: selectedCatId, lang: i18n.language },
-  { skip: !selectedCatId }
-);
+    data: subCategories = [], 
+    isFetching: isFetchingSubCats
+  } = useGetSubCategoriesQuery(
+    { categoryId: selectedCatId, lang: i18n.language },
+    { skip: !selectedCatId }
+  );
 
   const { data: contentTypes = [] } = useGetContentTypesQuery(
-     
-   { categoryId: selectedCatId || "", 
-    lang: i18n.language 
-  },
+    { categoryId: selectedCatId || "", lang: i18n.language }
   );
  
-  const isSubCatRequired = selectedCatId && subCategories.length > 0;
+  // FIX: Form is valid even if subCategory is empty
   const isFormValid = 
     selectedContentTypeId && 
     selectedCatId && 
-    (!isSubCatRequired || selectedSubCatId) && 
     year.trim() !== '' && 
-    files.length > 0;
+    files.length > 0 &&
+    !isFetchingSubCats; // Still wait for fetching to finish to avoid data mismatch
 
- 
   const currentCatName = categories.find(c => String(c.id) === selectedCatId)?.name || "...";
-  const currentSubCatName = subCategories.find(s => String(s.id) === selectedSubCatId)?.name || "...";
+  const currentSubCatName = subCategories.find(s => String(s.id) === selectedSubCatId)?.name || "";
   const currentCTName = contentTypes.find(ct => String(ct.id) === selectedContentTypeId)?.name || "...";
 
-  const logicalPath = `/${currentCatName}/${currentSubCatName}/${currentCTName}/${year || 'YYYY'}/${files.length > 0 ? `${files.length} files` : t('placeholder_filename')}`;
+  const logicalPath = `/${currentCatName}${currentSubCatName ? `/${currentSubCatName}` : ''}/${currentCTName}/${year || 'YYYY'}/${files.length > 0 ? `${files.length} files` : t('placeholder_filename')}`;
 
   const getFileType = (file: File) => {
     const ext = file.name.split('.').pop()?.toUpperCase();
@@ -72,7 +68,7 @@ const GlobalUpload = () => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(e.target.files || []);
     if (selectedFiles.length > 10) {
-      toast.error(t( "max_files_error"));
+      toast.error(t("max_files_error"));
       return;
     }
     setFiles(selectedFiles);
@@ -81,7 +77,6 @@ const GlobalUpload = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
- 
     if (!isFormValid) {
       toast.error(t("REQUIRED_FIELDS_ERROR"));
       return;
@@ -94,7 +89,7 @@ const GlobalUpload = () => {
 
     const metadata = JSON.stringify({
       category: currentCatName,
-      subcategory: currentSubCatName,
+      subcategory: currentSubCatName, // Will be empty string if not selected
     });
     formData.append('metadata', metadata);
     
@@ -107,7 +102,7 @@ const GlobalUpload = () => {
       toast.success(t("UPLOAD_SUCCESSFUL") || "Ingestion Started successfully!");
       navigate(-1);
     } catch (err) {
-      console.log(err)
+      console.log(err);
       toast.error(t("invalid_file_type") || "Upload failed: Check file types");
     }
   };
@@ -132,7 +127,6 @@ const GlobalUpload = () => {
       <form onSubmit={handleSubmit} className="space-y-8 bg-white p-8 rounded-2xl shadow-sm border border-slate-100">
         <div className="grid grid-cols-2 gap-x-8 gap-y-6">
 
- 
           <div className="space-y-2">
             <label className="text-sm font-bold text-slate-700">
               {t('content_type')} <span className="text-red-500">*</span>
@@ -172,45 +166,39 @@ const GlobalUpload = () => {
             </div>
           </div>
 
- 
           {selectedCatId && (
-    <>
-      {isFetchingSubCats ? (
-       
-        <div className="space-y-2 animate-pulse">
-          <div className="h-4 w-24 bg-slate-200 rounded"></div> {/* Fake Label */}
-          <div className="flex items-center justify-center w-full h-[42px] bg-slate-50 border border-slate-100 rounded-xl">
-            <Loader2 className="animate-spin text-orange-400" size={20} />
-          </div>
-        </div>
-      ) : (
-       
-        subCategories.length > 0 && (
-          <div className="space-y-2 animate-in fade-in slide-in-from-top-1 duration-300">
-            <label className="text-sm font-bold text-slate-700">
-              {t('subcategory')} <span className="text-red-500">*</span>
-            </label>
-            <div className="relative">
-              <select 
-                className="w-full pl-4 pr-10 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-600 appearance-none focus:ring-2 focus:ring-orange-500 outline-none transition-all"
-                value={selectedSubCatId}
-                onChange={(e) => setSelectedSubCatId(e.target.value)}
-                required
-              >
-                <option value="">{t('subcategory_placeholder')}</option>
-                {subCategories.map(sub => (
-                  <option key={sub.id} value={sub.id}>{sub.name}</option>
-                ))}
-              </select>
-              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
+            <div className="col-span-1">
+              {isFetchingSubCats ? (
+                <div className="space-y-2 animate-pulse">
+                  <div className="h-4 w-24 bg-slate-200 rounded"></div>
+                  <div className="flex items-center justify-center w-full h-[42px] bg-slate-50 border border-slate-100 rounded-xl">
+                    <Loader2 className="animate-spin text-orange-400" size={20} />
+                  </div>
+                </div>
+              ) : subCategories.length > 0 && (
+                <div className="space-y-2 animate-in fade-in slide-in-from-top-1 duration-300">
+                  <label className="text-sm font-bold text-slate-700">
+                    {t('subcategory')} <span className="text-slate-400 font-normal ml-1">({t("optional")})</span>
+                  </label>
+                  <div className="relative">
+                    <select 
+                      className="w-full pl-4 pr-10 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-600 appearance-none focus:ring-2 focus:ring-orange-500 outline-none transition-all"
+                      value={selectedSubCatId}
+                      onChange={(e) => setSelectedSubCatId(e.target.value)}
+                      // Required is REMOVED
+                    >
+                      <option value="">{t('subcategory_placeholder')}</option>
+                      {subCategories.map(sub => (
+                        <option key={sub.id} value={sub.id}>{sub.name}</option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
+                  </div>
+                </div>
+              )}
             </div>
-          </div>
-        )
-      )}
-    </>
-  )}
+          )}
 
- 
           <div className="space-y-2">
             <label className="text-sm font-bold text-slate-700">
               {t('data_year')} <span className="text-red-500">*</span>
