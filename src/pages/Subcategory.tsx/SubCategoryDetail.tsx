@@ -123,13 +123,13 @@ const SubCategoryDetail = () => {
         <div className="flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
           <button 
             onClick={() => window.open(file.url, '_blank')}
-            className="p-2 bg-orange-500 text-white rounded-xl hover:bg-orange-600 transition-all shadow-md shadow-orange-100"
+            className="p-2 bg-orange-500 text-white rounded-xl bg-orange-600 transition-all shadow-md shadow-orange-100"
           >
             <Download size={18} />
           </button>
           <button 
             onClick={() => handleDeleteClick(file.id)}
-            className="p-2 bg-red-50 text-red-500 rounded-xl hover:bg-red-100 transition-colors"
+            className="p-2  text-red-500 rounded-xl hover:text-gray-300 transition-colors"
           >
             <Trash2 size={18} />
           </button>

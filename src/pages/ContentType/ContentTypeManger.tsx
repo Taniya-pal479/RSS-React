@@ -134,15 +134,15 @@ export const ContentTypeManager = () => {
         <div className="flex justify-end gap-3">
           <button 
             onClick={() => setSelectedItem(item)}
-            className="flex items-center gap-2 px-3 py-1.5 border border-gray-100 rounded-lg text-sm font-semibold text-gray-500 hover:text-[#f97316] hover:border-[#f97316]/30 transition-all"
+           className="p-2  hover:text-gray-300 text-[#f97316] transition-colors"
           >
-            <Edit2 size={14} /> {t("edit")}
+            <Edit2 size={14} /> 
           </button>
           <button 
             onClick={() => handleDeleteClick(item.id)}
-            className="flex items-center gap-2 px-3 py-1.5 bg-red-50 text-red-500 rounded-lg text-sm font-semibold hover:bg-red-100 transition-colors"
+           className="p-2 hover:text-gray-300 text-red-500 transition-colors"
           >
-            <Trash2 size={14} /> {t("delete")}
+            <Trash2 size={14} /> 
           </button>
         </div>
       )

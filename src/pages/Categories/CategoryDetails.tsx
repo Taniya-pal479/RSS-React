@@ -70,10 +70,10 @@ const CategoryDetail = () => {
       className: "px-10 py-6 text-right",
       render: (sub: SubCategory) => (
         <div className="flex justify-end items-center gap-4">
-          <button onClick={() => setEditingSub(sub)} className="p-2 text-gray-300 hover:text-[#f97316] transition-colors">
+          <button onClick={() => setEditingSub(sub)} className="p-2  hover:text-gray-300 text-[#f97316] transition-colors">
             <Edit3 size={18} />
           </button>
-          <button onClick={(e) => handleDeleteSubCategory(e, sub.id)} className="p-2 text-gray-300 hover:text-red-500 transition-colors">
+          <button onClick={(e) => handleDeleteSubCategory(e, sub.id)} className="p-2 hover:text-gray-300 text-red-500 transition-colors">
             <Trash2 size={18} />
           </button>
         </div>
