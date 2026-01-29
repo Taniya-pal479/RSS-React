@@ -77,7 +77,8 @@
   "cancel_btn": "Cancel",
   "delete_btn": "Delete",
   "deleting": "Deleting...",
-  "fileName": "Category Name",
+  "CatName": "Category Name",
+  "SubcatName": "Subcategory Name",
   "description": "Description",
   "category_deleted_success": "Category deleted successfully",
   "subcategory_deleted_success": "Sub-category deleted successfully",
@@ -199,7 +200,9 @@
   "items_found": "items found",
   "for": "for",
   "clear_filters": "View All Files",
-  "all_files": "All Files"
+  "all_files": "All Files",
+  "optional":"optional",
+  "max_files_error": "You can only upload a maximum of 10 files at once"
  
  
  

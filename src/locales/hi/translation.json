@@ -76,7 +76,8 @@
   "cancel_btn": "रद्द करें",
   "delete_btn": "हटाएं",
   "deleting": "हटाया जा रहा है...",
-  "fileName": "श्रेणी का नाम",
+  "CatName": "श्रेणी का नाम",
+   "SubcatName": "उप-श्रेणी का नाम",
   "description": "विवरण",
   "category_deleted_success": "श्रेणी सफलतापूर्वक हटा दी गई",
   "subcategory_deleted_success": "उप-श्रेणी सफलतापूर्वक हटा दी गई",
@@ -171,6 +172,7 @@
   "add_new": "नया जोड़ें",
   "previous": "पिछला",
   "next": "अगला",
+   "optional":"वैकल्पिक",
 
   "add_new_content_type": "नया सामग्री प्रकार जोड़ें",
   "content_type_name": "सामग्री प्रकार का नाम",
@@ -201,7 +203,8 @@
   "for": "के लिए",
   "clear_filters": "सभी फ़ाइलें देखें",
   "all_files": "सभी फ़ाइलें",
-  "media_files": "मीडिया फ़ाइलें"
+  "media_files": "मीडिया फ़ाइलें",
+  "max_files_error": "आप एक बार में अधिकतम 10 फ़ाइलें ही अपलोड कर सकते हैं"
   
   
    

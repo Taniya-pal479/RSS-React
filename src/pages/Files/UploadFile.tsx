@@ -72,7 +72,7 @@ const GlobalUpload = () => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(e.target.files || []);
     if (selectedFiles.length > 10) {
-      toast.error("You can only upload a maximum of 10 files at once");
+      toast.error(t( "max_files_error"));
       return;
     }
     setFiles(selectedFiles);

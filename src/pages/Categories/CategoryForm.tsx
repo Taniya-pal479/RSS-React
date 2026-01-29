@@ -135,7 +135,7 @@ const CategoryForm = ({ mode }: { mode: 'category' | 'subcategory' }) => {
           <div className="space-y-6">
             <div>
               <label className="block text-[13px] font-bold text-gray-400 mb-2.5 ml-1">
-                {t("fileName")} <span className="text-red-500">*</span>
+                {mode === 'category' ? t("CatName") : t("SubcatName")} <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
