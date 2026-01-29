@@ -29,8 +29,7 @@ const GlobalUpload = () => {
   const { data: categories = [] } = useGetCategoriesQuery(i18n.language);
   
   const { 
-  data: subCategories = [], 
-  isFetching: isSubCatLoading 
+  data: subCategories = [], isFetching: isFetchingSubCats
 } = useGetSubCategoriesQuery(
   { categoryId: selectedCatId, lang: i18n.language },
   { skip: !selectedCatId }
@@ -174,25 +173,42 @@ const GlobalUpload = () => {
           </div>
 
  
-          {selectedCatId && subCategories.length > 0 && (
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700">
-                {t('subcategory')} <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <select 
-                  className="w-full pl-4 pr-10 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-600 appearance-none focus:ring-2 focus:ring-orange-500 outline-none transition-all"
-                  value={selectedSubCatId}
-                  onChange={(e) => setSelectedSubCatId(e.target.value)}
-                  required
-                >
-                  <option value="">{t('subcategory_placeholder')}</option>
-                  {subCategories.map(sub => <option key={sub.id} value={sub.id}>{sub.name}</option>)}
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
-              </div>
+          {selectedCatId && (
+    <>
+      {isFetchingSubCats ? (
+       
+        <div className="space-y-2 animate-pulse">
+          <div className="h-4 w-24 bg-slate-200 rounded"></div> {/* Fake Label */}
+          <div className="flex items-center justify-center w-full h-[42px] bg-slate-50 border border-slate-100 rounded-xl">
+            <Loader2 className="animate-spin text-orange-400" size={20} />
+          </div>
+        </div>
+      ) : (
+       
+        subCategories.length > 0 && (
+          <div className="space-y-2 animate-in fade-in slide-in-from-top-1 duration-300">
+            <label className="text-sm font-bold text-slate-700">
+              {t('subcategory')} <span className="text-red-500">*</span>
+            </label>
+            <div className="relative">
+              <select 
+                className="w-full pl-4 pr-10 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-600 appearance-none focus:ring-2 focus:ring-orange-500 outline-none transition-all"
+                value={selectedSubCatId}
+                onChange={(e) => setSelectedSubCatId(e.target.value)}
+                required
+              >
+                <option value="">{t('subcategory_placeholder')}</option>
+                {subCategories.map(sub => (
+                  <option key={sub.id} value={sub.id}>{sub.name}</option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
             </div>
-          )}
+          </div>
+        )
+      )}
+    </>
+  )}
 
  
           <div className="space-y-2">

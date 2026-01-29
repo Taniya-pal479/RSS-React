@@ -170,7 +170,6 @@
   "next": "Next",
 
   "add_new_content_type": "Add Custom Content Type",
-  "content_type_name": "Content type name",
   "save_content_type": "Save Content Type",
   "error_name_required": "Please provide a name for this content type.",
 
@@ -193,6 +192,17 @@
   "REQUIRED_FIELDS_ERROR": "Please fill in all required fields (marked with *)",
   "upload_file": "Upload File",
   "search_results": "Search Results",
-  "items_found_for": "items found for"
+  "items_found_for": "items found for",
+  "media_files": "Media Files",
+  "document_files": "Document Files",
+  "report_files": "Report Files",
+  "items_found": "items found",
+  "for": "for",
+  "clear_filters": "View All Files",
+  "all_files": "All Files"
+ 
+ 
+ 
+  
  
 }

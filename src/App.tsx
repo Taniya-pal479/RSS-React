@@ -19,6 +19,7 @@ const SearchResultsPage = lazy(() => import("./pages/SearchResultsPage"));
 
 import ProtectedRoute from "./components/common/ProtectedRoute/ProtectedRoute";
 import PublicRoute from "./components/common/ProtectedRoute/PublicRoute";
+import CardsFilesTable from "./pages/Files/CardsFilesTable";
 
 const PageLoader = () => (
   <div className="flex h-screen w-full items-center justify-center bg-[#fafafa]">
@@ -55,6 +56,7 @@ const App = () => {
               />
               <Route path="/category/:categoryId/content-type/:contentTypeId" element={<ContentTypeDetail />} />
               <Route path="/search-results" element={<SearchResultsPage />} />
+              <Route path="/results" element={<CardsFilesTable/>} />
             </Route>
           </Route>
         </Routes>

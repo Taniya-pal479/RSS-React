@@ -98,7 +98,7 @@ const ContentTypeDetail = () => {
           <div className="p-3 bg-orange-50 text-orange-600 rounded-2xl shadow-sm">
             <FileText size={20} />
           </div>
-          <div className="flex flex-col">
+          <div className="flex flex-col cursor-pointer ">
             <span className="font-bold text-slate-800 group-hover:text-orange-600 transition-colors">
               {file.fileName}
             </span>

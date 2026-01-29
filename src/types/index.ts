@@ -10,7 +10,7 @@ export interface StatsCardProps {
   label: string;
   value: string | number;
   icon: ReactNode;
- 
+  onClick:()=>void;
   subText: string;
   color: string;
   trendColor?: string;

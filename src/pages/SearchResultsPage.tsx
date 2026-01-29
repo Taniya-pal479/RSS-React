@@ -32,6 +32,8 @@ const SearchResultsPage = () => {
     );
   }, [files, searchQuery]);
 
+  
+
   const columns: Column<any>[] = [
     {
       header: t("file_display_name"),
@@ -42,9 +44,9 @@ const SearchResultsPage = () => {
           <div className="p-3 bg-orange-50 text-orange-600 rounded-2xl shadow-sm">
             <FileText size={20} />
           </div>
-          <div className="flex flex-col">
-            <span className="font-bold text-slate-800">{file.fileName}</span>
-            <span className="text-[10px] text-slate-400 font-black tracking-widest uppercase">
+          <div className="flex flex-col cursor-pointer" onClick={() => navigate(`/category/${file.categoryId}/content-type/${file.contentTypeId}`)}>
+            <span className="font-bold text-slate-800  group-hover:text-orange-600">{file.fileName}</span>
+            <span className="text-[10px] text-slate-400 font-black tracking-widest uppercase"    >
               {file.mimeType || 'FILE'}
             </span>
           </div>

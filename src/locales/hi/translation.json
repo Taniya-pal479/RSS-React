@@ -194,7 +194,16 @@
   "REQUIRED_FIELDS_ERROR": "कृपया सभी आवश्यक फ़ील्ड भरें (* के साथ चिह्नित)",
   "upload_file": "फ़ाइल अपलोड करें",
   "search_results": "खोज परिणाम",
-  "items_found_for": "के लिए मिले परिणाम"
+  "items_found_for": "के लिए मिले परिणाम",
+  "document_files": "दस्तावेज़ फ़ाइलें",
+  "report_files": "रिपोर्ट फ़ाइलें",
+  "items_found": "आइटम मिले",
+  "for": "के लिए",
+  "clear_filters": "सभी फ़ाइलें देखें",
+  "all_files": "सभी फ़ाइलें",
+  "media_files": "मीडिया फ़ाइलें"
+  
+  
    
 
 

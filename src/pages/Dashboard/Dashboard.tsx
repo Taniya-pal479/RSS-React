@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { FileText, Image as ImageIcon, BarChart3, FolderOpen, ArrowRight, Loader2, Plus } from 'lucide-react'; // Added Plus icon
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -55,6 +55,7 @@ const Dashboard = () => {
           icon={<FileText size={24} />} 
           subText={t("stats_subtext")}
           color="text-saffron-600" 
+          onClick={() => navigate("/results?type=docs")}
         />
         <StatsCard 
           label={t("total_media")} 
@@ -62,6 +63,7 @@ const Dashboard = () => {
           icon={<ImageIcon size={24} />} 
           subText={t("stats_subtext")}
           color="text-saffron-600" 
+          onClick={() => navigate("/results?type=media")}
         />
         <StatsCard 
           label={t("active_reports")} 
@@ -71,6 +73,7 @@ const Dashboard = () => {
           trendColor="text-gray-400 bg-gray-50"
           subText={t("no_change")}
           color="text-saffron-600" 
+          onClick={() => navigate("/results?type=reports")}
         />
       </div>
 
@@ -94,7 +97,7 @@ const Dashboard = () => {
         ) : stats.recentFiles.length > 0 ? (
           <div className="space-y-4">
             {stats.recentFiles.map((file) => {
-  // 1. Define the IDs here so the navigate function can find them
+  
   const catId = file.categoryId;
   const contentId = file.contentTypeId;
 
@@ -139,10 +142,11 @@ const Dashboard = () => {
     </div>
   );
 };
-
-const StatsCard = ({ label, value, icon, subText, color}:StatsCardProps) => (
+ 
+const StatsCard = ({ label, value, icon, subText, color,onClick}:StatsCardProps) => (
+    
   <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-card hover:-translate-y-1 transition-all duration-300">
-    <div className="flex justify-between items-start">
+    <div className="flex justify-between items-start" onClick={onClick}>
       <div>
         <p className="text-sm font-medium text-gray-500 mb-1">{label}</p>
         <h2 className="text-4xl font-bold text-gray-900">{value}</h2>
