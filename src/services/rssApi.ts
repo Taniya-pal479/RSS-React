@@ -115,6 +115,7 @@ export const rssApi = createApi({
       }),
 
       invalidatesTags: (result, error, arg) => [
+        { type: "ContentType" as const, id: "LIST" },
         { type: "ContentType" as const, id: arg.categoryId },
       ],
     }),
