@@ -12,24 +12,22 @@ const Login = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
-  // Form State
+ 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   
-  // Validation State (Key-Pair Errors)
+  
   const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>({});
 
   const [login, { isLoading }] = useLoginMutation();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Reset errors
+ 
     const newErrors: typeof errors = {};
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-    // Basic Validation logic using translation keys
+ 
     if (!email.trim()) {
       newErrors.email = t('email_blank_error');
     }
@@ -45,7 +43,7 @@ const Login = () => {
       return;
     }
 
-    setErrors({}); // Clear UI errors before API call
+    setErrors({}); 
 
     try {
       const result = await login({ email, password }).unwrap();
@@ -69,7 +67,7 @@ const Login = () => {
           <h1 className="text-[20px] font-bold text-[#1a1a1a] m-5">{t('archives')}</h1>
         </div>
 
-        {/* General Error Message */}
+   
         {errors.general && (
           <div className="mb-6 p-4 bg-red-50 text-red-600 rounded-2xl text-sm font-bold flex gap-2 animate-in fade-in zoom-in duration-300">
             <AlertCircle size={18} /> {errors.general}
@@ -78,7 +76,7 @@ const Login = () => {
 
         <form onSubmit={handleLogin} noValidate className="space-y-6">
           
-          {/* Email Input */}
+    
           <div className="space-y-1">
             <label className="text-[13px] font-bold text-gray-400 ml-1 uppercase tracking-wider">{t('email_label')}</label>
             <div className="relative">
@@ -100,7 +98,7 @@ const Login = () => {
             {errors.email && <p className="text-red-500 text-xs font-medium ml-1 mt-1">{errors.email}</p>}
           </div>
 
-          {/* Password Input */}
+      
           <div className="space-y-1">
             <label className="text-[13px] font-bold text-gray-400 ml-1 uppercase tracking-wider">{t('password_label')}</label>
             <div className="relative">
@@ -122,7 +120,7 @@ const Login = () => {
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
               >
-                {/* If error exists, show error icon, otherwise show eye toggle */}
+               
                 {errors.password ? <AlertCircle className="text-red-500" size={20} /> : (showPassword ? <EyeOff size={20} /> : <Eye size={20} />)}
               </button>
             </div>

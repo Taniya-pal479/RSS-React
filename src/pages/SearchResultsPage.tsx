@@ -9,6 +9,7 @@ import { format } from 'date-fns';
 import { useAppSelector } from '../hook/store';
 import { useGetAllFilesQuery } from '../services/rssApi';
 import DataTable, { type Column } from '../components/common/DataTable';
+import type { FileObject} from '../types';
 
 const SearchResultsPage = () => {
   const { t} = useTranslation();
@@ -34,12 +35,12 @@ const SearchResultsPage = () => {
 
   
 
-  const columns: Column<any>[] = [
+  const columns: Column<FileObject>[] = [
     {
       header: t("file_display_name"),
       key: "fileName",
       className: "w-[45%]",
-      render: (file: any) => (
+      render: (file: FileObject) => (
         <div className="flex items-center gap-4 py-2">
           <div className="p-3 bg-orange-50 text-orange-600 rounded-2xl shadow-sm">
             <FileText size={20} />
@@ -57,7 +58,7 @@ const SearchResultsPage = () => {
       header: t("size"),
       key: "fileSize",
       className: "w-[15%]",
-      render: (file: any) => (
+      render: (file: FileObject) => (
         <div className="flex items-center gap-2 text-slate-500 font-bold">
           <HardDrive size={14} className="text-slate-300" />
           <span>{(file.fileSize / 1024).toFixed(1)} KB</span>
@@ -68,7 +69,7 @@ const SearchResultsPage = () => {
       header: t("upload_date"),
       key: "uploadedAt",
       className: "w-[20%]",
-      render: (file: any) => (
+      render: (file: FileObject) => (
         <div className="flex items-center gap-2 text-slate-500">
           <Calendar size={14} className="text-slate-300" />
           <span>
@@ -83,7 +84,7 @@ const SearchResultsPage = () => {
       header: t("actions"),
       key: "actions",
       className: "w-[20%] text-right",
-      render: (file: any) => (
+      render: (file: FileObject) => (
         <div className="flex justify-end gap-2">
           <button 
             onClick={() => window.open(file.url, '_blank')}
@@ -119,7 +120,7 @@ const SearchResultsPage = () => {
         </p>
       </div>
 
-      <div className="bg-white rounded-[32px] border border-slate-100 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-4xl border border-slate-100 shadow-sm overflow-hidden">
         <DataTable 
           columns={columns} 
           data={filteredResults} 

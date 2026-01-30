@@ -2,6 +2,8 @@ import React, { lazy, Suspense } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import { Loader2 } from "lucide-react";
+import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
  
 const DashboardLayout = lazy(() => import("./layouts/DashboardLayout/DashboardLayout"));
@@ -28,6 +30,13 @@ const PageLoader = () => (
 );
 
 const App = () => {
+  const {t,i18n}=useTranslation()
+
+  useEffect(() => {
+    document.title = `RSS ${t('archives')}`;
+  }, [t, i18n.language]);
+
+
   return (
     <>
       <ToastContainer />

@@ -7,17 +7,9 @@ import { useDeleteContentTypeMutation, useGetContentTypesQuery } from '../../ser
 import { toast } from 'react-toastify';
 import EditContentTypeModal from '../../components/common/EditContentTypeModal';
 import ConfirmToast from '../../components/ui/ConfirmToast';  
-import type { Translation } from '../../types';
+import type { ContentTypeMapped } from '../../types';
 
-export interface ContentTypeMapped {
-  categoryId?: number;
-  id: number;
-  name: string;
-  description: string;
-  year: number;
-  status: string;
-  translations?: Translation[];
-}
+ 
 
 export const ContentTypeManager = () => {
   const { t, i18n } = useTranslation();

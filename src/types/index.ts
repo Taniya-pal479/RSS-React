@@ -42,6 +42,7 @@ export interface Category {
  
 }
 
+
 export interface CreateCategoryPayload {
   slug: string;
   translations: Translation[];
@@ -87,10 +88,11 @@ id: number;
 }
 
 export interface ContentTypeMapped {
-  id: string | number; 
+  id:number; 
   name: string;
   description: string;
-  
+  year?: number; 
+  status?: string;
   category?: string;    
   subcategory?: string;
   categoryId?: string | number;
@@ -127,10 +129,30 @@ export interface FileObject {
   storageKey: string;
   fileType: string;
   uploadedAt: string;
+   url: string;
   files:[];
   metadata: Array<{ id: number; key: string; value: string }>;
 }
-
+export interface IngestedFile {
+  id: string;
+  fileName: string;
+  fileSize: number;
+  mimeType: string;
+  uploadedAt: string;
+  url: string;
+  categoryId: string;
+  contentTypeId: string;
+  type?: string;
+  category?: {
+    id: string;
+    name: string;
+  };
+  contentType?: {
+    id: string;
+    name: string;
+    categoryId: string;
+  };
+}
 export interface AllFilesResponse {
   files: FileObject[];
   total: number;

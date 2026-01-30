@@ -7,13 +7,14 @@ import {
 } from 'lucide-react';
 import DataTable, { type Column } from '../../components/common/DataTable';
 import { 
-  useGetFilesBySubcategoryQuery, // Updated hook
+  useGetFilesBySubcategoryQuery,  
   useGetSubCategoriesQuery,
   useDeleteFileMutation 
 } from '../../services/rssApi';
 import { format } from 'date-fns';
 import { toast } from 'react-toastify';
 import ConfirmToast from '../../components/ui/ConfirmToast';
+import type { FileObject, SubCategory } from '../../types';
 
 const SubCategoryDetail = () => {
   const { subCategoryId, categoryId } = useParams<{ 
@@ -22,21 +23,19 @@ const SubCategoryDetail = () => {
   }>();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
-
-  // 1. Fetch files directly via the new subcategory endpoint
+ 
   const { data: files = [], isLoading: filesLoading } = useGetFilesBySubcategoryQuery(
     subCategoryId!, 
     { skip: !subCategoryId || subCategoryId === ':subCategoryId' }
   );
-
-  // 2. Fetch SubCategory info for the header
+ 
   const { data: subCategories = [], isLoading: subCatLoading } = useGetSubCategoriesQuery({ 
     categoryId: categoryId as string, 
     lang: i18n.language 
   });
 
   const currentSubCategory = useMemo(() => 
-    subCategories.find((s: any) => String(s.id) === String(subCategoryId)), 
+    subCategories.find((s: SubCategory) => String(s.id) === String(subCategoryId)), 
   [subCategories, subCategoryId]);
 
   const [deleteFile] = useDeleteFileMutation();
@@ -46,6 +45,7 @@ const SubCategoryDetail = () => {
       await deleteFile(id).unwrap();
       toast.success(t("DELETED_SUCCESSFULLY"));
     } catch (err) {
+      console.log(err)
       toast.error(t("ERROR_DELETING"));
     }
   };
@@ -60,7 +60,7 @@ const SubCategoryDetail = () => {
     ), { position: "top-center", autoClose: false });
   };
 
-  const columns: Column<any>[] = [
+  const columns: Column<FileObject>[] = [
     {
       header: t("file_display_name"),
       key: "fileName",

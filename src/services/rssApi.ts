@@ -215,8 +215,10 @@ export const rssApi = createApi({
           : [{ type: "Files", id: "LIST" }],
     }),
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getFilesBySubcategory: builder.query<any, string | number>({
   query: (subCatId) => `/files?subcategoryId=${subCatId}`,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   transformResponse: (response: { files: any[]; total: number }) => response.files,
   providesTags: (result, error, arg) => [{ type: 'Files', id: `SUBCAT-${arg}` }],
 }),

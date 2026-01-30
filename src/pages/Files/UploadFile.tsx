@@ -24,7 +24,7 @@ const GlobalUpload = () => {
   const [year, setYear] = useState('');
   const [files, setFiles] = useState<File[]>([]); 
 
-  // Queries
+ 
   const { data: categories = [] } = useGetCategoriesQuery(i18n.language);
   
   const { 
@@ -38,14 +38,13 @@ const GlobalUpload = () => {
   const { data: contentTypes = [] } = useGetContentTypesQuery(
     { categoryId: selectedCatId || "", lang: i18n.language }
   );
- 
-  // FIX: Form is valid even if subCategory is empty
+  
   const isFormValid = 
     selectedContentTypeId && 
     selectedCatId && 
     year.trim() !== '' && 
     files.length > 0 &&
-    !isFetchingSubCats; // Still wait for fetching to finish to avoid data mismatch
+    !isFetchingSubCats; 
 
   const currentCatName = categories.find(c => String(c.id) === selectedCatId)?.name || "...";
   const currentSubCatName = subCategories.find(s => String(s.id) === selectedSubCatId)?.name || "";
@@ -89,7 +88,7 @@ const GlobalUpload = () => {
 
     const metadata = JSON.stringify({
       category: currentCatName,
-      subcategory: currentSubCatName, // Will be empty string if not selected
+      subcategory: currentSubCatName,  
     });
     formData.append('metadata', metadata);
     
@@ -185,7 +184,7 @@ const GlobalUpload = () => {
                       className="w-full pl-4 pr-10 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-600 appearance-none focus:ring-2 focus:ring-orange-500 outline-none transition-all"
                       value={selectedSubCatId}
                       onChange={(e) => setSelectedSubCatId(e.target.value)}
-                      // Required is REMOVED
+                    
                     >
                       <option value="">{t('subcategory_placeholder')}</option>
                       {subCategories.map(sub => (
