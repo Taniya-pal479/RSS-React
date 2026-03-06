@@ -1,0 +1,312 @@
+import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import type {
+  Category,
+  SubCategory,
+  CreateCategoryPayload,
+  CreateSubCategoryPayload,
+  ContentTypeMapped,
+  CreateContentTypePayload,
+  FileObject,
+  FilesResponses,
+  SearchResponse,
+} from "../types";
+import type { RootState } from "../store/store";
+
+export const rssApi = createApi({
+  reducerPath: "rssApi",
+  baseQuery: fetchBaseQuery({
+    baseUrl: "https://rss-server-7wyx.onrender.com/",
+    prepareHeaders: (headers, { getState }) => {
+      const token = (getState() as RootState).auth.accessToken;
+      if (token) {
+        headers.set("authorization", `Bearer ${token}`);
+      }
+      return headers;
+    },
+  }),
+  tagTypes: ["Category", "SubCategory", "Files", "ContentType"],
+  endpoints: (builder) => ({
+    login: builder.mutation({
+      query: (credentials) => ({
+        url: "/auth/login",
+        method: "POST",
+        body: credentials,
+      }),
+    }),
+
+    getCategories: builder.query<Category[], string>({
+      query: (lang) => `/categories?lang=${lang}`,
+      providesTags: ["Category"],
+    }),
+
+    getSubCategories: builder.query<
+      SubCategory[],
+      { categoryId: number | string; lang: string }
+    >({
+      query: ({ categoryId, lang }) =>
+        `/subcategories/category/${Number(categoryId)}?lang=${lang}`,
+      providesTags: (_result, _error, arg) => [
+        { type: "SubCategory", id: arg.categoryId },
+      ],
+    }),
+
+    deleteCategory: builder.mutation<{ success: boolean }, string>({
+      query: (id) => ({ url: `categories/${id}`, method: "DELETE" }),
+      invalidatesTags: ["Category"],
+    }),
+
+    addCategory: builder.mutation<Category, CreateCategoryPayload>({
+      query: (body) => ({
+        url: "/categories",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Category"],
+    }),
+
+    addSubCategory: builder.mutation<SubCategory, CreateSubCategoryPayload>({
+      query: (body) => ({
+        url: "/subcategories",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: (_result, _error, arg) => [
+        "Category",
+        { type: "SubCategory", id: arg.categoryId },
+      ],
+    }),
+
+    deleteSubCategory: builder.mutation<{ success: boolean }, string>({
+      query: (id) => ({ url: `subcategories/${id}`, method: "DELETE" }),
+      invalidatesTags: ["SubCategory"],
+    }),
+
+    updateCategory: builder.mutation<
+      void,
+      { id: string; body: CreateCategoryPayload }
+    >({
+      query: ({ id, body }) => ({
+        url: `/categories/${id}`,
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: ["Category"],
+    }),
+
+    updateSubCategory: builder.mutation<
+      void,
+      { id: string; body: CreateSubCategoryPayload }
+    >({
+      query: ({ id, body }) => ({
+        url: `/subcategories/${id}`,
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: () => ["SubCategory", "Category"],
+    }),
+
+    addContentType: builder.mutation<
+      ContentTypeMapped,
+      CreateContentTypePayload
+    >({
+      query: (body) => ({
+        url: "/content-types",
+        method: "POST",
+        body,
+      }),
+
+      invalidatesTags: (_result, _error, arg) => [
+        { type: "ContentType" as const, id: "LIST" },
+        { type: "ContentType" as const, id: arg.categoryId },
+      ],
+    }),
+
+    getContentTypes: builder.query<
+      ContentTypeMapped[],
+      { categoryId: string | number; lang: string } // Removed 'page'
+    >({
+      query: ({ categoryId, lang }) =>
+        `/content-types?categoryId=${Number(categoryId)}&lang=${lang}`, // Removed limit/page for full list
+
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.map(({ id }) => ({ type: "ContentType" as const, id })),
+              { type: "ContentType", id: "LIST" },
+            ]
+          : [{ type: "ContentType", id: "LIST" }],
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      transformResponse: (response: any[]): ContentTypeMapped[] => {
+        if (!Array.isArray(response)) return [];
+        return response.map((item) => ({
+          id: item.id,
+          categoryId: item.categoryId,
+          name: item.name,
+          description: item.description,
+          year: item.contentYear,
+          status: item.status,
+          translations: item.translations,
+          category: item.category,
+        }));
+      },
+    }),
+
+    updateContentType: builder.mutation<
+      void,
+      { id: string | number; body: CreateCategoryPayload }
+    >({
+      query: ({ id, body }) => ({
+        url: `/content-types/${id}`,
+        method: "PATCH",
+        body: body,
+      }),
+
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: "ContentType", id },
+        { type: "ContentType", id: "LIST" },
+      ],
+    }),
+    deleteContentType: builder.mutation<
+      { success: boolean },
+      { id: number; categoryId: number | string }
+    >({
+      query: ({ id }) => ({
+        url: `/content-types/${Number(id)}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (_result, _error, arg) => [
+        { type: "ContentType", id: arg.categoryId },
+      ],
+    }),
+
+    uploadFile: builder.mutation<void, FormData>({
+      query: (formData) => ({
+        url: "/ingestion",
+        method: "POST",
+        body: formData,
+      }),
+      invalidatesTags: [{ type: "Files", id: "LIST" }],
+    }),
+
+    getFiles: builder.query<
+      FileObject[],
+      { contentTypeId: string | number; lang: string }
+    >({
+      query: ({ contentTypeId, lang }) =>
+        `/files/content-types/${contentTypeId}?lang=${lang}`,
+      providesTags: (_result, _error, arg) => [
+        { type: "Files", id: arg.contentTypeId },
+        { type: "Files", id: "LIST" },
+      ],
+    }),
+
+    getAllFiles: builder.query<FileObject[], string>({
+      query: (lang) => `/files?lang=${lang}&page=5`,
+
+      transformResponse: (response: { files: FileObject[]; total: number }) => {
+        return response.files || [];
+      },
+
+      providesTags: (result) =>
+        result && Array.isArray(result)
+          ? [
+              ...result.map(({ id }) => ({ type: "Files" as const, id })),
+              { type: "Files", id: "LIST" },
+            ]
+          : [{ type: "Files", id: "LIST" }],
+    }),
+
+    getFilesBySubcategory: builder.query<
+      FileObject[],
+      { subCatId: string | number; lang: string }
+    >({
+      query: ({ subCatId, lang }) =>
+        `/files/subcategory/${subCatId}?lang=${lang}`,
+
+      transformResponse: (response: FilesResponses): FileObject[] =>
+        response.files,
+      providesTags: (_result, _error, arg) => [
+        { type: "Files", id: `SUBCAT-${arg.subCatId}` },
+      ],
+    }),
+
+    getFilesByCategory: builder.query<
+      FileObject[],
+      { catId: string | number; lang: string }
+    >({
+      query: ({ catId, lang }) => `/files/category/${catId}?lang=${lang}`,
+
+      transformResponse: (response: FilesResponses) => response.files,
+      providesTags: (_result, _error, { catId, lang }) => [
+        { type: "Files", id: `CAT-${catId}-${lang}` },
+        { type: "Files", id: "LIST" },
+      ],
+    }),
+    deleteFile: builder.mutation<void, string | number>({
+      query: (id) => ({
+        url: `files/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Files"],
+    }),
+    updateFile: builder.mutation<
+      FileObject,
+      { id: string | number; body: FileObject }
+    >({
+      query: ({ id, body }) => ({
+        url: `/files/${id}`,
+        method: "PATCH",
+        body: body,
+      }),
+      invalidatesTags: ["Files"],
+    }),
+    globalSearch: builder.query<
+      SearchResponse,
+      { search: string; languageCode: string; skip?: number; take?: number }
+    >({
+      query: ({ search, languageCode, skip, take }) =>
+        `/search?search=${search}&languageCode=${languageCode}&skip=${skip}&take=${take}`,
+
+      serializeQueryArgs: ({ queryArgs }) => {
+        return `${queryArgs.search}-${queryArgs.languageCode}`;
+      },
+
+      merge: (currentCache, newItems) => {
+        if (newItems.skip === 0) {
+          return newItems;
+        }
+
+        currentCache.data.push(...newItems.data);
+      },
+
+      forceRefetch: ({ currentArg, previousArg }) =>
+        currentArg?.search !== previousArg?.search ||
+        currentArg?.languageCode !== previousArg?.languageCode,
+    }),
+  }),
+});
+
+export const {
+  useLoginMutation,
+  useGetCategoriesQuery,
+  useGetSubCategoriesQuery,
+  useAddCategoryMutation,
+  useAddSubCategoryMutation,
+  useDeleteCategoryMutation,
+  useDeleteSubCategoryMutation,
+  useUpdateCategoryMutation,
+  useUpdateSubCategoryMutation,
+  useGetContentTypesQuery,
+  useUploadFileMutation,
+  useDeleteContentTypeMutation,
+  useAddContentTypeMutation,
+  useUpdateContentTypeMutation,
+  useGetFilesQuery,
+  useDeleteFileMutation,
+  useGetAllFilesQuery,
+  useGetFilesBySubcategoryQuery,
+  useGetFilesByCategoryQuery,
+  useUpdateFileMutation,
+  useGlobalSearchQuery,
+} = rssApi;
