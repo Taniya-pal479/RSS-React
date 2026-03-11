@@ -220,6 +220,11 @@ export interface UpdateTranslationPayload {
   description: string;
 }
 
+export interface GetFilesArgs {
+  lang: string;
+  limit?: number;
+}
+
 export interface FileItem {
   description: string;
   id: string | number;
@@ -253,6 +258,7 @@ export interface FileObject {
   metadata: Array<{ id: number; key: string; value: string }>;
   updatedAt?: string;
   translations: FileTranslations[];
+  year?: string;
 }
 export interface IngestedFile {
   id: string;

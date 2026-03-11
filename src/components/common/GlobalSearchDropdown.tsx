@@ -10,7 +10,10 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useAppSelector } from "../../hook/store";
-import { useGlobalSearchQuery } from "../../services/rssApi";
+import {
+  useGetAllFilesQuery,
+  useGlobalSearchQuery,
+} from "../../services/rssApi";
 import { t } from "i18next";
 import { useDebounce } from "../../hook/useDebounce";
 import type {
@@ -133,6 +136,8 @@ const GlobalSearchDropdown = () => {
     { skip: !debouncedSearch || debouncedSearch.trim().length < 2 },
   );
 
+  const { data: allFiles = [] } = useGetAllFilesQuery(i18n.language);
+
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setSkip(0);
@@ -150,6 +155,13 @@ const GlobalSearchDropdown = () => {
   const filteredData = useMemo(() => {
     const results = (searchData ?? []) as GlobalSearchResult[];
 
+    const yearMatches = allFiles.filter((file) => {
+      if (!debouncedSearch) return false;
+      // Check if the user's search matches the file's year
+      return file.year?.toString() === debouncedSearch;
+    });
+    console.log("yearMatches", yearMatches);
+
     return {
       categories: results.filter(
         (i): i is CategoryResult => i.type === "category",
@@ -161,20 +173,17 @@ const GlobalSearchDropdown = () => {
         (i): i is ContentResult => i.type === "content",
       ),
       files: results.filter((i): i is FileResult => i.type === "file"),
-      YearWiseFiles: results.filter(
-        (i): i is FileResult =>
-          i.type === "file" && !!i.uploadedAt?.includes(debouncedSearch),
-      ),
+      YearWiseFiles: yearMatches,
     };
-  }, [searchData, debouncedSearch]);
+  }, [searchData, debouncedSearch, allFiles]);
+
+  console.log("filteryearMatches", filteredData.YearWiseFiles);
 
   const hasResults = Object.values(filteredData).some((arr) => arr.length > 0);
   const hasMoreGlobal =
     (searchData?.data?.length ?? 0) < (searchData?.total ?? 0);
 
   if (!searchQuery || searchQuery.trim() === "") return null;
-
-  console.log("filteredData", filteredData.categories);
 
   const handleNavigation = (
     e: React.MouseEvent,
@@ -292,6 +301,28 @@ const GlobalSearchDropdown = () => {
                     size={14}
                     className="text-slate-200 group-hover:text-emerald-500"
                   />
+                </div>
+              )}
+            />
+
+            <SearchResultSection
+              title={`${t("results_for_year")} ${debouncedSearch}`}
+              icon={FileText}
+              items={filteredData.YearWiseFiles}
+              renderItem={(item) => (
+                <div
+                  onMouseDown={(e) => handleNavigation(e, item.url, true)}
+                  className="flex items-center justify-between px-4 py-3 hover:bg-orange-50 cursor-pointer group h-[52px]"
+                >
+                  <div className="flex flex-col">
+                    <span className="text-sm font-bold text-slate-700 group-hover:text-orange-600 truncate">
+                      {item.displayName || `File #${item.id}`}
+                    </span>
+                    <span className="text-[10px] text-slate-400 font-bold uppercase">
+                      {t("Year")}: {item.year}
+                    </span>
+                  </div>
+                  <ChevronRight size={14} className="text-slate-200" />
                 </div>
               )}
             />

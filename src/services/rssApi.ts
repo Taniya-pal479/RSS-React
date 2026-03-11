@@ -130,9 +130,9 @@ export const rssApi = createApi({
 
     getContentTypes: builder.query<
       { data: ContentTypeMapped[]; total: number },
-      {   lang: string; take: number; skip: number } // Removed 'page'
+      { lang: string; take: number; skip: number } // Removed 'page'
     >({
-      query: ({   lang, take, skip }) =>
+      query: ({ lang, take, skip }) =>
         `/content-types?lang=${lang}&take=${take}&skip=${skip}`, // Removed limit/page for full list
 
       providesTags: (result) =>
