@@ -1,6 +1,6 @@
-import {ChevronRight} from 'lucide-react';
-import { t } from 'i18next';
-import type { SearchItem, SearchResultSectionProps } from '../../../types';
+import { ChevronRight } from "lucide-react";
+import { t } from "i18next";
+import type { SearchItem, SearchResultSectionProps } from "../../../types";
 
 export const SearchResultSection = <T extends SearchItem>({
   title,
@@ -17,17 +17,25 @@ export const SearchResultSection = <T extends SearchItem>({
         <Icon size={12} /> {t(title)}
       </header>
       {items.map((item) => (
-        <div 
-          key={item.id} 
+        <div
+          key={item.id}
           onClick={() => onSelect(item)}
           className="flex items-center justify-between px-4 py-3 hover:bg-slate-50 cursor-pointer group transition-all"
         >
-          {renderItem ? renderItem(item) : (
-            <span   onClick={() => onSelect(item)}  className="text-sm font-bold text-slate-700 group-hover:text-orange-600">
+          {renderItem ? (
+            renderItem(item)
+          ) : (
+            <span
+              onClick={() => onSelect(item)}
+              className="text-sm font-bold text-slate-700 group-hover:text-orange-600"
+            >
               {item.name}
             </span>
           )}
-          <ChevronRight size={14} className="text-slate-200 group-hover:text-orange-500 transition-colors" />
+          <ChevronRight
+            size={14}
+            className="text-slate-200 group-hover:text-orange-500 transition-colors"
+          />
         </div>
       ))}
     </section>

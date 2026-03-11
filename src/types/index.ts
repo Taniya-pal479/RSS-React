@@ -166,7 +166,7 @@ export interface ContentTypeMapped {
   status?: string;
   category?: string;
   subcategory?: string;
-
+  data: ContentTypeRawResponse[];
   categoryId: string | number;
   subcategoryId?: number | null;
   categorySlug?: string;

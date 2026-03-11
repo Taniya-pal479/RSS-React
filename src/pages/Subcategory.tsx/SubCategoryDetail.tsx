@@ -1,54 +1,64 @@
-import { useMemo, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { 
-  FileText, Download, Trash2, Calendar, 
-  HardDrive, Home, ChevronRight, 
-  Edit3
-} from 'lucide-react';
-import DataTable, { type Column } from '../../components/common/DataTable';
-import { 
-  useGetFilesBySubcategoryQuery,  
+import { useMemo, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import {
+  FileText,
+  Download,
+  Trash2,
+  Calendar,
+  HardDrive,
+  Home,
+  ChevronRight,
+  Edit3,
+} from "lucide-react";
+import DataTable, { type Column } from "../../components/common/DataTable";
+import {
+  useGetFilesBySubcategoryQuery,
   useGetSubCategoriesQuery,
-  useDeleteFileMutation 
-} from '../../services/rssApi';
-import { format } from 'date-fns';
-import { toast } from 'react-toastify';
-import ConfirmToast from '../../components/ui/ConfirmToast';
-import type { FileObject, SubCategory } from '../../types';
-import EditFileModal from '../../components/common/EditFileModal';
-import { useDownload } from '../../hook/useDownload';
+  useDeleteFileMutation,
+} from "../../services/rssApi";
+import { format } from "date-fns";
+import { toast } from "react-toastify";
+import ConfirmToast from "../../components/ui/ConfirmToast";
+import type { FileObject, SubCategory } from "../../types";
+import EditFileModal from "../../components/common/EditFileModal";
+import { useDownload } from "../../hook/useDownload";
 
 const SubCategoryDetail = () => {
-  const { subCategoryId, categoryId } = useParams<{ 
-    subCategoryId: string; 
-    categoryId: string; 
+  const { subCategoryId, categoryId } = useParams<{
+    subCategoryId: string;
+    categoryId: string;
   }>();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
-   const [fileEdit, setFileedit]=useState<FileObject|null>()
-    const {handleDownload} = useDownload();
- 
-  const { data: files = [], isLoading: filesLoading } = useGetFilesBySubcategoryQuery(
-   { 
-    subCatId: subCategoryId!, 
-    lang: i18n.language 
-  },
-  { 
-    
-    skip: !subCategoryId || subCategoryId === 'undefined' 
-  }
+  const [fileEdit, setFileedit] = useState<FileObject | null>();
+  const { handleDownload } = useDownload();
+
+  const { data: files = [], isLoading: filesLoading } =
+    useGetFilesBySubcategoryQuery(
+      {
+        subCatId: subCategoryId!,
+        lang: i18n.language,
+      },
+      {
+        skip: !subCategoryId || subCategoryId === "undefined",
+      },
+    );
+
+  const { data: subCategoriesData = [], isLoading: subCatLoading } =
+    useGetSubCategoriesQuery({
+      categoryId: categoryId as string,
+      lang: i18n.language,
+    });
+
+  const subCategories = (subCategoriesData as SubCategory[]) || [];
+  const currentSubCategory = useMemo(
+    () =>
+      subCategories.find(
+        (s: SubCategory) => String(s.id) === String(subCategoryId),
+      ),
+    [subCategories, subCategoryId],
   );
-   
- 
-  const { data: subCategories = [], isLoading: subCatLoading } = useGetSubCategoriesQuery({ 
-    categoryId: categoryId as string, 
-    lang: i18n.language 
-  });
- 
-  const currentSubCategory = useMemo(() => 
-    subCategories.find((s: SubCategory) => String(s.id) === String(subCategoryId)), 
-  [subCategories, subCategoryId]);
 
   const [deleteFile] = useDeleteFileMutation();
 
@@ -57,22 +67,23 @@ const SubCategoryDetail = () => {
       await deleteFile(id).unwrap();
       toast.success(t("DELETED_SUCCESSFULLY"));
     } catch (err) {
-      console.log(err)
+      console.log(err);
       toast.error(t("ERROR_DELETING"));
     }
   };
 
   const handleDeleteClick = (id: number) => {
-    toast(({ closeToast }) => (
-      <ConfirmToast
-        message={t("confirm_delete_msg")}
-        onConfirm={() => executeDelete(id)}
-        closeToast={closeToast}
-      />
-    ), { position: "top-center", autoClose: false });
+    toast(
+      ({ closeToast }) => (
+        <ConfirmToast
+          message={t("confirm_delete_msg")}
+          onConfirm={() => executeDelete(id)}
+          closeToast={closeToast}
+        />
+      ),
+      { position: "top-center", autoClose: false },
+    );
   };
-
-  
 
   const columns: Column<FileObject>[] = [
     {
@@ -84,8 +95,18 @@ const SubCategoryDetail = () => {
           <div className="p-3 bg-orange-50 text-blue-600 rounded-2xl">
             <FileText size={20} />
           </div>
-          <div className="flex flex-col cursor-pointer " onClick={() => window.open(file.url || `http://localhost:3000/uploads/${file.storageKey}`, "_blank")}>
-            <span className="font-bold text-slate-800  hover:text-orange-600">{file.displayName}</span>
+          <div
+            className="flex flex-col cursor-pointer "
+            onClick={() =>
+              window.open(
+                file.url || `http://localhost:3000/uploads/${file.storageKey}`,
+                "_blank",
+              )
+            }
+          >
+            <span className="font-bold text-slate-800  hover:text-orange-600">
+              {file.displayName}
+            </span>
             <span className="text-[10px] text-slate-400 font-black uppercase italic">
               {file.mimeType}
             </span>
@@ -120,17 +141,25 @@ const SubCategoryDetail = () => {
       key: "id",
       className: "w-[25%] text-right",
       render: (file) => (
-        <div className="flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
-          <button 
-           onClick={() => handleDownload(file.url, file.displayName)}
+        <div
+          className="flex justify-end gap-2"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button
+            onClick={() => handleDownload(file.url, file.displayName)}
             className="p-2 bg-orange-500 text-white rounded-xl hover:bg-orange-600 shadow-md cursor-pointer"
           >
             <Download size={18} />
           </button>
-          <button  onClick={() => {setFileedit(file)}} className="p-2 hover:text-gray-300 text-[#f97316] transition-colors cursor-pointer">
-                          <Edit3 size={18} />
-                        </button>
-          <button 
+          <button
+            onClick={() => {
+              setFileedit(file);
+            }}
+            className="p-2 hover:text-gray-300 text-[#f97316] transition-colors cursor-pointer"
+          >
+            <Edit3 size={18} />
+          </button>
+          <button
             onClick={() => handleDeleteClick(file.id)}
             className="p-2 text-red-500 rounded-xl hover:bg-red-50 cursor-pointer"
           >
@@ -144,11 +173,17 @@ const SubCategoryDetail = () => {
   return (
     <div className="p-8 bg-[#fafafa] min-h-screen">
       <nav className="flex items-center gap-2 mb-8 text-sm font-bold">
-        <button onClick={() => navigate("/")} className="text-slate-400 hover:text-orange-500">
+        <button
+          onClick={() => navigate("/")}
+          className="text-slate-400 hover:text-orange-500"
+        >
           <Home size={16} />
         </button>
         <ChevronRight size={14} className="text-slate-300" />
-        <button onClick={() => navigate(-1)} className="text-slate-400 hover:text-orange-500">
+        <button
+          onClick={() => navigate(-1)}
+          className="text-slate-400 hover:text-orange-500"
+        >
           {t("category")}
         </button>
         <ChevronRight size={14} className="text-slate-300" />
@@ -170,14 +205,15 @@ const SubCategoryDetail = () => {
       </div>
 
       <div className="bg-white rounded-4xl border border-slate-100 shadow-sm overflow-hidden">
-        <DataTable 
-          columns={columns} 
-          data={files} 
-          isLoading={filesLoading || subCatLoading} 
-          emptyMessage={t("no_files_uploaded_yet")} 
+        <DataTable
+          columns={columns}
+          data={files}
+          isLoading={filesLoading || subCatLoading}
+          emptyMessage={t("no_files_uploaded_yet")}
         />
-        {fileEdit && 
-                    (<EditFileModal  data={fileEdit} onClose={()=>setFileedit(null)}/>)}
+        {fileEdit && (
+          <EditFileModal data={fileEdit} onClose={() => setFileedit(null)} />
+        )}
       </div>
     </div>
   );

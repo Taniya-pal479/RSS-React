@@ -1,8 +1,11 @@
-import  { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { X, Globe, Check, ChevronDown, Save, Loader2 } from "lucide-react";
 import { toast } from "react-toastify";
-import { useUpdateContentTypeMutation, useGetContentTypesQuery } from "../../services/rssApi";
+import {
+  useUpdateContentTypeMutation,
+  useGetContentTypesQuery,
+} from "../../services/rssApi";
 import type { ContentTypeMapped, ContentTypeRawResponse } from "../../types";
 
 const SUPPORTED_LANGS = [
@@ -11,8 +14,7 @@ const SUPPORTED_LANGS = [
 ];
 
 interface EditContentTypeModalProps {
- 
-  data:ContentTypeMapped | ContentTypeRawResponse;
+  data: ContentTypeMapped | ContentTypeRawResponse;
   onClose: () => void;
 }
 
@@ -21,46 +23,54 @@ const EditContentTypeModal = ({ data, onClose }: EditContentTypeModalProps) => {
   const [currentLangCode, setCurrentLangCode] = useState("en");
   const [isLangOpen, setIsLangOpen] = useState(false);
 
-   
-  const { data: refreshedList, isFetching } = useGetContentTypesQuery({
-    lang: currentLangCode,
-    categoryId: data?.categoryId 
-  }, { skip: !data?.id });
+  const { data: refreshedListResponse, isFetching } = useGetContentTypesQuery(
+    {
+      lang: currentLangCode,
 
-  const [updateContentType, { isLoading: isUpdating }] = useUpdateContentTypeMutation();
+      skip: 0, // Add this
+      take: 100,
+    },
+    { skip: !data?.id },
+  );
 
-   
+  const refreshedList = refreshedListResponse?.data || [];
+
+  const [updateContentType, { isLoading: isUpdating }] =
+    useUpdateContentTypeMutation();
+
   const [formData, setFormData] = useState({ name: "", description: "" });
 
- 
   useEffect(() => {
-   if (refreshedList && Array.isArray(refreshedList)) {
-     const currentItem = refreshedList.find((item) => String(item.id) === String(data.id));
-     
-     if (currentItem) {
-       const newName = currentItem.name || "";
-       const newDesc = currentItem.description || "";
-  
-       if (formData.name !== newName || formData.description !== newDesc) {
-         setFormData({
-           name: newName,
-           description: newDesc,
-         });
-       }
-     }
-   }
-   // eslint-disable-next-line react-hooks/exhaustive-deps
- }, [refreshedList, data.id]);
+    if (refreshedList && Array.isArray(refreshedList)) {
+      const currentItem = refreshedList.find(
+        (item) => String(item.id) === String(data.id),
+      );
+
+      if (currentItem) {
+        const newName = currentItem.name || "";
+        const newDesc = currentItem.description || "";
+
+        if (formData.name !== newName || formData.description !== newDesc) {
+          setFormData({
+            name: newName,
+            description: newDesc,
+          });
+        }
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refreshedList, data.id]);
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
 
-
-    const translationPayload = [{
-      languageCode: currentLangCode,
-      name: formData.name.trim(),
-      description: formData.description.trim(),
-    }];
+    const translationPayload = [
+      {
+        languageCode: currentLangCode,
+        name: formData.name.trim(),
+        description: formData.description.trim(),
+      },
+    ];
 
     try {
       await updateContentType({
@@ -74,7 +84,7 @@ const EditContentTypeModal = ({ data, onClose }: EditContentTypeModalProps) => {
       toast.success(t("CONTENT_TYPE"));
       onClose();
     } catch (err) {
-      console.log(err)
+      console.log(err);
       toast.error(t("ERROR_UPDATING") || "Failed to update");
     }
   };
@@ -113,13 +123,22 @@ const EditContentTypeModal = ({ data, onClose }: EditContentTypeModalProps) => {
                       `}
                     >
                       {lang.name}
-                      {currentLangCode === lang.code && <Check size={14} className="text-green-500" strokeWidth={3} />}
+                      {currentLangCode === lang.code && (
+                        <Check
+                          size={14}
+                          className="text-green-500"
+                          strokeWidth={3}
+                        />
+                      )}
                     </button>
                   ))}
                 </div>
               )}
             </div>
-            <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full text-gray-400">
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-gray-100 rounded-full text-gray-400"
+            >
               <X size={20} />
             </button>
           </div>
@@ -127,7 +146,6 @@ const EditContentTypeModal = ({ data, onClose }: EditContentTypeModalProps) => {
 
         <form onSubmit={handleUpdate} className="p-8 space-y-6">
           <div className="space-y-4">
-        
             {isFetching ? (
               <div className="flex justify-center py-10">
                 <Loader2 className="animate-spin text-[#f97316]" size={32} />
@@ -136,23 +154,31 @@ const EditContentTypeModal = ({ data, onClose }: EditContentTypeModalProps) => {
               <>
                 <div>
                   <label className="block text-[11px] font-black text-gray-400 uppercase mb-2 ml-1">
-                    {t("name")}<span className="text-red-500">*</span>
+                    {t("name")}
+                    <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
                     value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
                     className="w-full px-5 py-4 bg-[#f9fafb] border border-gray-200 rounded-2xl text-sm outline-none focus:border-[#f97316] font-bold"
                     required={currentLangCode === "en"}
                   />
                 </div>
                 <div>
                   <label className="block text-[11px] font-black text-gray-400 uppercase mb-2 ml-1">
-                    {t("description")} <span className="text-gray-300 ml-1 font-normal lowercase">({t("optional")})</span>
+                    {t("description")}{" "}
+                    <span className="text-gray-300 ml-1 font-normal lowercase">
+                      ({t("optional")})
+                    </span>
                   </label>
                   <textarea
                     value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, description: e.target.value })
+                    }
                     className="w-full px-5 py-4 bg-[#f9fafb] border border-gray-200 rounded-2xl text-sm outline-none focus:border-[#f97316] min-h-30 resize-none font-medium"
                   />
                 </div>
@@ -173,7 +199,11 @@ const EditContentTypeModal = ({ data, onClose }: EditContentTypeModalProps) => {
               disabled={isUpdating || isFetching}
               className="flex-1 flex items-center justify-center gap-2 py-4 bg-[#f97316] text-white font-bold rounded-2xl hover:bg-[#ea580c] shadow-lg disabled:opacity-50 transition-all"
             >
-              {isUpdating ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
+              {isUpdating ? (
+                <Loader2 className="animate-spin" size={20} />
+              ) : (
+                <Save size={20} />
+              )}
               {t("save_changes")}
             </button>
           </div>

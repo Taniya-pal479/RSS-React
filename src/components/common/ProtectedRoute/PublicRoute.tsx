@@ -1,11 +1,12 @@
-import { Navigate, Outlet } from 'react-router-dom';
-import { useAppSelector } from '../../../hook/store';
+import { Navigate, Outlet } from "react-router-dom";
+import { useAppSelector } from "../../../hook/store";
 
 const PublicRoute = () => {
-  const { isAuthenticated } = useAppSelector((state) => state.auth);
+  const { isAuthenticated, accessToken } = useAppSelector(
+    (state) => state.auth,
+  );
 
- 
-  if (isAuthenticated) {
+  if (isAuthenticated && accessToken) {
     return <Navigate to="/dashboard" replace />;
   }
 

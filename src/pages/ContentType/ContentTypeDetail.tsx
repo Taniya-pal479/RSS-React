@@ -35,6 +35,8 @@ const ContentTypeDetail = () => {
   const [fileEdit, setFileedit] = useState<FileObject | null>();
   const isValidId = contentTypeId && contentTypeId !== ":contentTypeId";
   const { handleDownload } = useDownload();
+  const [page, setPage] = useState(0);
+  const rowsPerPage = 20;
 
   const { data: files = [], isLoading: filesLoading } = useGetFilesQuery(
     {
@@ -46,15 +48,21 @@ const ContentTypeDetail = () => {
     },
   );
 
-  console.log("files", files);
+  console.log("content files ", files);
 
   const { data: categories = [] } = useGetCategoriesQuery(i18n.language);
 
-  const { data: contentTypes = [], isLoading: typesLoading } =
+  const { data: contentTypesData, isLoading: typesLoading } =
     useGetContentTypesQuery(
-      { categoryId: categoryId ?? "", lang: i18n.language },
+      {
+        lang: i18n.language,
+        skip: page * rowsPerPage,
+        take: rowsPerPage,
+      },
       { skip: !categoryId },
     );
+
+  const contentTypes = contentTypesData?.data ?? [];
   console.log(files);
 
   const [deleteFile] = useDeleteFileMutation();

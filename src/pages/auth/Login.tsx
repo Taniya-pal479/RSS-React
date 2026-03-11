@@ -46,11 +46,14 @@ const Login = () => {
 
     setErrors({});
 
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("userType");
+
     try {
       const result = await login({ email, password }).unwrap();
       dispatch(setCredentials(result));
       console.log("login.....");
-      navigate("/dashboard");
+      navigate("/dashboard", { replace: true });
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err: unknown) {
       setErrors({ general: t("invalid_credentials_msg") });

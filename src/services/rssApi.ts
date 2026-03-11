@@ -37,6 +37,10 @@ export const rssApi = createApi({
     getCategories: builder.query<Category[], string>({
       query: (lang) => `/categories?lang=${lang}`,
       providesTags: ["Category"],
+
+      transformResponse: (response: any) => {
+        return Array.isArray(response) ? response : response.data || [];
+      },
     }),
 
     getSubCategories: builder.query<
@@ -48,6 +52,9 @@ export const rssApi = createApi({
       providesTags: (_result, _error, arg) => [
         { type: "SubCategory", id: arg.categoryId },
       ],
+      transformResponse: (response: any) => {
+        return Array.isArray(response) ? response : response.data || [];
+      },
     }),
 
     deleteCategory: builder.mutation<{ success: boolean }, string>({
@@ -122,33 +129,29 @@ export const rssApi = createApi({
     }),
 
     getContentTypes: builder.query<
-      ContentTypeMapped[],
-      { categoryId: string | number; lang: string } // Removed 'page'
+      { data: ContentTypeMapped[]; total: number },
+      {   lang: string; take: number; skip: number } // Removed 'page'
     >({
-      query: ({ categoryId, lang }) =>
-        `/content-types?categoryId=${Number(categoryId)}&lang=${lang}`, // Removed limit/page for full list
+      query: ({   lang, take, skip }) =>
+        `/content-types?lang=${lang}&take=${take}&skip=${skip}`, // Removed limit/page for full list
 
       providesTags: (result) =>
         result
           ? [
-              ...result.map(({ id }) => ({ type: "ContentType" as const, id })),
+              ...result.data.map(({ id }) => ({
+                type: "ContentType" as const,
+                id,
+              })),
               { type: "ContentType", id: "LIST" },
             ]
           : [{ type: "ContentType", id: "LIST" }],
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      transformResponse: (response: any[]): ContentTypeMapped[] => {
-        if (!Array.isArray(response)) return [];
-        return response.map((item) => ({
-          id: item.id,
-          categoryId: item.categoryId,
-          name: item.name,
-          description: item.description,
-          year: item.contentYear,
-          status: item.status,
-          translations: item.translations,
-          category: item.category,
-        }));
+      transformResponse: (response: {
+        data: ContentTypeMapped[];
+        total: number;
+      }) => {
+        return response;
       },
     }),
 

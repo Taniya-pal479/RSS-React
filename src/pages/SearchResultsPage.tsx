@@ -1,39 +1,41 @@
-import { useMemo ,useEffect} from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { 
-  FileText, Download, Calendar, 
-  HardDrive, Home, ChevronRight, Search 
-} from 'lucide-react';
-import { format } from 'date-fns';
-import { useAppSelector } from '../hook/store';
-import { useGetAllFilesQuery } from '../services/rssApi';
-import DataTable, { type Column } from '../components/common/DataTable';
-import type { FileObject} from '../types';
+import { useMemo, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import {
+  FileText,
+  Download,
+  Calendar,
+  HardDrive,
+  Home,
+  ChevronRight,
+  Search,
+} from "lucide-react";
+import { format } from "date-fns";
+import { useAppSelector } from "../hook/store";
+import { useGetAllFilesQuery } from "../services/rssApi";
+import DataTable, { type Column } from "../components/common/DataTable";
+import type { FileObject } from "../types";
+import i18n from "../i18n";
 
 const SearchResultsPage = () => {
-  const { t} = useTranslation();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const searchQuery = useAppSelector((state) => state.ui.searchQuery);
 
   useEffect(() => {
     if (!searchQuery || searchQuery.trim() === "") {
-      navigate("/"); 
+      navigate("/");
     }
   }, [searchQuery, navigate]);
-  
-   
-  const { data: files = [], isLoading } = useGetAllFilesQuery(); 
-  
+
+  const { data: files = [], isLoading } = useGetAllFilesQuery(i18n.language);
 
   const filteredResults = useMemo(() => {
     if (!searchQuery) return [];
     return files.filter((file) =>
-      file.fileName.toLowerCase().includes(searchQuery.toLowerCase())
+      file.fileName.toLowerCase().includes(searchQuery.toLowerCase()),
     );
   }, [files, searchQuery]);
-
-  
 
   const columns: Column<FileObject>[] = [
     {
@@ -45,14 +47,23 @@ const SearchResultsPage = () => {
           <div className="p-3 bg-orange-50 text-orange-600 rounded-2xl shadow-sm">
             <FileText size={20} />
           </div>
-          <div className="flex flex-col cursor-pointer" onClick={() => navigate(`/category/${file.categoryId}/content-type/${file.contentTypeId}`)}>
-            <span className="font-bold text-slate-800  group-hover:text-orange-600">{file.fileName}</span>
-            <span className="text-[10px] text-slate-400 font-black tracking-widest uppercase"    >
-              {file.mimeType || 'FILE'}
+          <div
+            className="flex flex-col cursor-pointer"
+            onClick={() =>
+              navigate(
+                `/category/${file.categoryId}/content-type/${file.contentTypeId}`,
+              )
+            }
+          >
+            <span className="font-bold text-slate-800  group-hover:text-orange-600">
+              {file.fileName}
+            </span>
+            <span className="text-[10px] text-slate-400 font-black tracking-widest uppercase">
+              {file.mimeType || "FILE"}
             </span>
           </div>
         </div>
-      )
+      ),
     },
     {
       header: t("size"),
@@ -63,7 +74,7 @@ const SearchResultsPage = () => {
           <HardDrive size={14} className="text-slate-300" />
           <span>{(file.fileSize / 1024).toFixed(1)} KB</span>
         </div>
-      )
+      ),
     },
     {
       header: t("upload_date"),
@@ -73,35 +84,37 @@ const SearchResultsPage = () => {
         <div className="flex items-center gap-2 text-slate-500">
           <Calendar size={14} className="text-slate-300" />
           <span>
-            {file.uploadedAt 
-              ? format(new Date(file.uploadedAt), 'MMMM do, yyyy') 
+            {file.uploadedAt
+              ? format(new Date(file.uploadedAt), "MMMM do, yyyy")
               : "—"}
           </span>
         </div>
-      )
+      ),
     },
     {
       header: t("actions"),
-      key: "actions",
+      key: "actions" as keyof FileObject,
       className: "w-[20%] text-right",
       render: (file: FileObject) => (
         <div className="flex justify-end gap-2">
-          <button 
-            onClick={() => window.open(file.url, '_blank')}
+          <button
+            onClick={() => window.open(file.url, "_blank")}
             className="p-2 bg-orange-500 text-white rounded-xl hover:bg-orange-600 transition-all shadow-md shadow-orange-100 cursor-pointer"
           >
             <Download size={18} />
           </button>
         </div>
-      )
-    }
+      ),
+    },
   ];
 
   return (
     <div className="p-8 bg-[#fafafa] min-h-screen">
-    
       <nav className="flex items-center gap-2 mb-8 text-sm font-bold">
-        <button onClick={() => navigate('/')} className="text-slate-400 hover:text-orange-500">
+        <button
+          onClick={() => navigate("/")}
+          className="text-slate-400 hover:text-orange-500"
+        >
           <Home size={16} />
         </button>
         <ChevronRight size={14} className="text-slate-300" />
@@ -116,16 +129,17 @@ const SearchResultsPage = () => {
           {t("search_results")}
         </h1>
         <p className="text-slate-400 font-medium mt-2">
-          {filteredResults.length} {t("items_found_for")} <span className="text-slate-800 font-bold">"{searchQuery}"</span>
+          {filteredResults.length} {t("items_found_for")}{" "}
+          <span className="text-slate-800 font-bold">"{searchQuery}"</span>
         </p>
       </div>
 
       <div className="bg-white rounded-4xl border border-slate-100 shadow-sm overflow-hidden">
-        <DataTable 
-          columns={columns} 
-          data={filteredResults} 
-          isLoading={isLoading} 
-          emptyMessage={t("no_results_found")} 
+        <DataTable
+          columns={columns}
+          data={filteredResults}
+          isLoading={isLoading}
+          emptyMessage={t("no_results_found")}
         />
       </div>
     </div>

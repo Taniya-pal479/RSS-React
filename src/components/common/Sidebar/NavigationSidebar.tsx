@@ -12,6 +12,7 @@ import {
 import { useNavigate, useLocation } from "react-router-dom";
 import { useGetCategoriesQuery } from "../../../services/rssApi";
 import SidebarCategoryItem from "./SidebarCategoryItem";
+import { useAppSelector } from "../../../hook/store";
 
 const NavigationSidebar = () => {
   const { i18n, t } = useTranslation();
@@ -21,12 +22,14 @@ const NavigationSidebar = () => {
     null,
   );
 
+  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
+
   const {
     data: categories = [],
     isLoading,
     isError,
     refetch,
-  } = useGetCategoriesQuery(i18n.language);
+  } = useGetCategoriesQuery(i18n.language, { skip: !isAuthenticated });
 
   const isActive = (path: string) => location.pathname === path;
   const handleToggle = (id: number | string) => {

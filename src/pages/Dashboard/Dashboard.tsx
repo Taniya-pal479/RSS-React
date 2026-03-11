@@ -18,12 +18,17 @@ import { format } from "date-fns";
 
 import i18n from "../../i18n";
 import { StatsCard } from "../../components/ui/StatsCard";
+import { useAppSelector } from "../../hook/store";
 
 const Dashboard = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  const { data: files = [], isLoading } = useGetAllFilesQuery(i18n.language);
+  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
+
+  const { data: files = [], isLoading } = useGetAllFilesQuery(i18n.language, {
+    skip: !isAuthenticated,
+  });
   console.log(files);
 
   const getFileIcon = (fileName: string) => {

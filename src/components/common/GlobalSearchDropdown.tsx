@@ -40,7 +40,6 @@ interface SearchResultSectionProps<T> {
   hasMore?: boolean;
 }
 
-// --- VIRTUALIZED SECTION COMPONENT ---
 const SearchResultSection = <T extends SearchResultItem>({
   title,
   icon: Icon,
@@ -112,7 +111,6 @@ const SearchResultSection = <T extends SearchResultItem>({
   );
 };
 
-// --- MAIN DROPDOWN COMPONENT ---
 const GlobalSearchDropdown = () => {
   const navigate = useNavigate();
   const [skip, setSkip] = useState(0);
@@ -121,16 +119,24 @@ const GlobalSearchDropdown = () => {
   const searchQuery = useAppSelector((state) => state.ui.searchQuery);
   const debouncedSearch = useDebounce(searchQuery, 500);
 
-  // Reset pagination when the search query changes
-  useEffect(() => {
-    setSkip(0);
-  }, [debouncedSearch]);
+  const isNewSearch = useMemo(() => {
+    return searchQuery !== debouncedSearch;
+  }, [searchQuery, debouncedSearch]);
 
   const { data: searchData, isFetching } = useGlobalSearchQuery(
-    { search: debouncedSearch, languageCode: i18n.language, skip, take },
+    {
+      search: debouncedSearch,
+      languageCode: i18n.language,
+      skip: isNewSearch ? 0 : skip,
+      take,
+    },
     { skip: !debouncedSearch || debouncedSearch.trim().length < 2 },
   );
 
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setSkip(0);
+  }, [debouncedSearch]);
   const handleLoadMore = () => {
     if (
       !isFetching &&

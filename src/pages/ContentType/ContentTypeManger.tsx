@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useRef } from "react"; // Added useRef
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Edit2, Trash2, Plus } from "lucide-react";
-import DataTable from "../../components/common/DataTable";
+import { useVirtualizer } from "@tanstack/react-virtual"; // Added
 import {
   useDeleteContentTypeMutation,
   useGetContentTypesQuery,
@@ -12,29 +12,38 @@ import EditContentTypeModal from "../../components/common/EditContentTypeModal";
 import ConfirmToast from "../../components/ui/ConfirmToast";
 import type { ContentTypeMapped } from "../../types";
 
-interface TableColumn<T> {
-  header: string;
-  key: keyof T | string;
-  className?: string;
-  render?: (item: T, index: number) => React.ReactNode;
-}
-
 export const ContentTypeManager = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { categoryId } = useParams<{ categoryId: string }>();
   const CategoryId = categoryId || "1";
-
   const [selectedItem, setSelectedItem] = useState<ContentTypeMapped | null>(
     null,
   );
 
-  const { data: contentTypes = [], isLoading } = useGetContentTypesQuery({
-    categoryId: CategoryId,
+  // Virtualization & Pagination State
+  const parentRef = useRef<HTMLDivElement>(null);
+  const [page, setPage] = useState(0);
+  const rowsPerPage = 50; // Increased because virtualization handles large lists easily
+
+  const { data: contentTypesData, isLoading } = useGetContentTypesQuery({
     lang: i18n.language,
+    skip: page * rowsPerPage,
+    take: rowsPerPage,
   });
 
+  const contentTypes = contentTypesData?.data ?? [];
   const [deleteContentType] = useDeleteContentTypeMutation();
+
+  // Initialize Virtualizer
+  const rowVirtualizer = useVirtualizer({
+    count: contentTypes.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 74, // Estimated height of your table row in pixels
+    overscan: 10, // Number of items to render outside the visible area
+  });
+
+  const virtualItems = rowVirtualizer.getVirtualItems();
 
   const handleDeleteClick = (id: number) => {
     toast(
@@ -45,13 +54,7 @@ export const ContentTypeManager = () => {
           closeToast={closeToast}
         />
       ),
-      {
-        position: "top-center",
-        autoClose: false,
-        closeOnClick: false,
-        draggable: false,
-        className: "rounded-2xl shadow-2xl border border-gray-100",
-      },
+      { position: "top-center", autoClose: false, className: "rounded-2xl" },
     );
   };
 
@@ -63,82 +66,10 @@ export const ContentTypeManager = () => {
       }).unwrap();
       toast.success(t("DELETED_SUCCESSFULLY"));
     } catch (err) {
-      console.log(err);
+      console.log("Error deleting content ", err);
       toast.error(t("ERROR_DELETING"));
     }
   };
-
-  const columns: TableColumn<ContentTypeMapped>[] = [
-    {
-      header: t("id"),
-      key: "id",
-      className: "w-16",
-      render: (_, index) => {
-        // Simple index-based serial number since pagination is gone
-        return <span className="text-gray-400 text-[14px]">#{index + 1}</span>;
-      },
-    },
-    {
-      header: t("content_type_name"),
-      key: "name",
-      className: "w-1/4",
-      render: (item: ContentTypeMapped) => {
-        const activeTranslation = item.translations?.find(
-          (tr) => tr.languageCode === i18n.language,
-        );
-        const displayName = activeTranslation?.name || item.name || "---";
-
-        return (
-          <span
-            className="font-bold text-[#1a1a1a] text-[15px] cursor-pointer hover:text-orange-600"
-            onClick={() =>
-              navigate(`/category/${categoryId}/content-type/${item.id}`)
-            }
-          >
-            {displayName}
-          </span>
-        );
-      },
-    },
-    {
-      header: t("description"),
-      key: "description",
-      render: (item: ContentTypeMapped) => {
-        const activeTranslation = item.translations?.find(
-          (tr) => tr.languageCode === i18n.language,
-        );
-        const displayDesc =
-          activeTranslation?.description || item.description || "---";
-
-        return (
-          <span className="text-gray-400 text-[14px] line-clamp-1">
-            {displayDesc}
-          </span>
-        );
-      },
-    },
-    {
-      header: t("actions"),
-      key: "actions",
-      className: "text-right",
-      render: (item: ContentTypeMapped) => (
-        <div className="flex justify-end gap-3">
-          <button
-            onClick={() => setSelectedItem(item)}
-            className="p-2 hover:text-gray-300 text-[#f97316] transition-colors cursor-pointer"
-          >
-            <Edit2 size={14} />
-          </button>
-          <button
-            onClick={() => handleDeleteClick(item.id)}
-            className="p-2 hover:text-gray-300 text-red-500 transition-colors cursor-pointer"
-          >
-            <Trash2 size={14} />
-          </button>
-        </div>
-      ),
-    },
-  ];
 
   if (isLoading) {
     return (
@@ -150,6 +81,7 @@ export const ContentTypeManager = () => {
 
   return (
     <div className="p-2 bg-[#fdfcfb] min-h-[50vh]">
+      {/* Header Section */}
       <div className="flex justify-between items-end mb-5">
         <div>
           <h2 className="text-2xl font-bold text-[#1a1a1a] mb-1">
@@ -157,25 +89,94 @@ export const ContentTypeManager = () => {
           </h2>
           <p className="text-gray-400 text-sm">{t("content_type_subtitle")}</p>
         </div>
-
         <button
           onClick={() => navigate("/content/add")}
-          className="flex items-center gap-2 px-6 py-3 bg-[#f97316] text-white font-bold rounded-xl shadow-lg shadow-orange-100 transition-all active:scale-95 cursor-pointer"
+          className="flex items-center gap-2 px-6 py-3 bg-[#f97316] text-white font-bold rounded-xl"
         >
           <Plus size={20} /> {t("add_new")}
         </button>
       </div>
 
+      {/* Virtualized Table Container */}
       <div className="bg-white rounded-[24px] border border-gray-100 shadow-sm overflow-hidden">
-        <DataTable
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          columns={columns as any}
-          data={contentTypes}
-          onRowClick={(item) =>
-            navigate(`/category/${categoryId}/content-type/${item.id}`)
-          }
-          emptyMessage={t("no_files_uploaded_yet")}
-        />
+        {/* Table Header */}
+        <div className="grid grid-cols-12 bg-gray-50 border-b border-gray-100 px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">
+          <div className="col-span-1">#</div>
+          <div className="col-span-4">{t("content_type_name")}</div>
+          <div className="col-span-5">{t("description")}</div>
+          <div className="col-span-2 text-right">{t("actions")}</div>
+        </div>
+
+        {/* Scrollable Area */}
+        <div
+          ref={parentRef}
+          className="overflow-y-auto custom-scrollbar"
+          style={{ height: "500px" }}
+        >
+          <div
+            style={{
+              height: `${rowVirtualizer.getTotalSize()}px`,
+              width: "100%",
+              position: "relative",
+            }}
+          >
+            {virtualItems.map((virtualRow) => {
+              const item = contentTypes[virtualRow.index];
+              const activeTranslation = item.translations?.find(
+                (tr) => tr.languageCode === i18n.language,
+              );
+              const displayName = activeTranslation?.name || item.name || "---";
+
+              return (
+                <div
+                  key={item.id}
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: `${virtualRow.size}px`,
+                    transform: `translateY(${virtualRow.start}px)`,
+                  }}
+                  className="grid grid-cols-12 items-center px-6 border-b border-gray-50 hover:bg-orange-50/30 transition-colors"
+                >
+                  <div className="col-span-1 text-gray-400 text-sm">
+                    #{virtualRow.index + 1}
+                  </div>
+                  <div
+                    className="col-span-4 font-bold text-[#1a1a1a] text-[15px] truncate pr-4 cursor-pointer hover:text-orange-600"
+                    onClick={() =>
+                      navigate(
+                        `/category/${categoryId}/content-type/${item.id}`,
+                      )
+                    }
+                  >
+                    {displayName}
+                  </div>
+                  <div className="col-span-5 text-gray-400 text-sm truncate pr-4">
+                    {activeTranslation?.description ||
+                      item.description ||
+                      "---"}
+                  </div>
+                  <div className="col-span-2 flex justify-end gap-2">
+                    <button
+                      onClick={() => setSelectedItem(item)}
+                      className="p-2 text-[#f97316] hover:bg-white rounded-lg transition-all"
+                    >
+                      <Edit2 size={16} />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteClick(item.id)}
+                      className="p-2 text-red-500 hover:bg-white rounded-lg transition-all"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
       {selectedItem && (

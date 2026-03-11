@@ -1,9 +1,15 @@
- 
-import { Outlet } from 'react-router-dom';
-import NavigationSidebar from '../../components/common/Sidebar/NavigationSidebar';
-import TopBar from '../../components/common/TopBar/TopBar';
+import { Outlet } from "react-router-dom";
+import NavigationSidebar from "../../components/common/Sidebar/NavigationSidebar";
+import TopBar from "../../components/common/TopBar/TopBar";
+import type { RootState } from "../../store/store";
+import { useSelector } from "react-redux";
 
 const DashboardLayout = () => {
+  const isAuthenticated = useSelector(
+    (state: RootState) => state.auth.isAuthenticated,
+  );
+
+  if (!isAuthenticated) return null;
   return (
     <div className="flex min-h-screen bg-[#FDFCF8] font-sans">
       <NavigationSidebar />

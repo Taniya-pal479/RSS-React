@@ -39,10 +39,19 @@ const GlobalUpload = () => {
       { skip: !selectedCatId },
     );
 
-  const { data: contentTypes = [] } = useGetContentTypesQuery({
-    categoryId: selectedCatId || "",
-    lang: i18n.language,
-  });
+  const [page, setPage] = useState(0);
+  const rowsPerPage = 20;
+
+  const { data: contentTypesData } = useGetContentTypesQuery(
+    {
+      lang: i18n.language,
+      skip: page * rowsPerPage,
+      take: rowsPerPage,
+    },
+    { skip: false },
+  );
+  const contentTypes = contentTypesData?.data ?? [];
+  console.log("contentTypes upload", contentTypes);
 
   const isFormValid =
     name &&

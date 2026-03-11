@@ -7,11 +7,14 @@ const getSafeStorage = (key: string) => {
   }
   return null;
 };
+const isLoginPage =
+  typeof window !== "undefined" && window.location.pathname === "/login";
 
 const initialState: AuthState = {
-  accessToken: getSafeStorage("accessToken"),
-  type: getSafeStorage("userType"),
-  isAuthenticated: !!getSafeStorage("accessToken"),
+  // If we are on the login page, start as null to prevent "Ghost" background requests
+  accessToken: isLoginPage ? null : getSafeStorage("accessToken"),
+  type: isLoginPage ? null : getSafeStorage("userType"),
+  isAuthenticated: isLoginPage ? false : !!getSafeStorage("accessToken"),
   user: null,
 };
 

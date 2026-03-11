@@ -36,11 +36,12 @@ const CategoryDetail = () => {
   const [deleteCategory] = useDeleteCategoryMutation();
   const [deleteSubCategory] = useDeleteSubCategoryMutation();
 
-  const { data: categories = [] } = useGetCategoriesQuery(i18n.language);
+  const { data: categoriesData = [] } = useGetCategoriesQuery(i18n.language);
+  const categories = (categoriesData as Category[]) || [];
   const currentCategory = categories.find(
     (c: Category) => Number(c.id) === Number(categoryId),
   );
-
+  console.log("categoryId", categoryId);
   const { data: files = [], isLoading: filesLoading } =
     useGetFilesByCategoryQuery(
       { catId: categoryId!, lang: i18n.language },
