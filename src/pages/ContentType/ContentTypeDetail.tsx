@@ -50,8 +50,12 @@ const ContentTypeDetail = () => {
 
   console.log("content files ", files);
 
-  const { data: categories = [] } = useGetCategoriesQuery(i18n.language);
-
+  const { data: categoriesData } = useGetCategoriesQuery({
+    lang: i18n.language,
+    skip: 0,
+    take: 100,
+  });
+  const categories = categoriesData?.data || [];
   const { data: contentTypesData, isLoading: typesLoading } =
     useGetContentTypesQuery(
       {

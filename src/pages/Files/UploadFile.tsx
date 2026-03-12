@@ -31,13 +31,21 @@ const GlobalUpload = () => {
   const [year, setYear] = useState("");
   const [files, setFiles] = useState<File[]>([]);
 
-  const { data: categories = [] } = useGetCategoriesQuery(i18n.language);
+  const { data: categoriesData } = useGetCategoriesQuery({
+    lang: i18n.language,
+    skip: 0,
+    take: 100,
+  });
 
-  const { data: subCategories = [], isFetching: isFetchingSubCats } =
+  const categories = categoriesData?.data || [];
+
+  const { data: subCategoriesData, isFetching: isFetchingSubCats } =
     useGetSubCategoriesQuery(
-      { categoryId: selectedCatId, lang: i18n.language },
+      { categoryId: selectedCatId, lang: i18n.language, skip: 0, take: 100 },
       { skip: !selectedCatId },
     );
+
+  const subCategories = subCategoriesData?.result || [];
 
   const [page, setPage] = useState(0);
   const rowsPerPage = 20;
@@ -51,6 +59,7 @@ const GlobalUpload = () => {
     { skip: false },
   );
   const contentTypes = contentTypesData?.data ?? [];
+
   console.log("contentTypes upload", contentTypes);
 
   const isFormValid =

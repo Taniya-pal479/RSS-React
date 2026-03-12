@@ -39,8 +39,8 @@ export const ContentTypeManager = () => {
   const rowVirtualizer = useVirtualizer({
     count: contentTypes.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 74, // Estimated height of your table row in pixels
-    overscan: 10, // Number of items to render outside the visible area
+    estimateSize: () => 74,
+    overscan: 10,
   });
 
   const virtualItems = rowVirtualizer.getVirtualItems();
