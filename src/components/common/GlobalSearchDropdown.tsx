@@ -136,7 +136,8 @@ const GlobalSearchDropdown = () => {
     { skip: !debouncedSearch || debouncedSearch.trim().length < 2 },
   );
 
-  const { data: allFiles = [] } = useGetAllFilesQuery(i18n.language);
+  const { data: allFiles } = useGetAllFilesQuery(i18n.language);
+  console.log("allFiles", allFiles);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -155,13 +156,12 @@ const GlobalSearchDropdown = () => {
   const filteredData = useMemo(() => {
     const results = (searchData ?? []) as GlobalSearchResult[];
 
-    const yearMatches = allFiles.filter((file) => {
-      if (!debouncedSearch) return false;
-      // Check if the user's search matches the file's year
-      return file.year?.toString() === debouncedSearch;
-    });
-    console.log("yearMatches", yearMatches);
+    const nameMatches = results.filter((i) => i.type === "file");
+    const yearMatches = results.filter(
+      (i) => i.type === "file" && i.year?.toString() === debouncedSearch,
+    );
 
+    console.log("filteredData results", results);
     return {
       categories: results.filter(
         (i): i is CategoryResult => i.type === "category",
@@ -172,12 +172,10 @@ const GlobalSearchDropdown = () => {
       contentTypes: results.filter(
         (i): i is ContentResult => i.type === "content",
       ),
-      files: results.filter((i): i is FileResult => i.type === "file"),
+      files: nameMatches,
       YearWiseFiles: yearMatches,
     };
-  }, [searchData, debouncedSearch, allFiles]);
-
-  console.log("filteryearMatches", filteredData.YearWiseFiles);
+  }, [searchData, debouncedSearch]);
 
   const hasResults = Object.values(filteredData).some((arr) => arr.length > 0);
   const hasMoreGlobal =
@@ -226,7 +224,7 @@ const GlobalSearchDropdown = () => {
                   className="flex items-center gap-3 px-4 py-3 hover:bg-orange-50 cursor-pointer group transition-colors h-[52px]"
                 >
                   <span className="text-sm font-bold text-slate-700 group-hover:text-orange-600">
-                    {item.title}
+                    {item.title || item.slug}
                   </span>
                 </div>
               )}
@@ -272,60 +270,62 @@ const GlobalSearchDropdown = () => {
                   className="flex items-center gap-3 px-4 py-3 hover:bg-purple-50 cursor-pointer group h-[52px]"
                 >
                   <span className="text-sm font-bold text-slate-700 group-hover:text-purple-600">
-                    {item.title}
+                    {item.displayName || item.title || item.slug}
                   </span>
                 </div>
               )}
             />
 
-            <SearchResultSection
-              title={t("files")}
-              icon={FileText}
-              items={filteredData.files}
-              hasMore={hasMoreGlobal}
-              onLoadMore={handleLoadMore}
-              renderItem={(item) => (
-                <div
-                  onMouseDown={(e) => handleNavigation(e, item.url, true)}
-                  className="flex items-center justify-between px-4 py-3 hover:bg-emerald-50 cursor-pointer group transition-all h-[52px]"
-                >
-                  <div className="flex flex-col">
-                    <span className="text-sm font-bold text-slate-700 group-hover:text-emerald-600 line-clamp-1">
+            {filteredData.files.length > 0 &&
+              !/^\d{4}$/.test(debouncedSearch) && (
+                <SearchResultSection
+                  title={t("files")}
+                  icon={FileText}
+                  items={filteredData.files}
+                  hasMore={hasMoreGlobal}
+                  onLoadMore={handleLoadMore}
+                  renderItem={(item) => (
+                    <div
+                      onMouseDown={(e) => handleNavigation(e, item.url, true)}
+                      className="flex items-center justify-between px-4 py-3 hover:bg-emerald-50 cursor-pointer group h-[62px]"
+                    >
+                      <div className="flex flex-col">
+                        <span className="text-sm font-bold text-slate-700 group-hover:text-emerald-600 truncate">
+                          {item.title || item.slug || `File #${item.id}`}
+                        </span>
+                        <span className="text-[9px] text-slate-400 uppercase font-black">
+                          {item.mimeType || "FILE"}{" "}
+                          {item.year ? `• ${item.year}` : ""}
+                        </span>
+                      </div>
+                      <ChevronRight size={14} className="text-slate-200" />
+                    </div>
+                  )}
+                />
+              )}
+
+            {filteredData.YearWiseFiles.length > 0 && (
+              <SearchResultSection
+                title={t("results_for_year", { year: debouncedSearch })}
+                icon={FileText}
+                items={filteredData.YearWiseFiles}
+                hasMore={hasMoreGlobal}
+                onLoadMore={handleLoadMore}
+                renderItem={(item) => (
+                  <div
+                    onMouseDown={(e) => handleNavigation(e, item.url, true)}
+                    className="flex items-center justify-between px-4 py-3 hover:bg-orange-50 cursor-pointer group h-[52px]"
+                  >
+                    <span className="text-sm font-bold text-slate-700">
                       {item.title}
                     </span>
-                    <span className="text-[9px] text-slate-400 uppercase font-black">
-                      {item.mimeType || "FILE"}
+                    <span className="text-[10px] text-orange-500 font-black uppercase">
+                      {item.year}
                     </span>
                   </div>
-                  <ChevronRight
-                    size={14}
-                    className="text-slate-200 group-hover:text-emerald-500"
-                  />
-                </div>
-              )}
-            />
-
-            <SearchResultSection
-              title={`${t("results_for_year")} ${debouncedSearch}`}
-              icon={FileText}
-              items={filteredData.YearWiseFiles}
-              renderItem={(item) => (
-                <div
-                  onMouseDown={(e) => handleNavigation(e, item.url, true)}
-                  className="flex items-center justify-between px-4 py-3 hover:bg-orange-50 cursor-pointer group h-[52px]"
-                >
-                  <div className="flex flex-col">
-                    <span className="text-sm font-bold text-slate-700 group-hover:text-orange-600 truncate">
-                      {item.displayName || `File #${item.id}`}
-                    </span>
-                    <span className="text-[10px] text-slate-400 font-bold uppercase">
-                      {t("Year")}: {item.year}
-                    </span>
-                  </div>
-                  <ChevronRight size={14} className="text-slate-200" />
-                </div>
-              )}
-            />
+                )}
+              />
+            )}
           </>
         )}
       </div>
