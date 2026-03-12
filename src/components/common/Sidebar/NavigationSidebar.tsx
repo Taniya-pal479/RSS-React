@@ -25,11 +25,16 @@ const NavigationSidebar = () => {
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
 
   const {
-    data: categories = [],
+    data: categoriesData,
     isLoading,
     isError,
     refetch,
-  } = useGetCategoriesQuery(i18n.language, { skip: !isAuthenticated });
+  } = useGetCategoriesQuery(
+    { lang: i18n.language, skip: 0, take: 100 },
+    { skip: !isAuthenticated },
+  );
+
+  const categories = categoriesData?.data || [];
 
   const isActive = (path: string) => location.pathname === path;
   const handleToggle = (id: number | string) => {

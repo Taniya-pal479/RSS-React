@@ -45,13 +45,15 @@ const SubCategoryDetail = () => {
       },
     );
 
-  const { data: subCategoriesData = [], isLoading: subCatLoading } =
+  const { data: subCategoriesData, isLoading: subCatLoading } =
     useGetSubCategoriesQuery({
       categoryId: categoryId as string,
       lang: i18n.language,
+      skip: 0,
+      take: 100,
     });
 
-  const subCategories = (subCategoriesData as SubCategory[]) || [];
+  const subCategories = subCategoriesData?.result || [];
   const currentSubCategory = useMemo(
     () =>
       subCategories.find(

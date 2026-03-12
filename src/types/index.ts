@@ -47,6 +47,15 @@ export interface FormTranslations {
   description: string;
 }
 
+export interface SubCategoryResponse {
+  result: SubCategory[];
+  total: number;
+}
+export interface CategoryResponse {
+  data: Category[];
+  total: number;
+}
+
 export interface SubCategory {
   categoryId: string | number;
   id: number | string;
@@ -56,6 +65,7 @@ export interface SubCategory {
   translations?: Translation[];
   createdAt?: string;
   updatedAt?: string;
+  result?: SubCategory[];
 }
 
 export interface Category {
@@ -65,7 +75,7 @@ export interface Category {
   description?: string | null;
   subCategories?: SubCategory[];
   translations?: Translation[];
-  data: Category[];
+  data?: Category[];
   createdAt?: string;
   updatedAt?: string;
 }

@@ -9,6 +9,8 @@ import type {
   FileObject,
   FilesResponses,
   SearchResponse,
+  SubCategoryResponse,
+  CategoryResponse,
 } from "../types";
 import type { RootState } from "../store/store";
 
@@ -34,26 +36,30 @@ export const rssApi = createApi({
       }),
     }),
 
-    getCategories: builder.query<Category[], string>({
-      query: (lang) => `/categories?lang=${lang}`,
+    getCategories: builder.query<
+      CategoryResponse,
+      { lang: string; skip: number; take: number }
+    >({
+      query: ({ lang, skip, take }) =>
+        `/categories?lang=${lang}&skip=${skip}&take=${take}`,
       providesTags: ["Category"],
 
-      transformResponse: (response: any) => {
-        return Array.isArray(response) ? response : response.data || [];
+      transformResponse: (response:CategoryResponse) => {
+        return response;
       },
     }),
 
     getSubCategories: builder.query<
-      SubCategory[],
-      { categoryId: number | string; lang: string }
+      SubCategoryResponse,
+      { categoryId: number | string; lang: string; skip: number; take: number }
     >({
-      query: ({ categoryId, lang }) =>
-        `/subcategories/category/${Number(categoryId)}?lang=${lang}`,
+      query: ({ categoryId, lang, skip, take }) =>
+        `/subcategories/category/${Number(categoryId)}?lang=${lang}&skip=${skip}&take=${take}`,
       providesTags: (_result, _error, arg) => [
         { type: "SubCategory", id: arg.categoryId },
       ],
-      transformResponse: (response: any) => {
-        return Array.isArray(response) ? response : response.data || [];
+      transformResponse: (response: SubCategoryResponse) => {
+        return response;
       },
     }),
 

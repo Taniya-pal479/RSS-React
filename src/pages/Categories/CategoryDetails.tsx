@@ -36,11 +36,19 @@ const CategoryDetail = () => {
   const [deleteCategory] = useDeleteCategoryMutation();
   const [deleteSubCategory] = useDeleteSubCategoryMutation();
 
-  const { data: categoriesData = [] } = useGetCategoriesQuery(i18n.language);
-  const categories = (categoriesData as Category[]) || [];
+  const { data: categoriesData } = useGetCategoriesQuery(
+    { lang: i18n.language, skip: 0, take: 100 },
+    { skip: !categoryId || isNaN(Number(categoryId)) },
+  );
+  const categories = categoriesData?.data || [];
   const currentCategory = categories.find(
     (c: Category) => Number(c.id) === Number(categoryId),
   );
+
+  const [page, setPage] = useState(1);
+  const take = 10;
+  const skip = (page - 1) * take;
+
   console.log("categoryId", categoryId);
   const { data: files = [], isLoading: filesLoading } =
     useGetFilesByCategoryQuery(
@@ -52,6 +60,7 @@ const CategoryDetail = () => {
           categoryId === ":categoryId",
       },
     );
+
   const [deleteFile] = useDeleteFileMutation();
   const handleDeleteClick = (id: number) => {
     toast(
@@ -85,9 +94,13 @@ const CategoryDetail = () => {
   const { data: subCatResponse, isLoading } = useGetSubCategoriesQuery({
     categoryId: categoryId as string,
     lang: i18n.language,
+    skip: skip,
+    take: take,
   });
 
-  const subCategories = subCatResponse || [];
+  const subCategories = useMemo(() => {
+    return subCatResponse?.result ?? [];
+  }, [subCatResponse]);
 
   const combinedData = useMemo(() => {
     const mixed = [
@@ -112,7 +125,8 @@ const CategoryDetail = () => {
     ];
     return mixed;
   }, [subCategories, files]);
-  console.log(combinedData);
+
+  console.log("Combined Data", combinedData);
 
   const columns = [
     {

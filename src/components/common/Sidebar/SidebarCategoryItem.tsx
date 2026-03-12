@@ -1,4 +1,3 @@
- 
 import {
   Layers,
   ChevronDown,
@@ -17,25 +16,29 @@ interface SidebarCategoryItemProps {
   onToggle: () => void;
 }
 
- 
-const SidebarCategoryItem = ({ category,isOpen,onToggle }: SidebarCategoryItemProps) => {
+const SidebarCategoryItem = ({
+  category,
+  isOpen,
+  onToggle,
+}: SidebarCategoryItemProps) => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
-  
 
   const handleCategoryClick = () => {
-  onToggle();
-  navigate(`/category/${category.id}`);
-};
- 
-  const { data: subCategories = [], isLoading } = useGetSubCategoriesQuery(
+    onToggle();
+    navigate(`/category/${category.id}`);
+  };
+
+  const { data: subCategoriesData, isLoading } = useGetSubCategoriesQuery(
     {
       categoryId: category.id,
       lang: i18n.language,
+      skip: 0,
+      take: 100,
     },
     { skip: !isOpen },
   );
-
+  const subCategories = subCategoriesData?.result || [];
   return (
     <div className="mb-1">
       <button
@@ -70,11 +73,14 @@ const SidebarCategoryItem = ({ category,isOpen,onToggle }: SidebarCategoryItemPr
             subCategories.map((sub: SubCategory) => (
               <button
                 key={sub.id}
-                
                 className="flex items-center gap-2 w-full text-left text-xs font-medium text-gray-500 hover:text-[#F97316] py-2 px-2 rounded-lg hover:bg-[#FFF7ED]"
               >
                 <div className="w-1.5 h-1.5 rounded-full bg-gray-300 shrink-0" />
-                <span className="truncate" onClick={()=> navigate(`/category/${category.id}/subcategory/${sub.id}`)}
+                <span
+                  className="truncate"
+                  onClick={() =>
+                    navigate(`/category/${category.id}/subcategory/${sub.id}`)
+                  }
                 >
                   {t(" ", { defaultValue: sub.name || "" })}
                 </span>

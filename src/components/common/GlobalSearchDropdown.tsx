@@ -19,7 +19,6 @@ import { useDebounce } from "../../hook/useDebounce";
 import type {
   CategoryResult,
   ContentResult,
-  FileResult,
   GlobalSearchResult,
   SubCategoryResult,
 } from "../../types/index";
