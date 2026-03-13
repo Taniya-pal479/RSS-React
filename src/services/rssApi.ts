@@ -44,7 +44,7 @@ export const rssApi = createApi({
         `/categories?lang=${lang}&skip=${skip}&take=${take}`,
       providesTags: ["Category"],
 
-      transformResponse: (response:CategoryResponse) => {
+      transformResponse: (response: CategoryResponse) => {
         return response;
       },
     }),
@@ -136,10 +136,10 @@ export const rssApi = createApi({
 
     getContentTypes: builder.query<
       { data: ContentTypeMapped[]; total: number },
-      { lang: string; take: number; skip: number } // Removed 'page'
+      { lang: string; take: number; skip: number }
     >({
       query: ({ lang, take, skip }) =>
-        `/content-types?lang=${lang}&take=${take}&skip=${skip}`, // Removed limit/page for full list
+        `/content-types?lang=${lang}&take=${take}&skip=${skip}`,
 
       providesTags: (result) =>
         result
@@ -204,6 +204,7 @@ export const rssApi = createApi({
     >({
       query: ({ contentTypeId, lang }) =>
         `/files/content-types/${contentTypeId}?lang=${lang}`,
+
       providesTags: (_result, _error, arg) => [
         { type: "Files", id: arg.contentTypeId },
         { type: "Files", id: "LIST" },

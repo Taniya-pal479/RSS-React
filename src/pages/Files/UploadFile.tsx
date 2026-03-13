@@ -17,6 +17,8 @@ import {
   useGetContentTypesQuery,
   useUploadFileMutation,
 } from "../../services/rssApi";
+import { useAppSelector } from "../../hook/store";
+import { is } from "date-fns/locale";
 
 const GlobalUpload = () => {
   const { t, i18n } = useTranslation();
@@ -30,25 +32,28 @@ const GlobalUpload = () => {
   const [selectedContentTypeId, setSelectedContentTypeId] = useState("");
   const [year, setYear] = useState("");
   const [files, setFiles] = useState<File[]>([]);
+  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
+  const [page, setPage] = useState(0);
+  const rowsPerPage = 20;
 
-  const { data: categoriesData } = useGetCategoriesQuery({
-    lang: i18n.language,
-    skip: 0,
-    take: 100,
-  });
+  const { data: categoriesData } = useGetCategoriesQuery(
+    {
+      lang: i18n.language,
+      skip: 0,
+      take: 100,
+    },
+    { skip: !isAuthenticated },
+  );
 
   const categories = categoriesData?.data || [];
 
   const { data: subCategoriesData, isFetching: isFetchingSubCats } =
     useGetSubCategoriesQuery(
       { categoryId: selectedCatId, lang: i18n.language, skip: 0, take: 100 },
-      { skip: !selectedCatId },
+      { skip: !isAuthenticated || !selectedCatId },
     );
 
   const subCategories = subCategoriesData?.result || [];
-
-  const [page, setPage] = useState(0);
-  const rowsPerPage = 20;
 
   const { data: contentTypesData } = useGetContentTypesQuery(
     {
@@ -56,7 +61,7 @@ const GlobalUpload = () => {
       skip: page * rowsPerPage,
       take: rowsPerPage,
     },
-    { skip: false },
+    { skip: !isAuthenticated },
   );
   const contentTypes = contentTypesData?.data ?? [];
 

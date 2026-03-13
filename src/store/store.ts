@@ -3,6 +3,7 @@ import { setupListeners } from "@reduxjs/toolkit/query";
 import { rssApi } from "../services/rssApi";
 import uiReducer from "./slices/uiSlice";
 import authReducer from "./slices/authSlice";
+import { rtkQueryLogger } from "./logger";
 
 //import { rtkQueryLogger } from './logger';
 
@@ -14,8 +15,7 @@ export const store = configureStore({
   },
 
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(rssApi.middleware),
-  //.concat(rtkQueryLogger),
+    getDefaultMiddleware().concat(rssApi.middleware).concat(rtkQueryLogger),
 });
 
 setupListeners(store.dispatch);

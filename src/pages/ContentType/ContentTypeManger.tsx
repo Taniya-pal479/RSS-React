@@ -1,4 +1,4 @@
-import { useState, useRef } from "react"; // Added useRef
+import { useState, useRef, useEffect } from "react"; // Added useRef
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Edit2, Trash2, Plus } from "lucide-react";
@@ -11,6 +11,7 @@ import { toast } from "react-toastify";
 import EditContentTypeModal from "../../components/common/EditContentTypeModal";
 import ConfirmToast from "../../components/ui/ConfirmToast";
 import type { ContentTypeMapped } from "../../types";
+import { useAppSelector } from "../../hook/store";
 
 export const ContentTypeManager = () => {
   const { t, i18n } = useTranslation();
@@ -21,23 +22,34 @@ export const ContentTypeManager = () => {
     null,
   );
 
-  // Virtualization & Pagination State
+  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
+
+   
   const parentRef = useRef<HTMLDivElement>(null);
   const [page, setPage] = useState(0);
-  const rowsPerPage = 50; // Increased because virtualization handles large lists easily
+  const rowsPerPage = 20;
 
-  const { data: contentTypesData, isLoading } = useGetContentTypesQuery({
-    lang: i18n.language,
-    skip: page * rowsPerPage,
-    take: rowsPerPage,
-  });
+  const {
+    data: contentTypesData,
+    isLoading,
+    isFetching,
+  } = useGetContentTypesQuery(
+    {
+      lang: i18n.language,
+      skip: page * rowsPerPage,
+      take: rowsPerPage,
+    },
+    { skip: !isAuthenticated },
+  );
 
   const contentTypes = contentTypesData?.data ?? [];
+  const totalCount = contentTypesData?.total ?? 0;
+
   const [deleteContentType] = useDeleteContentTypeMutation();
 
-  // Initialize Virtualizer
+ 
   const rowVirtualizer = useVirtualizer({
-    count: contentTypes.length,
+    count: totalCount,
     getScrollElement: () => parentRef.current,
     estimateSize: () => 74,
     overscan: 10,
@@ -45,6 +57,18 @@ export const ContentTypeManager = () => {
 
   const virtualItems = rowVirtualizer.getVirtualItems();
 
+  useEffect(() => {
+    const lastItem = virtualItems[virtualItems.length - 1];
+    if (!lastItem) return;
+
+    
+    const isAtBottom = lastItem.index >= contentTypes.length - 1;
+    const hasMoreData = contentTypes.length < totalCount;
+
+    if (isAtBottom && hasMoreData && !isFetching) {
+      setPage((prev) => prev + 1);
+    }
+  }, [virtualItems, isFetching, contentTypes.length, totalCount]);
   const handleDeleteClick = (id: number) => {
     toast(
       ({ closeToast }) => (
@@ -81,7 +105,7 @@ export const ContentTypeManager = () => {
 
   return (
     <div className="p-2 bg-[#fdfcfb] min-h-[50vh]">
-      {/* Header Section */}
+    
       <div className="flex justify-between items-end mb-5">
         <div>
           <h2 className="text-2xl font-bold text-[#1a1a1a] mb-1">
@@ -97,9 +121,9 @@ export const ContentTypeManager = () => {
         </button>
       </div>
 
-      {/* Virtualized Table Container */}
+   
       <div className="bg-white rounded-[24px] border border-gray-100 shadow-sm overflow-hidden">
-        {/* Table Header */}
+ 
         <div className="grid grid-cols-12 bg-gray-50 border-b border-gray-100 px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">
           <div className="col-span-1">#</div>
           <div className="col-span-4">{t("content_type_name")}</div>
@@ -107,7 +131,7 @@ export const ContentTypeManager = () => {
           <div className="col-span-2 text-right">{t("actions")}</div>
         </div>
 
-        {/* Scrollable Area */}
+ 
         <div
           ref={parentRef}
           className="overflow-y-auto custom-scrollbar"
@@ -122,6 +146,25 @@ export const ContentTypeManager = () => {
           >
             {virtualItems.map((virtualRow) => {
               const item = contentTypes[virtualRow.index];
+
+              if (!item) {
+                return (
+                  <div
+                    key={`loading-${virtualRow.index}`}
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      width: "100%",
+                      height: `${virtualRow.size}px`,
+                      transform: `translateY(${virtualRow.start}px)`,
+                    }}
+                    className="flex items-center px-6 border-b border-gray-50 text-gray-300 italic text-sm"
+                  >
+                    {t("loading")}...
+                  </div>
+                );
+              }
               const activeTranslation = item.translations?.find(
                 (tr) => tr.languageCode === i18n.language,
               );

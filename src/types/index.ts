@@ -55,6 +55,10 @@ export interface CategoryResponse {
   data: Category[];
   total: number;
 }
+export interface FilesRespons {
+  files: FileResponse[];
+  total: number;
+}
 
 export interface SubCategory {
   categoryId: string | number;
@@ -120,6 +124,7 @@ interface ResourceMetadata {
 export interface FilesResponses {
   files: FileObject[];
   total: number;
+  skip?: number;
 }
 
 export interface FileResource {
