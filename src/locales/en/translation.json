@@ -41,6 +41,7 @@
   "recently_added": "Recently Added Files",
   "no_files_title": "No files uploaded yet",
   "no_files_desc": "Your document repository is currently empty. Get started by uploading your first file.",
+  "no_files_found": "No files found",
   "browse_cta": "browse",
   "title": "Create New Category",
   "Subtitle": "Create New Subcategory",

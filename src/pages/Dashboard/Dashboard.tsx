@@ -26,9 +26,20 @@ const Dashboard = () => {
 
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
 
-  const { data: files = [], isLoading } = useGetAllFilesQuery(i18n.language, {
-    skip: !isAuthenticated,
-  });
+  const { data: filesData, isLoading } = useGetAllFilesQuery(
+    {
+      lang: i18n.language,
+      skip: 0,
+      take: 999,
+    },
+    {
+      skip: !isAuthenticated,
+    },
+  );
+
+  const files = useMemo(() => {
+    return filesData?.data || [];
+  }, [filesData]);
   console.log(files);
 
   const getFileIcon = (fileName: string) => {

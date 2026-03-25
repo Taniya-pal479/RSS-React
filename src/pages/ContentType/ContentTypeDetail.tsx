@@ -81,7 +81,7 @@ const ContentTypeDetail = () => {
     },
   );
 
-  const items = files ?? [];
+  const items = files?.files ?? [];
 
   const totalCount = files?.length ?? 0;
 

@@ -269,7 +269,7 @@ export interface FileObject {
   fileType: string;
   uploadedAt: string;
   url: string;
-  files: [];
+  files?: [];
   metadata: Array<{ id: number; key: string; value: string }>;
   updatedAt?: string;
   translations: FileTranslations[];

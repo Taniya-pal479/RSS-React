@@ -135,7 +135,18 @@ const GlobalSearchDropdown = () => {
     { skip: !debouncedSearch || debouncedSearch.trim().length < 2 },
   );
 
-  const { data: allFiles } = useGetAllFilesQuery(i18n.language);
+ const { data: filesData  } = useGetAllFilesQuery(
+    {
+      lang: i18n.language,
+      skip: 0,
+      take: 999,
+    },
+    
+  );
+
+   const allFiles = useMemo(() => {
+      return filesData?.data || [];
+    }, [filesData]);
   console.log("allFiles", allFiles);
 
   useEffect(() => {
@@ -285,7 +296,9 @@ const GlobalSearchDropdown = () => {
                   onLoadMore={handleLoadMore}
                   renderItem={(item) => (
                     <div
-                      onMouseDown={(e) => handleNavigation(e, item.url, true)}
+                      onMouseDown={(e) =>
+                        handleNavigation(e, `/year/${item.year}`)
+                      }
                       className="flex items-center justify-between px-4 py-3 hover:bg-emerald-50 cursor-pointer group h-[62px]"
                     >
                       <div className="flex flex-col">
@@ -312,7 +325,9 @@ const GlobalSearchDropdown = () => {
                 onLoadMore={handleLoadMore}
                 renderItem={(item) => (
                   <div
-                    onMouseDown={(e) => handleNavigation(e, item.url, true)}
+                    onMouseDown={(e) =>
+                      handleNavigation(e, `/year/${item.year}`)
+                    }
                     className="flex items-center justify-between px-4 py-3 hover:bg-orange-50 cursor-pointer group h-[52px]"
                   >
                     <span className="text-sm font-bold text-slate-700">

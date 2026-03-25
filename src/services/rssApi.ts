@@ -210,20 +210,47 @@ export const rssApi = createApi({
       ],
     }),
 
-    getAllFiles: builder.query<FileObject[], string>({
-      query: (lang) => `/files?lang=${lang}&page=5`,
+    getAllFiles: builder.query<
+      { data: FileObject[]; total: number },
+      {
+        contentTypeId?: string | number;
+        lang: string;
+        skip?: number;
+        take?: number;
+      }
+    >({
+      query: ({ contentTypeId, lang, skip, take }) => {
+        let url = `/files?lang=${lang}&skip=${skip}&take=${take}`;
 
-      transformResponse: (response: { files: FileObject[]; total: number }) => {
-        return response.files || [];
+        if (contentTypeId) {
+          url = `/files/content-types/${contentTypeId}?lang=${lang}&skip=${skip}&take=${take}`;
+        }
+        return url;
       },
 
       providesTags: (result) =>
-        result && Array.isArray(result)
+        result?.data
           ? [
-              ...result.map(({ id }) => ({ type: "Files" as const, id })),
-              { type: "Files", id: "LIST" },
+              ...result.data.map(({ id }) => ({ type: "Files" as const, id })),
+              "Files",
             ]
-          : [{ type: "Files", id: "LIST" }],
+          : ["Files"],
+
+      serializeQueryArgs: ({ queryArgs }) => {
+        return { contentTypeId: queryArgs.contentTypeId, lang: queryArgs.lang };
+      },
+
+      merge: (currentCache, newItems, { arg }) => {
+        if (arg.skip === 0) {
+          return newItems;
+        }
+        currentCache.data.push(...newItems.data);
+        currentCache.total = newItems.total;
+      },
+
+      forceRefetch({ currentArg, previousArg }) {
+        return currentArg !== previousArg;
+      },
     }),
 
     getFilesBySubcategory: builder.query<
