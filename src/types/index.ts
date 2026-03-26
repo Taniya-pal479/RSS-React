@@ -189,6 +189,10 @@ export interface ContentTypeMapped {
   lang?: string;
   createdAt?: string;
   updatedAt?: string;
+  metadata?: {
+    category?: string;
+    subcategory?: string;
+  };
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   translations?: any[];
 }
@@ -270,7 +274,10 @@ export interface FileObject {
   uploadedAt: string;
   url: string;
   files?: [];
-  metadata: Array<{ id: number; key: string; value: string }>;
+  metadata?: {
+    category?: string;
+    subcategory?: string;
+  };
   updatedAt?: string;
   translations: FileTranslations[];
   year?: string;

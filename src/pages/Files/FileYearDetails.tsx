@@ -51,6 +51,7 @@ const FileYearDetails = () => {
   );
 
   const allFiles = filesData?.data || [];
+  console.log("category ", allFiles[0]?.metadata?.category);
 
   const yearFiles = useMemo(() => {
     let filtered = allFiles.filter((f) => String(f.year) === String(year));
@@ -132,6 +133,26 @@ const FileYearDetails = () => {
             </span>
           </div>
         </div>
+      ),
+    },
+    {
+      header: t("category"),
+      key: "metadata" as string,
+      className: "w-[20%]",
+      render: (file: FileObject) => (
+        <span className="font-bold text-slate-600">
+          {file.metadata?.category || "---"}
+        </span>
+      ),
+    },
+    {
+      header: t("subcategory"),
+      key: "subcategory" as string,
+      className: "w-[20%]",
+      render: (file: FileObject) => (
+        <span className="font-bold text-slate-600">
+          {file.metadata?.subcategory || "---"}
+        </span>
       ),
     },
 
@@ -220,7 +241,7 @@ const FileYearDetails = () => {
 
       <div className="mb-10">
         <h1 className="text-4xl font-black text-slate-900 uppercase">
-          {year} {t("collection")}
+          {year} {t("Files_Detail")}
         </h1>
       </div>
 

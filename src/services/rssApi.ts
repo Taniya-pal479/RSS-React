@@ -211,7 +211,11 @@ export const rssApi = createApi({
     }),
 
     getAllFiles: builder.query<
-      { data: FileObject[]; total: number },
+      {
+        data: FileObject[];
+        total: number;
+        metadata?: { category: string; subcategory: string };
+      },
       {
         contentTypeId?: string | number;
         lang: string;
@@ -298,7 +302,6 @@ export const rssApi = createApi({
       invalidatesTags: ["Files"],
     }),
 
-    
     globalSearch: builder.query<
       SearchResponse,
       { search: string; languageCode: string; skip?: number; take?: number }
