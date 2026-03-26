@@ -64,11 +64,10 @@ const FileYearDetails = () => {
     return filtered;
   }, [allFiles, year, selectedType]);
 
-  // ✅ Get content types for column
   const { data: contentTypesData } = useGetContentTypesQuery({
     lang: i18n.language,
     skip: 0,
-    take: 100,
+    take: 1000,
   });
 
   const contentTypes = contentTypesData?.data ?? [];
@@ -136,7 +135,6 @@ const FileYearDetails = () => {
       ),
     },
 
-    // ✅ Content Type Column
     {
       header: t("content_type"),
       key: "contentType",
@@ -209,7 +207,7 @@ const FileYearDetails = () => {
         <ChevronRight size={14} className="text-slate-300" />
 
         <button
-          onClick={() => navigate(-1)}
+          onClick={() => navigate("/year")}
           className="text-slate-400 hover:text-orange-500"
         >
           {t("all_files")}

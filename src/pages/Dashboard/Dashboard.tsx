@@ -72,7 +72,7 @@ const Dashboard = () => {
     console.log("Media Found:", mediaCount);
 
     const reportsCount = files.filter((f) => {
-      const ext = f.fileName?.split(".").pop()?.toUpperCase() || "";
+      const ext = f.originalName?.split(".").pop()?.toUpperCase() || "";
       const reportExtensions = ["CSV", "XLS", "XLSX"];
       return reportExtensions.includes(ext);
     }).length;
@@ -88,7 +88,7 @@ const Dashboard = () => {
 
     return { totalDocs, mediaCount, recentFiles, reportsCount };
   }, [files]);
-  console.log(files);
+  console.log("reportsCount", stats.reportsCount);
   return (
     <div className="space-y-8 animate-fade-in">
       <div className="flex justify-between items-end">
