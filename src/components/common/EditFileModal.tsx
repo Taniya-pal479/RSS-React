@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 import { useUpdateFileMutation, useGetFilesQuery } from "../../services/rssApi";
  
  
-import type { FileObject, FileTranslations } from "../../types";
+import type { FileObject } from "../../types";
 
 const SUPPORTED_LANGS = [
   { code: "en", name: "English" },
@@ -24,10 +24,11 @@ const EditFileModal = ({ data, onClose }: EditFileModalProps) => {
   const [isLangOpen, setIsLangOpen] = useState(false);
 
    
-  const { data: refreshedList, isFetching } = useGetFilesQuery( {
+  const { data: refreshedListData, isFetching } = useGetFilesQuery( {
      contentTypeId: data?.contentTypeId, 
     lang: currentLangCode
   }, { skip: !data?.id });
+const refreshedList  = refreshedListData?.files ?? [];
 
   const [updateFile, { isLoading: isUpdating }] = useUpdateFileMutation();
 
@@ -56,46 +57,32 @@ const EditFileModal = ({ data, onClose }: EditFileModalProps) => {
   }, [refreshedList, data.id]);
 
   const handleUpdate = async (e: React.FormEvent) => {
-    e.preventDefault();
+  e.preventDefault();
 
- 
-    const translationPayload:FileTranslations[] = [{
-      languageCode: currentLangCode,
-      displayName: formData.displayName.trim(),
-      description: formData.description.trim(),
-    }];
+  try {
+    await updateFile({
+      id: data.id,
+      // Create a clean body. Do NOT send empty strings for fileName, url, etc.
+      body: {
+        ...data, // Start with existing file data so you don't lose anything
+        translations: [
+          {
+            languageCode: currentLangCode,
+            displayName: formData.displayName.trim(),
+            description: formData.description.trim(),
+          },
+        ],
+        // Remove the hardcoded empty strings you had before
+      } as FileObject,
+    }).unwrap();
 
-    try {
-      await updateFile({
-        id: data.id,
-        body: {
-          translations: translationPayload,
-          type: undefined,
-          contentTypeId: "",
-          categoryId: "",
-          id: 0,
-          fileName: "",
-          displayName: "",
-          originalName: "",
-          description: "",
-          fileSize: 0,
-          mimeType: "",
-          storageKey: "",
-          fileType: "",
-          uploadedAt: "",
-          url: "",
-          files: [],
-          metadata: []
-        },
-      }).unwrap();
-
-      toast.success(t("FILE_UPDATED_SUCCESSFULLY"));
-      onClose();
-    } catch (err) {
-      console.error(err);
-      toast.error(t("ERROR_UPDATING"));
-    }
-  };
+    toast.success(t("FILE_UPDATED_SUCCESSFULLY"));
+    onClose();
+  } catch (err) {
+    console.error("Update failed:", err);
+    toast.error(t("ERROR_UPDATING"));
+  }
+};
 
   return (
     <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">

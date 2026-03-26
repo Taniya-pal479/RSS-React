@@ -14,7 +14,7 @@ export const FileYearManager = () => {
 
   // Pagination state for infinite scroll
   const [page, setPage] = useState(0);
-  const rowsPerPage = 20;
+  const rowsPerPage = 5;
 
   const { data, isLoading, isFetching } = useGetAllFilesQuery(
     {
@@ -90,7 +90,7 @@ export const FileYearManager = () => {
   }
 
   return (
-    <div className="p-2 bg-[#fdfcfb] h-full flex flex-col overflow-hidden">
+    <div className="p-2 bg-[#fdfcfb] h-screen flex flex-col overflow-hidden">
       <div className="flex justify-between items-end mb-5 flex-none">
         <div>
           <h2 className="text-2xl font-bold text-[#1a1a1a] mb-1">
@@ -111,11 +111,10 @@ export const FileYearManager = () => {
         {/* Scrollable Viewport */}
         <div
           ref={parentRef}
-          className="flex-1 overflow-y-auto custom-scrollbar relative"
-          style={{
-            minHeight: 0,
-            scrollbarGutter: "stable",
-          }}
+          className="  overflow-y-auto custom-scrollbar  "
+         style={{
+    minHeight: "300px",
+  }}
         >
           <div
             style={{

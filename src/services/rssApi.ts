@@ -297,6 +297,8 @@ export const rssApi = createApi({
       }),
       invalidatesTags: ["Files"],
     }),
+
+    
     globalSearch: builder.query<
       SearchResponse,
       { search: string; languageCode: string; skip?: number; take?: number }
