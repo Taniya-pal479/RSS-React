@@ -100,7 +100,7 @@ const NavigationSidebar = () => {
             }`}
           >
             <Calendar1Icon size={20} className="text-[#F97316]" />
-            <span>{t("Year")}</span>
+            <span>{t("file_directory")}</span>
           </button>
         </div>
 

@@ -64,6 +64,8 @@
   "results_for_year": "Results for year",
   "archive_by_year": "Archives By Year",
   "collection": "collection",
+  "file_directory": "File Directory",
+  "file_directory_sub": "Systematic access to all uploaded assets and historical records.",
 
   "error_occurred": "An error occurred. Please try again later.",
   "dashboard": "Dashboard",

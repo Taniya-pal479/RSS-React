@@ -6,11 +6,7 @@ type Props = {
   onChange: (value: string | null) => void;
 };
 
-const ContentTypeFilter = ({
-  contentTypes,
-  selectedType,
-  onChange,
-}: Props) => {
+const ContentTypeFilter = ({ contentTypes, selectedType, onChange }: Props) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -26,13 +22,12 @@ const ContentTypeFilter = ({
 
       {isOpen && (
         <div className="absolute top-12 right-0 w-60 bg-white border border-gray-100 rounded-xl shadow-lg z-10">
-          {/* All option */}
           <div
             onClick={() => {
               onChange(null);
               setIsOpen(false);
             }}
-            className="px-4 py-2 hover:bg-orange-50 cursor-pointer text-sm"
+            className="px-4  py-2 hover:bg-orange-50 cursor-pointer text-sm mb-10"
           >
             All
           </div>
@@ -44,7 +39,7 @@ const ContentTypeFilter = ({
                 onChange(String(ct.id));
                 setIsOpen(false);
               }}
-              className="px-4 py-2 hover:bg-orange-50 cursor-pointer text-sm"
+              className="px-4 py-2  hover:bg-orange-50 cursor-pointer text-sm"
             >
               {ct.name}
             </div>

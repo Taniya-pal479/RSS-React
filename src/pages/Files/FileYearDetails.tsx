@@ -39,37 +39,30 @@ const FileYearDetails = () => {
   const { handleDownload } = useDownload();
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
 
-  // ✅ Get ALL files (no pagination)
-  const {
-    data: filesData,
-    isLoading,
-  } = useGetAllFilesQuery(
+  const { data: filesData, isLoading } = useGetAllFilesQuery(
     {
       lang: i18n.language,
       skip: 0,
-      take: 1000, // ⚠️ large enough (or adjust)
+      take: 1000,
     },
     {
       skip: !isAuthenticated,
-    }
+    },
   );
 
   const allFiles = filesData?.data || [];
 
-  // ✅ Filter by year (from URL)
   const yearFiles = useMemo(() => {
-  let filtered = allFiles.filter(
-    (f) => String(f.year) === String(year)
-  );
+    let filtered = allFiles.filter((f) => String(f.year) === String(year));
 
-  if (selectedType) {
-    filtered = filtered.filter(
-      (f) => String(f.contentTypeId) === String(selectedType)
-    );
-  }
+    if (selectedType) {
+      filtered = filtered.filter(
+        (f) => String(f.contentTypeId) === String(selectedType),
+      );
+    }
 
-  return filtered;
-}, [allFiles, year, selectedType]);
+    return filtered;
+  }, [allFiles, year, selectedType]);
 
   // ✅ Get content types for column
   const { data: contentTypesData } = useGetContentTypesQuery({
@@ -95,7 +88,7 @@ const FileYearDetails = () => {
         position: "top-center",
         autoClose: false,
         className: "rounded-2xl shadow-2xl border border-gray-100",
-      }
+      },
     );
   };
 
@@ -109,7 +102,6 @@ const FileYearDetails = () => {
     }
   };
 
-  
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const columns: Column<any>[] = [
     {
@@ -129,7 +121,7 @@ const FileYearDetails = () => {
                 window.open(
                   file.url ||
                     `http://localhost:3000/uploads/${file.storageKey}`,
-                  "_blank"
+                  "_blank",
                 )
               }
             >
@@ -151,7 +143,7 @@ const FileYearDetails = () => {
       className: "w-[20%]",
       render: (file) => {
         const type = contentTypes.find(
-          (ct) => String(ct.id) === String(file.contentTypeId)
+          (ct) => String(ct.id) === String(file.contentTypeId),
         );
         return (
           <span className="text-slate-500 font-bold">
@@ -206,7 +198,6 @@ const FileYearDetails = () => {
 
   return (
     <div className="p-8 bg-[#fafafa] min-h-[60vh]">
-      {/* Breadcrumb */}
       <nav className="flex items-center gap-2 mb-8 text-sm font-bold">
         <button
           onClick={() => navigate("/")}
@@ -226,26 +217,22 @@ const FileYearDetails = () => {
 
         <ChevronRight size={14} className="text-slate-300" />
 
-        <span className="text-orange-600 uppercase">
-          {year}
-        </span>
+        <span className="text-orange-600 uppercase">{year}</span>
       </nav>
 
-      {/* Title */}
       <div className="mb-10">
         <h1 className="text-4xl font-black text-slate-900 uppercase">
           {year} {t("collection")}
         </h1>
       </div>
 
-      {/* Table */}
       <div className="flex justify-end mb-4">
-  <ContentTypeFilter
-    contentTypes={contentTypes}
-    selectedType={selectedType}
-    onChange={setSelectedType}
-  />
-</div>
+        <ContentTypeFilter
+          contentTypes={contentTypes}
+          selectedType={selectedType}
+          onChange={setSelectedType}
+        />
+      </div>
       <div className="bg-white rounded-4xl border border-slate-100 shadow-sm overflow-hidden">
         <DataTable
           columns={columns}
@@ -255,10 +242,7 @@ const FileYearDetails = () => {
         />
 
         {fileEdit && (
-          <EditFileModal
-            data={fileEdit}
-            onClose={() => setFileedit(null)}
-          />
+          <EditFileModal data={fileEdit} onClose={() => setFileedit(null)} />
         )}
       </div>
     </div>
