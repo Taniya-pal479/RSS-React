@@ -14,7 +14,9 @@ export const FileYearManager = () => {
     {
       lang: i18n.language,
       skip: 0,
-      take: 1000,
+      take: 999,
+      sortBy: "undefine",
+      order: "undefine",
     },
     { skip: !isAuthenticated },
   );

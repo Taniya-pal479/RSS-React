@@ -221,10 +221,12 @@ export const rssApi = createApi({
         lang: string;
         skip?: number;
         take?: number;
+        sortBy?: string;
+        order?: string;
       }
     >({
-      query: ({ contentTypeId, lang, skip, take }) => {
-        let url = `/files?lang=${lang}&skip=${skip}&take=${take}`;
+      query: ({ contentTypeId, lang, skip, take, sortBy, order }) => {
+        let url = `/files?lang=${lang}&skip=${skip}&take=${take}&sortBy=${sortBy}&order=${order}`;
 
         if (contentTypeId) {
           url = `/files/content-types/${contentTypeId}?lang=${lang}&skip=${skip}&take=${take}`;
@@ -283,6 +285,7 @@ export const rssApi = createApi({
         { type: "Files", id: "LIST" },
       ],
     }),
+
     deleteFile: builder.mutation<void, string | number>({
       query: (id) => ({
         url: `files/${id}`,
@@ -300,6 +303,10 @@ export const rssApi = createApi({
         body: body,
       }),
       invalidatesTags: ["Files"],
+    }),
+
+    contentFiles: builder.query<FileObject, { id?: string; lang: string }>({
+      query: ({ id, lang }) => `/files/list/${id}?${lang}`,
     }),
 
     globalSearch: builder.query<

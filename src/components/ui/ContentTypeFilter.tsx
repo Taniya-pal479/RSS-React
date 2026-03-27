@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import { X } from "lucide-react";
 
 type Props = {
   contentTypes: any[];
@@ -8,17 +9,57 @@ type Props = {
 
 const ContentTypeFilter = ({ contentTypes, selectedType, onChange }: Props) => {
   const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutSide = (event: MouseEvent) => {
+      if (
+        isOpen &&
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      )
+        setIsOpen(false);
+    };
+
+    document.addEventListener("mousedown", handleClickOutSide);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutSide);
+    };
+  }, [isOpen]);
 
   return (
-    <div className="relative">
-      <button
-        onClick={() => setIsOpen((prev) => !prev)}
-        className="px-4 py-2 bg-white border border-gray-200 rounded-xl shadow-sm text-sm font-semibold hover:text-orange-500"
+    <div className="relative" ref={dropdownRef}>
+      <div
+        className={`flex items-center rounded-full border px-3 py-1.5 transition-all shadow-sm bg-white ${
+          selectedType ? "border-orange-500 bg-orange-50/30" : "border-gray-200"
+        }`}
       >
-        {selectedType
-          ? contentTypes.find((ct) => String(ct.id) === selectedType)?.name
-          : "Filter by Content Type"}
-      </button>
+        {selectedType && (
+          <button
+            onClick={() => {
+              onChange(null);
+              setIsOpen(false);
+            }}
+            className="mr-2 text-gray-400 hover:text-red-500 transition-colors"
+          >
+            <X size={16} strokeWidth={3} />
+          </button>
+        )}
+
+        <button
+          onClick={() => setIsOpen((prev) => !prev)}
+          className={`text-sm font-bold outline-none ${
+            selectedType
+              ? "text-orange-600"
+              : "text-slate-600 hover:text-orange-500"
+          }`}
+        >
+          {selectedType
+            ? contentTypes.find((ct) => String(ct.id) === selectedType)?.name
+            : "Filter by Content Type"}
+        </button>
+      </div>
 
       {isOpen && (
         <div className="absolute top-12 right-0 w-60 bg-white border border-gray-100 rounded-xl shadow-lg z-10">

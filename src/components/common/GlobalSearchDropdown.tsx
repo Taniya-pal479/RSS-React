@@ -55,13 +55,12 @@ const SearchResultSection = <T extends SearchResultItem>({
   const rowVirtualizer = useVirtualizer({
     count: items.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 52, // Expected height of each row
+    estimateSize: () => 52,
     overscan: 5,
   });
 
   const virtualItems = rowVirtualizer.getVirtualItems();
 
-  // Trigger Load More when the user scrolls near the end of this specific section
   useEffect(() => {
     const lastItem = virtualItems[virtualItems.length - 1];
     if (
@@ -135,18 +134,15 @@ const GlobalSearchDropdown = () => {
     { skip: !debouncedSearch || debouncedSearch.trim().length < 2 },
   );
 
- const { data: filesData  } = useGetAllFilesQuery(
-    {
-      lang: i18n.language,
-      skip: 0,
-      take: 999,
-    },
-    
-  );
+  const { data: filesData } = useGetAllFilesQuery({
+    lang: i18n.language,
+    skip: 0,
+    take: 999,
+  });
 
-   const allFiles = useMemo(() => {
-      return filesData?.data || [];
-    }, [filesData]);
+  const allFiles = useMemo(() => {
+    return filesData?.data || [];
+  }, [filesData]);
   console.log("allFiles", allFiles);
 
   useEffect(() => {
