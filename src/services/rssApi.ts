@@ -332,6 +332,21 @@ export const rssApi = createApi({
         currentArg?.search !== previousArg?.search ||
         currentArg?.languageCode !== previousArg?.languageCode,
     }),
+    getSearchFiles: builder.query({
+      query: ({ search, lang, skip, take, year, sortBy, order }) => ({
+        url: "/search/files",
+        method: "GET",
+        params: {
+          search: search || "",
+          languageCode: lang || "en",
+          skip: skip || 0,
+          take: take || 20,
+          year: year,
+          sortBy: sortBy,
+          order: order,
+        },
+      }),
+    }),
   }),
 });
 
@@ -357,4 +372,5 @@ export const {
   useGetFilesByCategoryQuery,
   useUpdateFileMutation,
   useGlobalSearchQuery,
+  useGetSearchFilesQuery,
 } = rssApi;

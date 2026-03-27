@@ -104,7 +104,7 @@ export const FileYearManager = () => {
           ) : (
             <div className="py-20 text-center text-gray-400 font-bold flex flex-col items-center">
               <FolderOpen className="opacity-20 mb-2" size={48} />
-              {t("no_data_available")}
+              {t("no_data_found")}
             </div>
           )}
         </div>

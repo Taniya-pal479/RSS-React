@@ -316,6 +316,17 @@ export interface BaseResult {
   uploadedAt?: string;
 }
 
+export type SortOption = {
+  label: string;
+  value: string;
+};
+
+export type Props = {
+  options: SortOption[];
+  selectedSort: string;
+  onChange: (value: string) => void;
+};
+
 // Define specific shapes
 export interface CategoryResult extends BaseResult {
   type: "category";

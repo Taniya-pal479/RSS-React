@@ -11,7 +11,6 @@ interface ContentTabsProps {
 const ContentTabs = ({ activeTab, onTabChange }: ContentTabsProps) => {
   const { t } = useTranslation();
 
-  // Define tabs inside to use the 't' function
   const tabs = [
     {
       id: "documents" as ContentType,

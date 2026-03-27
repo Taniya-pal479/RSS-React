@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
-import { X } from "lucide-react";
+import { ChevronDown, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 type Props = {
   contentTypes: any[];
@@ -10,6 +11,7 @@ type Props = {
 const ContentTypeFilter = ({ contentTypes, selectedType, onChange }: Props) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const { t } = useTranslation();
 
   useEffect(() => {
     const handleClickOutSide = (event: MouseEvent) => {
@@ -31,7 +33,7 @@ const ContentTypeFilter = ({ contentTypes, selectedType, onChange }: Props) => {
   return (
     <div className="relative" ref={dropdownRef}>
       <div
-        className={`flex items-center rounded-full border px-3 py-1.5 transition-all shadow-sm bg-white ${
+        className={`flex items-center rounded-xl border px-3 py-1.5 transition-all shadow-sm bg-white ${
           selectedType ? "border-orange-500 bg-orange-50/30" : "border-gray-200"
         }`}
       >
@@ -43,6 +45,12 @@ const ContentTypeFilter = ({ contentTypes, selectedType, onChange }: Props) => {
             }}
             className="mr-2 text-gray-400 hover:text-red-500 transition-colors"
           >
+            {!selectedType && (
+              <ChevronDown
+                size={16}
+                className={`text-slate-400 transition-transform ${isOpen ? "rotate-180" : ""}`}
+              />
+            )}
             <X size={16} strokeWidth={3} />
           </button>
         )}
@@ -57,7 +65,7 @@ const ContentTypeFilter = ({ contentTypes, selectedType, onChange }: Props) => {
         >
           {selectedType
             ? contentTypes.find((ct) => String(ct.id) === selectedType)?.name
-            : "Filter by Content Type"}
+            : t("filter_by_content_type", "Filter by Content Type")}
         </button>
       </div>
 

@@ -10,6 +10,9 @@ import {
   Home,
   ChevronRight,
   Edit2,
+  Loader2,
+  Search,
+  X,
 } from "lucide-react";
 
 import DataTable, { type Column } from "../../components/common/DataTable";
@@ -18,6 +21,7 @@ import {
   useGetAllFilesQuery,
   useGetContentTypesQuery,
   useDeleteFileMutation,
+  useGetSearchFilesQuery,
 } from "../../services/rssApi";
 
 import { toast } from "react-toastify";
@@ -27,6 +31,10 @@ import type { FileObject } from "../../types";
 import { useDownload } from "../../hook/useDownload";
 import { useAppSelector } from "../../hook/store";
 import ContentTypeFilter from "../../components/ui/ContentTypeFilter";
+import SortDropdown from "../../components/ui/SortDropdown";
+
+import OrderDropdown from "../../components/ui/OrderDropdown";
+import { useDebounce } from "../../hook/useDebounce";
 
 const FileYearDetails = () => {
   const { year } = useParams();
@@ -34,16 +42,28 @@ const FileYearDetails = () => {
   const { t, i18n } = useTranslation();
 
   const [selectedType, setSelectedType] = useState<string | null>(null);
-
+  const [sortBy, setSortBy] = useState<string>("updatedAt");
+  const [order, setOrder] = useState("asc");
   const [fileEdit, setFileedit] = useState<FileObject | null>(null);
   const { handleDownload } = useDownload();
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const debouncedSearch = useDebounce(searchQuery, 500);
+
+  const sortOptions = [
+    { label: t("date_updated"), value: "updatedAt" },
+    { label: t("file_size"), value: "fileSize" },
+    { label: t("original_name"), value: "originalName" },
+  ];
 
   const { data: filesData, isLoading } = useGetAllFilesQuery(
     {
       lang: i18n.language,
       skip: 0,
       take: 1000,
+      sortBy: sortBy,
+      order: order,
     },
     {
       skip: !isAuthenticated,
@@ -51,9 +71,31 @@ const FileYearDetails = () => {
   );
 
   const allFiles = filesData?.data || [];
-  console.log("category ", allFiles[0]?.metadata?.category);
+
+  const { data: filterData, isFetching } = useGetSearchFilesQuery(
+    {
+      search: debouncedSearch,
+      lang: i18n.language,
+      skip: 0,
+      take: 100,
+      year: year,
+      sortBy: sortBy,
+      order: order,
+    },
+    {
+      skip: !isAuthenticated || !debouncedSearch.trim(),
+    },
+  );
+
+  const allFilterFiles = filterData || [];
+  console.log("filter", searchQuery);
+
+  console.log("filterdata", allFilterFiles.translations);
 
   const yearFiles = useMemo(() => {
+    if (debouncedSearch.trim()) {
+      return allFilterFiles;
+    }
     let filtered = allFiles.filter((f) => String(f.year) === String(year));
 
     if (selectedType) {
@@ -63,7 +105,7 @@ const FileYearDetails = () => {
     }
 
     return filtered;
-  }, [allFiles, year, selectedType]);
+  }, [allFiles, year, allFilterFiles, debouncedSearch, selectedType]);
 
   const { data: contentTypesData } = useGetContentTypesQuery({
     lang: i18n.language,
@@ -108,33 +150,43 @@ const FileYearDetails = () => {
       header: t("file_display_name"),
       key: "fileName",
       className: "w-[35%]",
-      render: (file) => (
-        <div className="flex items-center gap-4 py-2">
-          <div className="p-3 bg-orange-50 text-blue-600 rounded-2xl shadow-sm">
-            <FileText size={20} />
-          </div>
+      render: (file) => {
+        const translatedName = file.translations?.find(
+          (t: any) => t.languageCode === i18n.language,
+        )?.displayName;
 
-          <div className="flex flex-col cursor-pointer">
-            <span
-              className="font-bold text-slate-800"
-              onClick={() =>
-                window.open(
-                  file.url ||
-                    `http://localhost:3000/uploads/${file.storageKey}`,
-                  "_blank",
-                )
-              }
-            >
-              {file.displayName}
-            </span>
+        const nameToShow =
+          translatedName || file.displayName || file.originalName;
 
-            <span className="text-[10px] text-slate-400 uppercase">
-              {file.mimeType}
-            </span>
+        return (
+          <div className="flex items-center gap-4 py-2">
+            <div className="p-3 bg-orange-50 text-blue-600 rounded-2xl shadow-sm">
+              <FileText size={20} />
+            </div>
+
+            <div className="flex flex-col cursor-pointer">
+              <span
+                className="font-bold text-slate-800 hover:text-orange-600 transition-colors"
+                onClick={() =>
+                  window.open(
+                    file.url ||
+                      `http://localhost:3000/uploads/${file.storageKey}`,
+                    "_blank",
+                  )
+                }
+              >
+                {nameToShow}
+              </span>
+
+              <span className="text-[10px] text-slate-400 uppercase">
+                {file.mimeType} • {file.extension?.replace(".", "")}
+              </span>
+            </div>
           </div>
-        </div>
-      ),
+        );
+      },
     },
+
     {
       header: t("category"),
       key: "metadata" as string,
@@ -245,18 +297,52 @@ const FileYearDetails = () => {
         </h1>
       </div>
 
-      <div className="flex justify-end mb-4">
-        <ContentTypeFilter
-          contentTypes={contentTypes}
-          selectedType={selectedType}
-          onChange={setSelectedType}
-        />
+      <div className="flex justify-between items-center mb-6 px-4">
+        {/* Search Field */}
+        <div className="relative w-full max-w-sm">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            {isFetching ? (
+              <Loader2 size={18} className="text-orange-500 animate-spin" />
+            ) : (
+              <Search size={18} className="text-slate-400" />
+            )}
+          </div>
+          <input
+            type="text"
+            placeholder={t("search_files")}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="block w-full pl-10 pr-10 py-2 border border-slate-200 rounded-xl bg-white text-sm focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-all"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-red-500"
+            >
+              <X size={16} />
+            </button>
+          )}
+        </div>
+
+        <div className="flex gap-2">
+          <SortDropdown
+            options={sortOptions}
+            selectedSort={sortBy}
+            onChange={setSortBy}
+          />
+          <OrderDropdown value={order as any} onChange={setOrder} />
+          <ContentTypeFilter
+            contentTypes={contentTypes}
+            selectedType={selectedType}
+            onChange={setSelectedType}
+          />
+        </div>
       </div>
       <div className="bg-white rounded-4xl border border-slate-100 shadow-sm overflow-hidden">
         <DataTable
           columns={columns}
           data={yearFiles}
-          isLoading={isLoading}
+          isLoading={isLoading || (isFetching && searchQuery !== "")}
           emptyMessage={t("no_files_found")}
         />
 
