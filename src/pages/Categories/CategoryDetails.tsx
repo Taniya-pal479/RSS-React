@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Plus, Trash2, Edit3, Folder, FileText, Download } from "lucide-react";
@@ -36,8 +36,13 @@ const CategoryDetail = () => {
   const [deleteCategory] = useDeleteCategoryMutation();
   const [deleteSubCategory] = useDeleteSubCategoryMutation();
 
+  const observerTarget = useRef(null);
+  const [page, setPage] = useState(1);
+  const take = 10;
+  const skip = (page - 1) * take;
+
   const { data: categoriesData } = useGetCategoriesQuery(
-    { lang: i18n.language, skip: 0, take: 100 },
+    { lang: i18n.language, skip: skip, take: take },
     { skip: !categoryId || isNaN(Number(categoryId)) },
   );
   const categories = categoriesData?.data || [];
@@ -45,21 +50,32 @@ const CategoryDetail = () => {
     (c: Category) => Number(c.id) === Number(categoryId),
   );
 
-  const [page, setPage] = useState(1);
-  const take = 10;
-  const skip = (page - 1) * take;
-
   console.log("categoryId", categoryId);
-  const { data: files = [], isLoading: filesLoading } =
-    useGetFilesByCategoryQuery(
-      { catId: categoryId!, lang: i18n.language },
-      {
-        skip:
-          !categoryId ||
-          isNaN(Number(categoryId)) ||
-          categoryId === ":categoryId",
-      },
-    );
+  const {
+    data: files = [],
+    isLoading: filesLoading,
+    isFetching: filesFetching,
+  } = useGetFilesByCategoryQuery(
+    {
+      catId: categoryId!,
+      lang: i18n.language,
+      skip: page * take,
+      take: take,
+    },
+    { skip: !categoryId || categoryId === ":categoryId" },
+  );
+
+  const {
+    data: subCatResponse,
+    isLoading: subLoading,
+    isFetching: subFetching,
+  } = useGetSubCategoriesQuery({
+    categoryId: categoryId as string,
+    lang: i18n.language,
+    skip: page * take,
+    take: take,
+  });
+
   const [deleteFile] = useDeleteFileMutation();
   const handleDeleteClick = (id: number) => {
     toast(
@@ -90,18 +106,18 @@ const CategoryDetail = () => {
     }
   };
 
-  const { data: subCatResponse, isLoading } = useGetSubCategoriesQuery({
-    categoryId: categoryId as string,
-    lang: i18n.language,
-    skip: skip,
-    take: take,
-  });
-
   const subCategories = useMemo(() => {
     return subCatResponse?.result ?? [];
   }, [subCatResponse]);
 
+  const hasMore =
+    (subCatResponse?.result?.length || 0) < (subCatResponse?.total || 0) ||
+    ((files as any)?.files?.length % take === 0 &&
+      (files as any)?.files?.length > 0);
+
   const combinedData = useMemo(() => {
+    const filesArray = (files as any)?.files || [];
+
     const mixed = [
       ...(subCategories || []).map((sub: any) => ({
         ...sub,
@@ -112,7 +128,7 @@ const CategoryDetail = () => {
         itemType: "subcategory",
         icon: <Folder size={18} className="text-orange-500" />,
       })),
-      ...(files || []).map((file: any) => ({
+      ...filesArray.map((file: any) => ({
         ...file,
         tableId: `file-${file.id}`,
         displayName: file.displayName,
@@ -276,6 +292,21 @@ const CategoryDetail = () => {
     }
   };
 
+  const isAnyFetching = filesFetching || subFetching;
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !isAnyFetching) {
+          setPage((prev) => prev + 1);
+        }
+      },
+      { threshold: 0.5 },
+    );
+    if (observerTarget.current) observer.observe(observerTarget.current);
+    return () => observer.disconnect();
+  }, [hasMore, isAnyFetching]);
+
   return (
     <div className="p-8 bg-[#fafafa] min-h-[60vh]">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
@@ -321,9 +352,22 @@ const CategoryDetail = () => {
         columns={columns}
         onRowClick={handleRowClick}
         data={combinedData}
-        isLoading={isLoading || filesLoading}
+        isLoading={subLoading || filesLoading}
         emptyMessage={t("no_subcategories")}
       />
+
+      <div
+        ref={observerTarget}
+        className="w-full py-6 flex justify-center items-center"
+      >
+        {isAnyFetching && page > 0 && (
+          <div className="flex gap-2 items-center text-orange-500 font-bold">
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-orange-500"></div>
+            <span>{t("loading_more")}</span>
+          </div>
+        )}
+      </div>
+
       {fileEdit && (
         <EditFileModal data={fileEdit} onClose={() => setFileedit(null)} />
       )}

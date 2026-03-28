@@ -56,6 +56,20 @@ export const rssApi = createApi({
     >({
       query: ({ categoryId, lang, skip, take }) =>
         `/subcategories/category/${Number(categoryId)}?lang=${lang}&skip=${skip}&take=${take}`,
+
+      serializeQueryArgs: ({ endpointName, queryArgs }) =>
+        `${endpointName}-${queryArgs.categoryId}`,
+
+      merge: (currentCache, newItems) => {
+        if (currentCache?.result) {
+          currentCache.result.push(...newItems.result);
+        } else {
+          return newItems;
+        }
+      },
+
+      forceRefetch: ({ currentArg, previousArg }) => currentArg !== previousArg,
+
       providesTags: (_result, _error, arg) => [
         { type: "SubCategory", id: arg.categoryId },
       ],
@@ -294,12 +308,26 @@ export const rssApi = createApi({
     }),
 
     getFilesByCategory: builder.query<
-      FileObject[],
-      { catId: string | number; lang: string }
+      AllFilesResponse,
+      { catId: string | number; lang: string; skip: number; take: number }
     >({
-      query: ({ catId, lang }) => `/files/category/${catId}?lang=${lang}`,
+      query: ({ catId, lang, take, skip }) =>
+        `/files/category/${catId}?lang=${lang}&skip=${skip}&take=${take}`,
 
-      transformResponse: (response: FilesResponses) => response.files,
+      serializeQueryArgs: ({ endpointName, queryArgs }) =>
+        `${endpointName}-${queryArgs.catId}`,
+
+      merge: (currentCache, newItems) => {
+        if (currentCache?.files) {
+          currentCache.files.push(...newItems.files);
+        } else {
+          return newItems;
+        }
+      },
+      forceRefetch: ({ currentArg, previousArg }) => currentArg !== previousArg,
+
+      transformResponse: (response: FilesResponses) => response,
+
       providesTags: (_result, _error, { catId, lang }) => [
         { type: "Files", id: `CAT-${catId}-${lang}` },
         { type: "Files", id: "LIST" },

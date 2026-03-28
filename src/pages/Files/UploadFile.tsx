@@ -87,7 +87,7 @@ const GlobalUpload = () => {
   const getFileType = (file: File) => {
     const ext = file.name.split(".").pop()?.toUpperCase();
     const imageExts = ["JPG", "JPEG", "PNG", "WEBP"];
-    const videoExts = ["MP4", "MOV", "AVI"];
+    const videoExts = ["MP4", "MOV", "AVI", "WEBM"];
     const audioExts = ["MP3", "WAV"];
 
     if (imageExts.includes(ext!)) return "IMAGE";
