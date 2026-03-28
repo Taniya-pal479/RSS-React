@@ -300,7 +300,7 @@ const ContentTypeDetail = () => {
         <ChevronRight size={14} className="text-slate-300" />
 
         <button
-          onClick={() => navigate(-1)}
+          onClick={() => navigate("/content")}
           className="text-slate-400 hover:text-orange-500"
         >
           {currentCategory?.name || t("content_type")}
