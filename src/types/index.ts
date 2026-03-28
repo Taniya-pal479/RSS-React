@@ -40,6 +40,7 @@ export interface FileTranslations {
   displayName: string;
   description?: string;
   data?: string;
+  name?: string;
 }
 
 export interface FormTranslations {
@@ -261,7 +262,10 @@ export interface FileObject {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   type: any;
   contentTypeId: number | string;
+  contentType: number | string;
   categoryId: number | string;
+  category: number | string;
+  subcategory: number | string;
   id: number;
   fileName: string;
   displayName: string;
@@ -279,6 +283,7 @@ export interface FileObject {
     subcategory?: string;
   };
   updatedAt?: string;
+  createdAt?: string;
   translations: FileTranslations[];
   year?: string;
 }

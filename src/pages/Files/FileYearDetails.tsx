@@ -13,6 +13,7 @@ import {
   Loader2,
   Search,
   X,
+  Calendar,
 } from "lucide-react";
 
 import DataTable, { type Column } from "../../components/common/DataTable";
@@ -42,8 +43,8 @@ const FileYearDetails = () => {
   const { t, i18n } = useTranslation();
 
   const [selectedType, setSelectedType] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState<string>("updatedAt");
-  const [order, setOrder] = useState("asc");
+  const [sortBy, setSortBy] = useState<string>("");
+  const [order, setOrder] = useState<"asc" | "desc" | null>(null);
   const [fileEdit, setFileedit] = useState<FileObject | null>(null);
   const { handleDownload } = useDownload();
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
@@ -63,7 +64,7 @@ const FileYearDetails = () => {
       skip: 0,
       take: 1000,
       sortBy: sortBy,
-      order: order,
+      order: order ?? "asc",
     },
     {
       skip: !isAuthenticated,
@@ -79,8 +80,6 @@ const FileYearDetails = () => {
       skip: 0,
       take: 100,
       year: year,
-      sortBy: sortBy,
-      order: order,
     },
     {
       skip: !isAuthenticated || !debouncedSearch.trim(),
@@ -151,13 +150,6 @@ const FileYearDetails = () => {
       key: "fileName",
       className: "w-[35%]",
       render: (file) => {
-        const translatedName = file.translations?.find(
-          (t: any) => t.languageCode === i18n.language,
-        )?.displayName;
-
-        const nameToShow =
-          translatedName || file.displayName || file.originalName;
-
         return (
           <div className="flex items-center gap-4 py-2">
             <div className="p-3 bg-orange-50 text-blue-600 rounded-2xl shadow-sm">
@@ -175,7 +167,7 @@ const FileYearDetails = () => {
                   )
                 }
               >
-                {nameToShow}
+                {file.displayName || file.name}
               </span>
 
               <span className="text-[10px] text-slate-400 uppercase">
@@ -193,7 +185,7 @@ const FileYearDetails = () => {
       className: "w-[20%]",
       render: (file: FileObject) => (
         <span className="font-bold text-slate-600">
-          {file.metadata?.category || "---"}
+          {file.metadata?.category || file.category || "---"}
         </span>
       ),
     },
@@ -203,7 +195,7 @@ const FileYearDetails = () => {
       className: "w-[20%]",
       render: (file: FileObject) => (
         <span className="font-bold text-slate-600">
-          {file.metadata?.subcategory || "---"}
+          {file.metadata?.subcategory || file.subcategory || "---"}
         </span>
       ),
     },
@@ -218,8 +210,29 @@ const FileYearDetails = () => {
         );
         return (
           <span className="text-slate-500 font-bold">
-            {type?.name || "---"}
+            {type?.name || file.contentType || "---"}
           </span>
+        );
+      },
+    },
+    {
+      header: t("upload_date"),
+
+      key: "uploadedAt",
+
+      className: "w-[20%]",
+
+      render: (file) => {
+        const dateOnly = file.uploadedAt
+          ? file.uploadedAt.split("T")[0]
+          : "---";
+        const date = file.createdAt ? file.createdAt.split("T")[0] : "---";
+        return (
+          <div className="flex items-center gap-2 text-slate-500">
+            <Calendar size={14} className="text-slate-300" />
+
+            <span>{searchQuery ? date : dateOnly}</span>
+          </div>
         );
       },
     },
@@ -309,7 +322,7 @@ const FileYearDetails = () => {
           </div>
           <input
             type="text"
-            placeholder={t("search_files")}
+            placeholder={t("search")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="block w-full pl-10 pr-10 py-2 border border-slate-200 rounded-xl bg-white text-sm focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-all"
@@ -330,7 +343,10 @@ const FileYearDetails = () => {
             selectedSort={sortBy}
             onChange={setSortBy}
           />
-          <OrderDropdown value={order as any} onChange={setOrder} />
+          <OrderDropdown
+            value={order}
+            onChange={(val) => setOrder(val as "asc" | "desc")}
+          />
           <ContentTypeFilter
             contentTypes={contentTypes}
             selectedType={selectedType}
