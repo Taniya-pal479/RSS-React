@@ -54,6 +54,7 @@ const ContentTypeDetail = () => {
   const isValidId = contentTypeId && contentTypeId !== ":contentTypeId";
 
   const parentRef = useRef<HTMLElement>(null);
+  const observerTarget = useRef(null);
 
   const { handleDownload } = useDownload();
 
@@ -65,28 +66,23 @@ const ContentTypeDetail = () => {
 
   const {
     data: files,
-
-    isLoading: filesLoading,
-
+    isLoading,
     isFetching,
   } = useGetFilesQuery(
     {
       contentTypeId: contentTypeId!,
-
       lang: i18n.language,
+      skip: page * rowsPerPage,
+      take: rowsPerPage,
     },
-
-    {
-      skip: !isAuthenticated || !isValidId,
-    },
+    { skip: !isAuthenticated || !isValidId },
   );
 
   const items = files?.files ?? [];
-
-  const totalCount = files?.length ?? 0;
+  const hasMore = items.length < (files?.total ?? 0);
 
   const rowVirtualizer = useVirtualizer({
-    count: totalCount, // Always use the API total
+    count: items.length,
 
     getScrollElement: () => parentRef.current,
 
@@ -96,20 +92,21 @@ const ContentTypeDetail = () => {
   });
 
   useEffect(() => {
-    const virtualItems = rowVirtualizer.getVirtualItems();
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !isFetching) {
+          setPage((prev) => prev + 1);
+        }
+      },
+      { threshold: 1.0 },
+    );
 
-    const lastItem = virtualItems[virtualItems.length - 1];
-
-    if (!lastItem) return;
-
-    if (
-      lastItem.index >= items.length - 1 &&
-      items.length < totalCount &&
-      !isFetching
-    ) {
-      setPage((prev) => prev + 1);
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
     }
-  }, [rowVirtualizer.getVirtualItems(), isFetching, items.length, totalCount]);
+
+    return () => observer.disconnect();
+  }, [hasMore, isFetching]);
 
   const { data: categoriesData } = useGetCategoriesQuery({
     lang: i18n.language,
@@ -326,13 +323,22 @@ const ContentTypeDetail = () => {
         <DataTable
           columns={columns}
           data={items}
-          isLoading={filesLoading || typesLoading}
+          isLoading={isLoading || typesLoading}
           emptyMessage={t("no_files_uploaded_yet")}
         />
 
-        {fileEdit && (
-          <EditFileModal data={fileEdit} onClose={() => setFileedit(null)} />
+        {/* Loader UI - Table ke niche center mein */}
+        {isFetching && page > 0 && (
+          <div className="flex justify-center py-4 border-t border-slate-50">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500"></div>
+          </div>
         )}
+
+        {/* Invisible Trigger - Isse layout kharab nahi hoga */}
+        <div
+          ref={observerTarget}
+          className="absolute bottom-10 left-0 w-full h-1 pointer-events-none"
+        />
       </div>
     </div>
   );

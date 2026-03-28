@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react"; // Added useRef
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Edit2, Trash2, Plus } from "lucide-react";
+import { Edit2, Trash2, Plus, Loader2 } from "lucide-react";
 import { useVirtualizer } from "@tanstack/react-virtual"; // Added
 import {
   useDeleteContentTypeMutation,
@@ -95,7 +95,7 @@ export const ContentTypeManager = () => {
   if (isLoading) {
     return (
       <div className="p-8 flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#f97316]"></div>
+        <Loader2 className="animate-spin text-[#f97316]" size={32} />
       </div>
     );
   }

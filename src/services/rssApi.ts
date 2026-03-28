@@ -11,6 +11,7 @@ import type {
   SearchResponse,
   SubCategoryResponse,
   CategoryResponse,
+  AllFilesResponse,
 } from "../types";
 import type { RootState } from "../store/store";
 
@@ -199,11 +200,30 @@ export const rssApi = createApi({
     }),
 
     getFiles: builder.query<
-      FileObject[],
-      { contentTypeId: string | number; lang: string }
+      AllFilesResponse,
+      {
+        contentTypeId: string | number;
+        lang: string;
+        take?: number;
+        skip?: number;
+      }
     >({
-      query: ({ contentTypeId, lang }) =>
-        `/files/content-types/${contentTypeId}?lang=${lang}`,
+      query: ({ contentTypeId, lang, skip, take }) =>
+        `/files/content-types/${contentTypeId}?lang=${lang}&skip=${skip}&take=${take}`,
+
+      serializeQueryArgs: ({ endpointName, queryArgs }) => {
+        return `${endpointName}-${queryArgs.contentTypeId}`;
+      },
+      merge: (currentCache, newItems) => {
+        if (currentCache.files) {
+          currentCache.files.push(...newItems.files);
+        }
+        return currentCache;
+      },
+      forceRefetch({ currentArg, previousArg }) {
+        return currentArg !== previousArg;
+      },
+
       providesTags: (_result, _error, arg) => [
         { type: "Files", id: arg.contentTypeId },
         { type: "Files", id: "LIST" },
