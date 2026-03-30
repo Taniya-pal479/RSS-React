@@ -37,10 +37,9 @@ const CategoryDetail = () => {
   const [deleteSubCategory] = useDeleteSubCategoryMutation();
 
   const observerTarget = useRef(null);
-  const [page, setPage] = useState(1);
-  const take = 10;
-  const skip = (page - 1) * take;
-
+  const page = 0;
+  const take = 100; // Ek saath zyada items dikhane ke liye 'take' badha dein
+  const skip = 0;
   const { data: categoriesData } = useGetCategoriesQuery(
     { lang: i18n.language, skip: skip, take: take },
     { skip: !categoryId || isNaN(Number(categoryId)) },
@@ -361,10 +360,7 @@ const CategoryDetail = () => {
         className="w-full py-6 flex justify-center items-center"
       >
         {isAnyFetching && page > 0 && (
-          <div className="flex gap-2 items-center text-orange-500 font-bold">
-            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-orange-500"></div>
-            <span>{t("loading_more")}</span>
-          </div>
+          <div className="flex gap-2 items-center text-orange-500 font-bold"></div>
         )}
       </div>
 

@@ -23,6 +23,7 @@ import ConfirmToast from "../../components/ui/ConfirmToast";
 import type { FileObject, SubCategory } from "../../types";
 import EditFileModal from "../../components/common/EditFileModal";
 import { useDownload } from "../../hook/useDownload";
+import { useRef, useEffect } from "react";
 
 const SubCategoryDetail = () => {
   const { subCategoryId, categoryId } = useParams<{
@@ -33,6 +34,7 @@ const SubCategoryDetail = () => {
   const { t, i18n } = useTranslation();
   const [fileEdit, setFileedit] = useState<FileObject | null>();
   const { handleDownload } = useDownload();
+  
 
   const { data: files = [], isLoading: filesLoading } =
     useGetFilesBySubcategoryQuery(
