@@ -3,8 +3,7 @@ import { useTranslation } from "react-i18next";
 import { X, Globe, Check, ChevronDown, Save, Loader2 } from "lucide-react";
 import { toast } from "react-toastify";
 import { useUpdateFileMutation, useGetFilesQuery } from "../../services/rssApi";
- 
- 
+
 import type { FileObject } from "../../types";
 
 const SUPPORTED_LANGS = [
@@ -13,39 +12,49 @@ const SUPPORTED_LANGS = [
 ];
 
 interface EditFileModalProps {
-  data: FileObject;  
+  data: FileObject;
   onClose: () => void;
 }
 
 const EditFileModal = ({ data, onClose }: EditFileModalProps) => {
-    
   const { t } = useTranslation();
   const [currentLangCode, setCurrentLangCode] = useState("en");
   const [isLangOpen, setIsLangOpen] = useState(false);
 
-   
-  const { data: refreshedListData, isFetching } = useGetFilesQuery( {
-     contentTypeId: data?.contentTypeId, 
-    lang: currentLangCode
-  }, { skip: !data?.id });
-const refreshedList  = refreshedListData?.files ?? [];
+  console.log("data", data.contentTypeId);
+  const { data: refreshedListData, isFetching } = useGetFilesQuery(
+    {
+      contentTypeId: data?.contentTypeId,
+      lang: currentLangCode,
+      take: 100,
+      skip: 0,
+    },
+    { skip: !data?.id },
+  );
+  const refreshedList = refreshedListData?.files ?? [];
+  console.log(refreshedList);
 
   const [updateFile, { isLoading: isUpdating }] = useUpdateFileMutation();
 
-  
-  const [formData, setFormData] = useState({ displayName: "", description: "" });
+  const [formData, setFormData] = useState({
+    displayName: "",
+    description: "",
+  });
 
-   
   useEffect(() => {
     if (refreshedList && Array.isArray(refreshedList)) {
-      const currentItem = refreshedList.find((item) => String(item.id) === String(data.id));
-      
+      const currentItem = refreshedList.find(
+        (item) => String(item.id) === String(data.id),
+      );
+
       if (currentItem) {
         const newName = currentItem.displayName || "";
         const newDesc = currentItem.description || "";
 
-        
-        if (formData.displayName !== newName || formData.description !== newDesc) {
+        if (
+          formData.displayName !== newName ||
+          formData.description !== newDesc
+        ) {
           setFormData({
             displayName: newName,
             description: newDesc,
@@ -53,42 +62,40 @@ const refreshedList  = refreshedListData?.files ?? [];
         }
       }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshedList, data.id]);
 
   const handleUpdate = async (e: React.FormEvent) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  try {
-    await updateFile({
-      id: data.id,
-      // Create a clean body. Do NOT send empty strings for fileName, url, etc.
-      body: {
-        ...data, // Start with existing file data so you don't lose anything
-        translations: [
-          {
-            languageCode: currentLangCode,
-            displayName: formData.displayName.trim(),
-            description: formData.description.trim(),
-          },
-        ],
-        // Remove the hardcoded empty strings you had before
-      } as FileObject,
-    }).unwrap();
+    try {
+      await updateFile({
+        id: data.id,
+        // Create a clean body. Do NOT send empty strings for fileName, url, etc.
+        body: {
+          ...data, // Start with existing file data so you don't lose anything
+          translations: [
+            {
+              languageCode: currentLangCode,
+              displayName: formData.displayName.trim(),
+              description: formData.description.trim(),
+            },
+          ],
+          // Remove the hardcoded empty strings you had before
+        } as FileObject,
+      }).unwrap();
 
-    toast.success(t("FILE_UPDATED_SUCCESSFULLY"));
-    onClose();
-  } catch (err) {
-    console.error("Update failed:", err);
-    toast.error(t("ERROR_UPDATING"));
-  }
-};
+      toast.success(t("FILE_UPDATED_SUCCESSFULLY"));
+      onClose();
+    } catch (err) {
+      console.error("Update failed:", err);
+      toast.error(t("ERROR_UPDATING"));
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
       <div className="bg-white w-full max-w-137.5 rounded-4xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
-        
-      
         <div className="px-8 py-6 border-b border-gray-50 flex items-center justify-between">
           <h2 className="text-xl font-black text-gray-800">{t("edit_file")}</h2>
           <div className="flex items-center gap-3">
@@ -109,27 +116,31 @@ const refreshedList  = refreshedListData?.files ?? [];
                     <button
                       key={lang.code}
                       type="button"
-                      onClick={() => { 
-                        setCurrentLangCode(lang.code); 
-                        setIsLangOpen(false); 
-                        console.log(formData.displayName, lang.code)
+                      onClick={() => {
+                        setCurrentLangCode(lang.code);
+                        setIsLangOpen(false);
+                        console.log(formData.displayName, lang.code);
                       }}
                       className={`w-full flex items-center justify-between px-4 py-2.5 text-xs font-bold ${currentLangCode === lang.code ? "bg-orange-50 text-[#f97316]" : "hover:bg-gray-50 text-gray-600"}`}
                     >
                       {lang.name}
-                      {currentLangCode === lang.code && <Check size={14} className="text-green-500" />}
+                      {currentLangCode === lang.code && (
+                        <Check size={14} className="text-green-500" />
+                      )}
                     </button>
                   ))}
                 </div>
               )}
             </div>
-            <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full text-gray-400">
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-gray-100 rounded-full text-gray-400"
+            >
               <X size={20} />
             </button>
           </div>
         </div>
 
-   
         <form onSubmit={handleUpdate} className="p-8 space-y-6">
           <div className="space-y-4">
             {isFetching ? (
@@ -140,23 +151,31 @@ const refreshedList  = refreshedListData?.files ?? [];
               <>
                 <div>
                   <label className="block text-[11px] font-black text-gray-400 uppercase mb-2 ml-1">
-                    {t("name")}<span className="text-red-500">*</span>
+                    {t("name")}
+                    <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
                     value={formData.displayName}
-                    onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, displayName: e.target.value })
+                    }
                     className="w-full px-5 py-4 bg-[#f9fafb] border border-gray-200 rounded-2xl text-sm font-bold outline-none focus:border-[#f97316]"
                     required={currentLangCode === "en"}
                   />
                 </div>
                 <div>
                   <label className="block text-[11px] font-black text-gray-400 uppercase mb-2 ml-1">
-                    {t("description")} <span className="text-slate-400 font-normal ml-1">({t("optional")})</span>
+                    {t("description")}{" "}
+                    <span className="text-slate-400 font-normal ml-1">
+                      ({t("optional")})
+                    </span>
                   </label>
                   <textarea
                     value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, description: e.target.value })
+                    }
                     className="w-full px-5 py-4 bg-[#f9fafb] border border-gray-200 rounded-2xl text-sm min-h-30 resize-none outline-none focus:border-[#f97316]"
                   />
                 </div>
@@ -165,7 +184,11 @@ const refreshedList  = refreshedListData?.files ?? [];
           </div>
 
           <div className="flex gap-3 pt-4">
-            <button type="button" onClick={onClose} className="flex-1 py-4 border-2 border-gray-100 text-gray-500 font-bold rounded-2xl hover:bg-gray-50">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 py-4 border-2 border-gray-100 text-gray-500 font-bold rounded-2xl hover:bg-gray-50"
+            >
               {t("cancel")}
             </button>
             <button
@@ -173,7 +196,11 @@ const refreshedList  = refreshedListData?.files ?? [];
               disabled={isUpdating || isFetching}
               className="flex-1 flex items-center justify-center gap-2 py-4 bg-[#f97316] text-white font-bold rounded-2xl hover:bg-[#ea580c] shadow-lg disabled:opacity-50"
             >
-              {isUpdating ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
+              {isUpdating ? (
+                <Loader2 className="animate-spin" size={20} />
+              ) : (
+                <Save size={20} />
+              )}
               {t("save_changes")}
             </button>
           </div>

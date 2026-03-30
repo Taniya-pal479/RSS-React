@@ -339,6 +339,10 @@ const ContentTypeDetail = () => {
           ref={observerTarget}
           className="absolute bottom-10 left-0 w-full h-1 pointer-events-none"
         />
+
+        {fileEdit && (
+          <EditFileModal data={fileEdit} onClose={() => setFileedit(null)} />
+        )}
       </div>
     </div>
   );

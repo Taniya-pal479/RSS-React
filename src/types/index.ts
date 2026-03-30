@@ -131,6 +131,11 @@ export interface FilesResponses {
   total: number;
   skip?: number;
 }
+export interface Files {
+  data: FileObject[];
+  total: number;
+  skip?: number;
+}
 
 export interface FileResource {
   id: number;
@@ -281,6 +286,7 @@ export interface FileObject {
   fileType: string;
   uploadedAt: string;
   url: string;
+  data?: [];
   files?: [];
   metadata?: {
     category?: string;
@@ -290,6 +296,9 @@ export interface FileObject {
   createdAt?: string;
   translations: FileTranslations[];
   year?: string;
+  icon?: string;
+  itemType?: string;
+  displayType?: string;
 }
 export interface IngestedFile {
   id: string;
@@ -315,7 +324,12 @@ export interface AllFilesResponse {
   files: FileObject[];
   total: number;
 }
-
+export interface SubCatFilesResponse {
+  data: FileObject[];
+  total: number;
+  skip: number;
+  take: number;
+}
 // Define the base properties shared by all results
 export interface BaseResult {
   id: number;

@@ -12,6 +12,7 @@ import type {
   SubCategoryResponse,
   CategoryResponse,
   AllFilesResponse,
+  SubCatFilesResponse,
 } from "../types";
 import type { RootState } from "../store/store";
 
@@ -214,12 +215,19 @@ export const rssApi = createApi({
       serializeQueryArgs: ({ endpointName, queryArgs }) => {
         return `${endpointName}-${queryArgs.contentTypeId}`;
       },
-      merge: (currentCache, newItems) => {
-        if (currentCache.files) {
-          currentCache.files.push(...newItems.files);
+      merge: (currentCache, newItems, { arg }) => {
+        if (arg.skip === 0) {
+          return newItems;
         }
-        return currentCache;
+        const existingIds = new Set(currentCache.files.map((item) => item.id));
+        const uniqueNewItems = newItems.files.filter(
+          (item) => !existingIds.has(item.id),
+        );
+
+        currentCache.files.push(...uniqueNewItems);
+        currentCache.total = newItems.total;
       },
+
       forceRefetch({ currentArg, previousArg }) {
         return currentArg !== previousArg;
       },
@@ -280,13 +288,28 @@ export const rssApi = createApi({
     }),
 
     getFilesBySubcategory: builder.query<
-      AllFilesResponse,
+      SubCatFilesResponse,
       { subCatId: string | number; lang: string; take: number; skip: number }
     >({
       query: ({ subCatId, lang, take, skip }) =>
-        `/files/subcategory/${subCatId}?lang=${lang}?take=${take}?skip=${skip}`,
+        `/files/subcategory/${subCatId}?lang=${lang}&take=${take}&skip=${skip}`,
 
-      transformResponse: (response: FilesResponses) => response,
+      serializeQueryArgs: ({ queryArgs }) => {
+        return `files-${queryArgs.subCatId}-${queryArgs.lang}`;
+      },
+
+      merge: (currentCache, newItems, { arg }) => {
+        if (arg.skip === 0) {
+          return newItems;
+        }
+
+        currentCache.data.push(...newItems.data);
+        currentCache.total = newItems.total;
+      },
+      forceRefetch: ({ currentArg, previousArg }) => {
+        return currentArg !== previousArg;
+      },
+
       providesTags: (_result, _error, arg) => [
         { type: "Files", id: `SUBCAT-${arg.subCatId}` },
       ],

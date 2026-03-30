@@ -200,7 +200,7 @@ const CategoryDetail = () => {
 
       className: "px-10 py-6 font-bold text-gray-700",
 
-      render: (item: any) => (
+      render: (item: FileObject) => (
         <div className="flex items-center gap-3">
           {item.icon}
 
@@ -221,7 +221,7 @@ const CategoryDetail = () => {
 
       className: "px-10 py-6 text-gray-500 text-sm",
 
-      render: (item: any) =>
+      render: (item: FileObject) =>
         item.description ? (
           <span className="text-gray-400 text-[14px] line-clamp-1">
             {item.description}
@@ -238,7 +238,7 @@ const CategoryDetail = () => {
 
       className: "px-10 py-6",
 
-      render: (item: any) => (
+      render: (item: FileObject) => (
         <span
           className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
             item.itemType === "subcategory"
@@ -258,7 +258,7 @@ const CategoryDetail = () => {
 
       className: "px-10 py-6 text-right",
 
-      render: (item: any) => (
+      render: (item: FileObject) => (
         <div className="flex justify-end items-center gap-4">
           {item.itemType === "subcategory" ? (
             <>
@@ -363,7 +363,7 @@ const CategoryDetail = () => {
     );
   };
 
-  const handleRowClick = (item: any) => {
+  const handleRowClick = (item: FileObject) => {
     if (item.itemType === "subcategory") {
       navigate(`/category/${categoryId}/subcategory/${item.id}`);
     } else {
