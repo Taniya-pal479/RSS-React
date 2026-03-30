@@ -60,6 +60,10 @@ export interface FilesRespons {
   files: FileResponse[];
   total: number;
 }
+export interface SubFilesRespons {
+  data: FileResponse[];
+  total: number;
+}
 
 export interface SubCategory {
   categoryId: string | number;

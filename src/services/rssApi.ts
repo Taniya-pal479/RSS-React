@@ -59,6 +59,9 @@ export const rssApi = createApi({
       providesTags: (_result, _error, arg) => [
         { type: "SubCategory", id: arg.categoryId },
       ],
+      transformResponse: (response: SubCategoryResponse) => {
+        return response;
+      },
     }),
 
     deleteCategory: builder.mutation<{ success: boolean }, string>({
@@ -277,14 +280,13 @@ export const rssApi = createApi({
     }),
 
     getFilesBySubcategory: builder.query<
-      FileObject[],
-      { subCatId: string | number; lang: string }
+      AllFilesResponse,
+      { subCatId: string | number; lang: string; take: number; skip: number }
     >({
-      query: ({ subCatId, lang }) =>
-        `/files/subcategory/${subCatId}?lang=${lang}`,
+      query: ({ subCatId, lang, take, skip }) =>
+        `/files/subcategory/${subCatId}?lang=${lang}?take=${take}?skip=${skip}`,
 
-      transformResponse: (response: FilesResponses): FileObject[] =>
-        response.files,
+      transformResponse: (response: FilesResponses) => response,
       providesTags: (_result, _error, arg) => [
         { type: "Files", id: `SUBCAT-${arg.subCatId}` },
       ],
@@ -296,6 +298,7 @@ export const rssApi = createApi({
     >({
       query: ({ catId, lang, take, skip }) =>
         `/files/category/${catId}?lang=${lang}&skip=${skip}&take=${take}`,
+      transformResponse: (response: FilesResponses) => response,
       providesTags: (_result, _error, { catId, lang }) => [
         { type: "Files", id: `CAT-${catId}-${lang}` },
         { type: "Files", id: "LIST" },

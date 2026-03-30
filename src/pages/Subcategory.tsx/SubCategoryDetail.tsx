@@ -34,18 +34,23 @@ const SubCategoryDetail = () => {
   const { t, i18n } = useTranslation();
   const [fileEdit, setFileedit] = useState<FileObject | null>();
   const { handleDownload } = useDownload();
-  
 
-  const { data: files = [], isLoading: filesLoading } =
+  const { data: filesData, isLoading: filesLoading } =
     useGetFilesBySubcategoryQuery(
       {
         subCatId: subCategoryId!,
         lang: i18n.language,
+        skip: 0,
+        take: 100,
       },
       {
         skip: !subCategoryId || subCategoryId === "undefined",
       },
     );
+  const files = filesData?.data || filesData || [];
+
+  console.log("subCatttt", files);
+  console.log("subCatttt", files);
 
   const { data: subCategoriesData, isLoading: subCatLoading } =
     useGetSubCategoriesQuery({

@@ -44,6 +44,8 @@ export const ContentTypeManager = () => {
   const contentTypes = contentTypesData?.data ?? [];
   const totalCount = contentTypesData?.total ?? 0;
 
+  console.log("CT", contentTypes);
+
   const [deleteContentType] = useDeleteContentTypeMutation();
 
   const rowVirtualizer = useVirtualizer({
