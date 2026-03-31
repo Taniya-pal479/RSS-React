@@ -19,6 +19,7 @@ const NavigationSidebar = () => {
   const { i18n, t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
+
   const [openCategoryId, setOpenCategoryId] = useState<number | string | null>(
     null,
   );
@@ -117,49 +118,50 @@ const NavigationSidebar = () => {
               <PlusCircle size={16} />
             </button>
           </div>
+          <div className="max-h-[calc(100vh-300px)] overflow-y-auto custom-scrollbar px-1">
+            {isLoading && (
+              <div className="flex flex-col items-center justify-center py-8 gap-2 text-gray-400">
+                <Loader2 className="animate-spin text-[#F97316]" size={20} />
+                <span className="text-xs font-medium">{t("loading")}...</span>
+              </div>
+            )}
 
-          {isLoading && (
-            <div className="flex flex-col items-center justify-center py-8 gap-2 text-gray-400">
-              <Loader2 className="animate-spin text-[#F97316]" size={20} />
-              <span className="text-xs font-medium">{t("loading")}...</span>
-            </div>
-          )}
+            {isError && (
+              <div className="px-4 py-3 bg-red-50 rounded-xl border border-red-100 text-center">
+                <AlertCircle className="mx-auto text-red-500 mb-1" size={18} />
+                <p className="text-[10px] text-red-600 font-bold mb-2">
+                  {t("error_loading")}
+                </p>
+                <button
+                  onClick={() => refetch()}
+                  className="text-[10px] bg-white border border-red-200 px-2 py-1 rounded-md text-red-500 hover:bg-red-50 transition-colors"
+                >
+                  {t("retry")}
+                </button>
+              </div>
+            )}
 
-          {isError && (
-            <div className="px-4 py-3 bg-red-50 rounded-xl border border-red-100 text-center">
-              <AlertCircle className="mx-auto text-red-500 mb-1" size={18} />
-              <p className="text-[10px] text-red-600 font-bold mb-2">
-                {t("error_loading")}
-              </p>
-              <button
-                onClick={() => refetch()}
-                className="text-[10px] bg-white border border-red-200 px-2 py-1 rounded-md text-red-500 hover:bg-red-50 transition-colors"
-              >
-                {t("retry")}
-              </button>
-            </div>
-          )}
-
-          {!isLoading && !isError && (
-            <div className="space-y-1">
-              {categories.length > 0 ? (
-                categories.map((category) => (
-                  <SidebarCategoryItem
-                    key={category.id}
-                    category={category}
-                    isOpen={openCategoryId === category.id}
-                    onToggle={() => handleToggle(category.id)}
-                  />
-                ))
-              ) : (
-                <div className="px-4 py-4 text-center border-2 border-dashed border-gray-50 rounded-xl">
-                  <p className="text-xs text-gray-400 italic">
-                    {t("no_categories")}
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
+            {!isLoading && !isError && (
+              <div className="space-y-1">
+                {categories.length > 0 ? (
+                  categories.map((category) => (
+                    <SidebarCategoryItem
+                      key={category.id}
+                      category={category}
+                      isOpen={openCategoryId === category.id}
+                      onToggle={() => handleToggle(category.id)}
+                    />
+                  ))
+                ) : (
+                  <div className="px-4 py-4 text-center border-2 border-dashed border-gray-50 rounded-xl">
+                    <p className="text-xs text-gray-400 italic">
+                      {t("no_categories")}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

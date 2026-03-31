@@ -44,7 +44,41 @@ export const rssApi = createApi({
     >({
       query: ({ lang, skip, take }) =>
         `/categories?lang=${lang}&skip=${skip}&take=${take}`,
-      providesTags: ["Category"],
+
+      serializeQueryArgs: ({ queryArgs }) => {
+        return `categories-${queryArgs.lang}`;
+      },
+
+      merge: (currentCache, newItems, { arg }) => {
+        if (arg.skip === 0) {
+          return newItems;
+        }
+
+        if (currentCache?.data && newItems?.data) {
+          // Only push if we actually have new items to add
+          if (newItems.data.length > 0) {
+            const existingIds = new Set(
+              currentCache.data.map((item) => item.id),
+            );
+            const uniqueNew = newItems.data.filter(
+              (item) => !existingIds.has(item.id),
+            );
+
+            currentCache.data.push(...uniqueNew);
+            currentCache.total = newItems.total;
+          }
+        }
+      },
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.data.map(({ id }) => ({
+                type: "Category" as const,
+                id,
+              })),
+              { type: "Category" as const, id: "LIST" },
+            ]
+          : [{ type: "Category" as const, id: "LIST" }],
 
       transformResponse: (response: CategoryResponse) => {
         return response;

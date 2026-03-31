@@ -30,7 +30,7 @@ const Dashboard = () => {
     {
       lang: i18n.language,
       skip: 0,
-      take: 999,
+      take: 100,
     },
     {
       skip: !isAuthenticated,
@@ -40,7 +40,7 @@ const Dashboard = () => {
   const files = useMemo(() => {
     return filesData?.data || [];
   }, [filesData]);
-  console.log(files);
+  console.log("docsall", files);
 
   const getFileIcon = (fileName: string) => {
     const ext = fileName?.split(".").pop()?.toUpperCase() || "";
@@ -78,6 +78,7 @@ const Dashboard = () => {
     }).length;
 
     const totalDocs = files.length - mediaCount - reportsCount;
+    console.log("RRRR", totalDocs);
 
     const recentFiles = [...files]
       .sort(
@@ -88,7 +89,7 @@ const Dashboard = () => {
 
     return { totalDocs, mediaCount, recentFiles, reportsCount };
   }, [files]);
-  console.log("reportsCount", stats.reportsCount);
+  console.log("reportsCount", stats.totalDocs);
   return (
     <div className="space-y-8 animate-fade-in">
       <div className="flex justify-between items-end">
