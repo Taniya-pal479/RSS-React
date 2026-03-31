@@ -7,19 +7,23 @@
   --font-sans: "Inter", sans-serif;
 
   /* Custom Colors - Saffron Palette */
-  --color-saffron-50: #FFF7ED;
-  --color-saffron-100: #FFEDD5;
-  --color-saffron-500: #F97316;
-  --color-saffron-600: #EA580C;
-  --color-saffron-700: #C2410C;
+  --color-saffron-50: #fff7ed;
+  --color-saffron-100: #ffedd5;
+  --color-saffron-500: #f97316;
+  --color-saffron-600: #ea580c;
+  --color-saffron-700: #c2410c;
 
   /* Custom Colors - Rose */
   --color-rose-800: #9f1239;
 
   /* Custom Shadows */
-  --shadow-card: 0px 1px 3px rgba(0, 0, 0, 0.05), 0px 20px 40px rgba(249, 115, 22, 0.04);
+  --shadow-card:
+    0px 1px 3px rgba(0, 0, 0, 0.05), 0px 20px 40px rgba(249, 115, 22, 0.04);
 }
- 
+:root {
+  overflow-y: hidden;
+}
+
 @utility custom-scrollbar {
   &::-webkit-scrollbar {
     width: 4px;

@@ -13,6 +13,8 @@ import type {
   CategoryResponse,
   AllFilesResponse,
   SubCatFilesResponse,
+  YearGroup,
+  FileIndexResponse,
 } from "../types";
 import type { RootState } from "../store/store";
 
@@ -387,6 +389,16 @@ export const rssApi = createApi({
         { type: "Files", id: "LIST" },
       ],
     }),
+    getFileIndex: builder.query<
+      FileIndexResponse,
+      { groupBy: string; lang: string }
+    >({
+      query: ({ groupBy, lang }) =>
+        `/files/index?groupBy=${groupBy}&lang=${lang}`,
+      // Standard caching; it will refetch if lang or groupBy changes
+      providesTags: () => [{ type: "Files", id: "LIST" }],
+    }),
+
     deleteFile: builder.mutation<void, string | number>({
       query: (id) => ({
         url: `files/${id}`,
@@ -472,4 +484,5 @@ export const {
   useUpdateFileMutation,
   useGlobalSearchQuery,
   useGetSearchFilesQuery,
+  useGetFileIndexQuery,
 } = rssApi;

@@ -1,8 +1,7 @@
-import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Calendar, ChevronRight, FolderOpen, Loader2 } from "lucide-react";
-import { useGetAllFilesQuery } from "../../services/rssApi";
+import { useGetFileIndexQuery } from "../../services/rssApi";
 import { useAppSelector } from "../../hook/store";
 
 export const FileYearManager = () => {
@@ -10,40 +9,17 @@ export const FileYearManager = () => {
   const navigate = useNavigate();
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
 
-  const { data, isLoading } = useGetAllFilesQuery(
+  const { data, isLoading, isError } = useGetFileIndexQuery(
     {
+      groupBy: "year",
       lang: i18n.language,
-      skip: 0,
-      take: 999,
-      sortBy: "undefine",
-      order: "undefine",
     },
-    { skip: !isAuthenticated },
+    {
+      skip: !isAuthenticated,
+    },
   );
 
   const files = data?.data || [];
-
-  const yearData = useMemo(() => {
-    const stats: Record<string, number> = {};
-    files.forEach((file) => {
-      if (file.year) {
-        const year = String(file.year);
-        stats[year] = (stats[year] || 0) + 1;
-      }
-    });
-
-    return Object.entries(stats)
-      .map(([year, count]) => ({ year, count }))
-      .sort((a, b) => b.year.localeCompare(a.year));
-  }, [files]);
-
-  if (isLoading) {
-    return (
-      <div className="flex h-[60vh] justify-center items-center">
-        <Loader2 className="animate-spin text-[#f97316]" size={32} />
-      </div>
-    );
-  }
 
   return (
     <div className="p-8 bg-[#fafafa] min-h-[60vh]">
@@ -68,9 +44,9 @@ export const FileYearManager = () => {
         </div>
 
         <div className="max-h-[calc(100vh-450px)] overflow-y-auto custom-scrollbar">
-          {yearData.length > 0 ? (
+          {files.length > 0 ? (
             <div className="divide-y divide-gray-50">
-              {yearData.map((item, index) => (
+              {files.map((item, index) => (
                 <div
                   key={item.year}
                   onClick={() => navigate(`/year/${item.year}`)}

@@ -302,6 +302,14 @@ export interface FileObject {
   itemType?: string;
   displayType?: string;
 }
+
+interface YearGroup {
+  year: number;
+  count: number;
+}
+export interface FileIndexResponse {
+  data: YearGroup[];
+}
 export interface IngestedFile {
   id: string;
   fileName: string;
