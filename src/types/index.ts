@@ -74,6 +74,7 @@ export interface SubCategory {
   translations?: Translation[];
   createdAt?: string;
   updatedAt?: string;
+  total?: number;
   result?: SubCategory[];
 }
 
@@ -275,6 +276,7 @@ export interface FileObject {
   categoryId: number | string;
   category: number | string;
   subcategory: number | string;
+  total?: number;
   id: number;
   fileName: string;
   displayName: string;

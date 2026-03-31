@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 
 import { useParams, useNavigate } from "react-router-dom";
 
@@ -35,22 +35,17 @@ interface ApiError {
 
 const CategoryDetail = () => {
   const { categoryId } = useParams();
-
   const navigate = useNavigate();
-
   const { t, i18n } = useTranslation();
-
   const { handleDownload } = useDownload();
-
   const [isEditCatOpen, setIsEditCatOpen] = useState(false);
-
   const [editingSub, setEditingSub] = useState<SubCategory | null>(null);
-
   const [fileEdit, setFileedit] = useState<FileObject | null>();
-
   const [deleteCategory] = useDeleteCategoryMutation();
-
   const [deleteSubCategory] = useDeleteSubCategoryMutation();
+  const [page, setPage] = useState(0);
+  const take = 10;
+  const observerTarget = useRef(null);
 
   const { data: categoriesData } = useGetCategoriesQuery(
     { lang: i18n.language, skip: 0, take: 100 },
@@ -67,28 +62,60 @@ const CategoryDetail = () => {
     (c: Category) => Number(c.id) === Number(categoryId),
   );
 
-  const [page, setPage] = useState(1);
-
-  const take = 10;
-
-  const skip = (page - 1) * take;
-
   console.log("categoryId", categoryId);
 
-  const { data: filesData, isLoading: filesLoading } =
-    useGetFilesByCategoryQuery(
-      { catId: categoryId!, lang: i18n.language, take: 100, skip: 0 },
+  const {
+    data: subCat,
+    isLoading,
+    isFetching: subCatFetching,
+  } = useGetSubCategoriesQuery(
+    {
+      categoryId: categoryId as string,
 
-      {
-        skip:
-          !categoryId ||
-          isNaN(Number(categoryId)) ||
-          categoryId === ":categoryId",
+      lang: i18n.language,
 
-        refetchOnMountOrArgChange: true,
-      },
-    );
-  const files = filesData?.files;
+      skip: page * take,
+      take: take,
+    },
+    { refetchOnMountOrArgChange: true },
+  );
+
+  console.log("subCatt", subCat?.total);
+
+  const subCatResponse = subCat?.result || [];
+
+  const subCategories = useMemo(() => {
+    return subCatResponse ?? [];
+  }, [subCatResponse]);
+
+  const {
+    data: filesData,
+    isLoading: filesLoading,
+    isFetching: filesFetching,
+  } = useGetFilesByCategoryQuery(
+    {
+      catId: categoryId!,
+      lang: i18n.language,
+      skip: page * take,
+      take: take,
+    },
+    {
+      skip:
+        !categoryId ||
+        isNaN(Number(categoryId)) ||
+        categoryId === ":categoryId",
+
+      refetchOnMountOrArgChange: true,
+    },
+  );
+  const files = filesData?.files || [];
+  console.log("newFiles", filesData?.total);
+
+  console.log("subCatt", subCat?.total);
+
+  const hasMore =
+    (subCat?.total ?? 0) > subCategories.length ||
+    (filesData?.total ?? 0) > files.length;
 
   const [deleteFile] = useDeleteFileMutation();
 
@@ -116,8 +143,6 @@ const CategoryDetail = () => {
     );
   };
 
-  console.log("files", files);
-
   const executeDelete = async (id: number) => {
     try {
       await deleteFile(id).unwrap();
@@ -130,22 +155,29 @@ const CategoryDetail = () => {
     }
   };
 
-  const { data: subCatResponse, isLoading } = useGetSubCategoriesQuery(
-    {
-      categoryId: categoryId as string,
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (
+          entries[0].isIntersecting &&
+          hasMore &&
+          !subCatFetching &&
+          !filesFetching
+        ) {
+          setPage((prev) => prev + 1);
+        }
+      },
+      { threshold: 0.1 },
+    );
 
-      lang: i18n.language,
+    if (observerTarget.current) observer.observe(observerTarget.current);
+    return () => observer.disconnect();
+  }, [hasMore, subCatFetching, filesFetching]);
 
-      skip: skip,
-
-      take: take,
-    },
-    { refetchOnMountOrArgChange: true },
-  );
-
-  const subCategories = useMemo(() => {
-    return subCatResponse?.result ?? [];
-  }, [subCatResponse]);
+  //  Reset on category change
+  useEffect(() => {
+    setPage(0);
+  }, [categoryId]);
 
   const combinedData = useMemo(() => {
     if (filesLoading || isLoading) return [];
@@ -188,9 +220,6 @@ const CategoryDetail = () => {
   }, [subCategories, files, filesLoading, isLoading]);
 
   console.log("Combined Data", combinedData);
-  useEffect(() => {
-    setPage(1);
-  }, [categoryId]);
 
   const columns: Column<FileObject>[] = [
     {
@@ -423,6 +452,11 @@ const CategoryDetail = () => {
         isLoading={isLoading || filesLoading}
         emptyMessage={t("no_subcategories")}
       />
+
+      <div
+        ref={observerTarget}
+        className="w-full   flex justify-center items-center bg-white"
+      ></div>
 
       {fileEdit && (
         <EditFileModal data={fileEdit} onClose={() => setFileedit(null)} />

@@ -10,6 +10,7 @@ export interface Column<T> {
 interface DataTableProps<T> {
   columns: Column<T>[];
   data: T[];
+  rowKey: string | number;
   isLoading?: boolean;
   emptyMessage?: string;
   onRowClick?: (item: T) => void;

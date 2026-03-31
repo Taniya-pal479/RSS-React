@@ -35,7 +35,7 @@ const SubCategoryDetail = () => {
   const [fileEdit, setFileedit] = useState<FileObject | null>();
   const { handleDownload } = useDownload();
   const [page, setPage] = useState(0);
-  const take = 10; // Smaller batches for smoother infinite scroll
+  const take = 10;
   const observerTarget = useRef(null);
 
   const {
