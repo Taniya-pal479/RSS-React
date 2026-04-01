@@ -14,14 +14,24 @@ const DashboardLayout = () => {
   if (!isAuthenticated) return null;
 
   return (
+    /* h-screen + overflow-hidden here is correct: 
+       it locks the browser window so only the internal parts scroll. */
     <div className="flex h-screen bg-[#FDFCF8] font-sans overflow-hidden">
-      <NavigationSidebar isOpen={isSidebarOpen} />
+      <NavigationSidebar
+        isOpen={isSidebarOpen}
+        onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+      />
 
-      <div className="flex-1 flex flex-col h-full overflow-hidden">
+      {/* 1. Removed mb-20: This was pushing your content off the bottom of the screen.
+          2. min-w-0: Prevents the main content from breaking the flex layout when tables are wide. */}
+      <div className="flex-1 flex flex-col h-full min-w-0">
         <TopBar onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
 
-        <main className="flex-1 overflow-hidden p-6 md:p-8 flex flex-col">
-          <div className="max-w-7xl mx-auto w-full h-full flex flex-col">
+        {/* 3. Removed overflow-hidden from <main>: 
+              We want the 'Outlet' (the Dashboard or Table pages) to handle their own scrolling.
+        */}
+        <main className="flex-1 p-6 md:p-8 overflow-auto">
+          <div className="max-w-7xl mx-auto">
             <Outlet />
           </div>
         </main>

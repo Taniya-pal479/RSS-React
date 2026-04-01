@@ -281,92 +281,90 @@ const FileYearDetails = () => {
   ];
 
   return (
-    <div className="h-full overflow-y-auto   space-y-8 animate-fade-in pb-10 no-scrollbar">
-      <div className="p-8 bg-[#fafafa] min-h-[60vh] ">
-        <nav className="flex items-center gap-2 mb-8 text-sm font-bold">
-          <button
-            onClick={() => navigate("/")}
-            className="text-slate-400 hover:text-orange-500"
-          >
-            <Home size={16} />
-          </button>
+    <div className="p-8 bg-[#fafafa] min-h-[60vh]  pb-5">
+      <nav className="flex items-center gap-2 mb-8 text-sm font-bold">
+        <button
+          onClick={() => navigate("/")}
+          className="text-slate-400 hover:text-orange-500"
+        >
+          <Home size={16} />
+        </button>
 
-          <ChevronRight size={14} className="text-slate-300" />
+        <ChevronRight size={14} className="text-slate-300" />
 
-          <button
-            onClick={() => navigate("/year")}
-            className="text-slate-400 hover:text-orange-500"
-          >
-            {t("all_files")}
-          </button>
+        <button
+          onClick={() => navigate("/year")}
+          className="text-slate-400 hover:text-orange-500"
+        >
+          {t("all_files")}
+        </button>
 
-          <ChevronRight size={14} className="text-slate-300" />
+        <ChevronRight size={14} className="text-slate-300" />
 
-          <span className="text-orange-600 uppercase">{year}</span>
-        </nav>
+        <span className="text-orange-600 uppercase">{year}</span>
+      </nav>
 
-        <div className="mb-10">
-          <h1 className="text-4xl font-black text-slate-900 uppercase">
-            {year} {t("Files_Detail")}
-          </h1>
-        </div>
+      <div className="mb-10">
+        <h1 className="text-4xl font-black text-slate-900 uppercase">
+          {year} {t("Files_Detail")}
+        </h1>
+      </div>
 
-        <div className="flex justify-between items-center mb-6 px-4">
-          {/* Search Field */}
-          <div className="relative w-full max-w-sm">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              {isFetching ? (
-                <Loader2 size={18} className="text-orange-500 animate-spin" />
-              ) : (
-                <Search size={18} className="text-slate-400" />
-              )}
-            </div>
-            <input
-              type="text"
-              placeholder={t("search")}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="block w-full pl-10 pr-10 py-2 border border-slate-200 rounded-xl bg-white text-sm focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-all"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery("")}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-red-500"
-              >
-                <X size={16} />
-              </button>
+      <div className="flex justify-between items-center mb-6 px-4">
+        {/* Search Field */}
+        <div className="relative w-full max-w-sm">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            {isFetching ? (
+              <Loader2 size={18} className="text-orange-500 animate-spin" />
+            ) : (
+              <Search size={18} className="text-slate-400" />
             )}
           </div>
-
-          <div className="flex gap-2">
-            <SortDropdown
-              options={sortOptions}
-              selectedSort={sortBy}
-              onChange={setSortBy}
-            />
-            <OrderDropdown
-              value={order}
-              onChange={(val) => setOrder(val as "asc" | "desc")}
-            />
-            <ContentTypeFilter
-              contentTypes={contentTypes}
-              selectedType={selectedType}
-              onChange={setSelectedType}
-            />
-          </div>
-        </div>
-        <div className="bg-white rounded-4xl border border-slate-100 shadow-sm  ">
-          <DataTable
-            columns={columns}
-            data={yearFiles}
-            isLoading={isLoading || (isFetching && searchQuery !== "")}
-            emptyMessage={t("no_files_found")}
+          <input
+            type="text"
+            placeholder={t("search")}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="block w-full pl-10 pr-10 py-2 border border-slate-200 rounded-xl bg-white text-sm focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-all"
           />
-
-          {fileEdit && (
-            <EditFileModal data={fileEdit} onClose={() => setFileedit(null)} />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-red-500"
+            >
+              <X size={16} />
+            </button>
           )}
         </div>
+
+        <div className="flex gap-2">
+          <SortDropdown
+            options={sortOptions}
+            selectedSort={sortBy}
+            onChange={setSortBy}
+          />
+          <OrderDropdown
+            value={order}
+            onChange={(val) => setOrder(val as "asc" | "desc")}
+          />
+          <ContentTypeFilter
+            contentTypes={contentTypes}
+            selectedType={selectedType}
+            onChange={setSelectedType}
+          />
+        </div>
+      </div>
+      <div className="bg-white rounded-4xl border border-slate-100 shadow-sm overflow-hidden">
+        <DataTable
+          columns={columns}
+          data={yearFiles}
+          isLoading={isLoading || (isFetching && searchQuery !== "")}
+          emptyMessage={t("no_files_found")}
+        />
+
+        {fileEdit && (
+          <EditFileModal data={fileEdit} onClose={() => setFileedit(null)} />
+        )}
       </div>
     </div>
   );
