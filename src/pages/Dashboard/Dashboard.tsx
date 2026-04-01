@@ -59,12 +59,20 @@ const Dashboard = () => {
     console.log("Processing Files for Stats:", files.length);
 
     const mediaCount = files.filter((f) => {
-      const extension = f.originalName?.split(".").pop()?.toUpperCase();
-      const imageExtensions = ["JPG", "JPEG", "PNG", "WEBP", "MP3", "MP4"];
+      const extension = f.fileType;
+      const imageExtensions = [
+        "IMAGE",
+        "AUDIO",
+        "VIDEO",
+        "PNG",
+        "WEBP",
+        "MP3",
+        "MP4",
+      ];
 
       return (
         imageExtensions.includes(extension || "") ||
-        ["IMAGE", "MEDIA"].includes(f.type?.toUpperCase()) ||
+        ["IMAGE", "AUDIO", "VIDEO"].includes(f.type?.toUpperCase()) ||
         f.mimeType?.startsWith("image/")
       );
     }).length;
@@ -73,11 +81,17 @@ const Dashboard = () => {
 
     const reportsCount = files.filter((f) => {
       const ext = f.originalName?.split(".").pop()?.toUpperCase() || "";
-      const reportExtensions = ["CSV", "XLS", "XLSX"];
+      const reportExtensions = ["CSV", "XLS", "XLSX", "EXCEL"];
       return reportExtensions.includes(ext);
     }).length;
 
-    const totalDocs = files.length - mediaCount - reportsCount;
+    const otherCount = files.filter((f) => {
+      const ext = f.fileType;
+      const otherExtensions = ["OTHER"];
+      return otherExtensions.includes(ext);
+    }).length;
+
+    const totalDocs = files.length - mediaCount - reportsCount - otherCount;
     console.log("RRRR", totalDocs);
 
     const recentFiles = [...files]

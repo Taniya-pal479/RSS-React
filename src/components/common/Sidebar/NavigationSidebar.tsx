@@ -62,7 +62,7 @@ const NavigationSidebar = () => {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-3 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto px-3 custom-scrollbar mb-5">
         <div className="space-y-1 mb-2">
           <button
             onClick={() => navigate("/dashboard")}
@@ -118,7 +118,7 @@ const NavigationSidebar = () => {
               <PlusCircle size={16} />
             </button>
           </div>
-          <div className="max-h-[calc(100vh-300px)] overflow-y-auto custom-scrollbar px-1">
+          <div className="max-h-[calc(100vh-300px)] overflow-y-auto custom-scrollbar px-1 pb-6">
             {isLoading && (
               <div className="flex flex-col items-center justify-center py-8 gap-2 text-gray-400">
                 <Loader2 className="animate-spin text-[#F97316]" size={20} />

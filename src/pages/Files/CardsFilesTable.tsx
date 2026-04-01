@@ -42,13 +42,23 @@ const CardsFilesTable = () => {
   );
 
   const files = filesData?.data || [];
+
+  console.log("faaaaa", files);
   const { handleDownload } = useDownload();
   const filteredData = useMemo<FileObject[]>(() => {
     return files.filter((f) => {
-      const extension = f.originalName?.split(".").pop()?.toUpperCase() || "";
-      const imageExtensions = ["JPG", "JPEG", "PNG", "WEBP"];
-      const docExtensions = ["PDF", "DOC", "DOCX", "TXT"];
-      const reportExtensions = ["CSV", "XLS", "XLSX"];
+      const extension = f.fileType;
+      const imageExtensions = [
+        "JPG",
+        "JPEG",
+        "PNG",
+        "WEBP",
+        "VIDEO",
+        "AUDIO",
+        "IMAGE",
+      ];
+      const docExtensions = ["PDF", "DOC", "DOCX", "TXT", "TEXT", "WORD"];
+      const reportExtensions = ["CSV", "XLS", "XLSX", "EXCEL"];
 
       let matchesType = true;
 
@@ -59,9 +69,7 @@ const CardsFilesTable = () => {
       } else if (filterType === "reports") {
         matchesType = reportExtensions.includes(extension);
       } else if (filterType === "docs") {
-        matchesType =
-          docExtensions.includes(extension) &&
-          !reportExtensions.includes(extension);
+        matchesType = docExtensions.includes(extension);
       }
 
       const matchesSearch = searchQuery
@@ -71,6 +79,7 @@ const CardsFilesTable = () => {
       return matchesType && matchesSearch;
     });
   }, [files, filterType, searchQuery]);
+  console.log("filter", filteredData);
 
   const getHeaderTitle = () => {
     switch (filterType) {
