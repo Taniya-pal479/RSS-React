@@ -47,10 +47,6 @@ export const rssApi = createApi({
       query: ({ lang, skip, take }) =>
         `/categories?lang=${lang}&skip=${skip}&take=${take}`,
 
-      serializeQueryArgs: ({ queryArgs }) => {
-        return `categories-${queryArgs.lang}`;
-      },
-
       merge: (currentCache, newItems, { arg }) => {
         if (arg.skip === 0) {
           return newItems;
@@ -70,6 +66,9 @@ export const rssApi = createApi({
             currentCache.total = newItems.total;
           }
         }
+      },
+      forceRefetch({ currentArg, previousArg }) {
+        return currentArg?.skip !== previousArg?.skip;
       },
       providesTags: (result) =>
         result

@@ -70,29 +70,42 @@ const ContentTypeFilter = ({ contentTypes, selectedType, onChange }: Props) => {
       </div>
 
       {isOpen && (
-        <div className="absolute top-12 right-0 w-60 bg-white border border-gray-100 rounded-xl shadow-lg z-10">
-          <div
-            onClick={() => {
-              onChange(null);
-              setIsOpen(false);
-            }}
-            className="px-4  py-2 hover:bg-orange-50 cursor-pointer text-sm mb-10"
-          >
-            All
-          </div>
-
-          {contentTypes.map((ct) => (
+        <div className="absolute top-full right-0 mt-2 w-64 bg-white border border-gray-100 rounded-2xl shadow-2xl z-[999] overflow-hidden">
+          <div className="max-h-60 overflow-y-auto custom-scrollbar p-1.5">
             <div
-              key={ct.id}
               onClick={() => {
-                onChange(String(ct.id));
+                onChange(null);
                 setIsOpen(false);
               }}
-              className="px-4 py-2  hover:bg-orange-50 cursor-pointer text-sm"
+              className={`px-4 py-2.5 cursor-pointer text-sm font-bold rounded-lg ${
+                !selectedType
+                  ? "bg-orange-60 text-orange-600"
+                  : "hover:bg-orange-50 text-slate-600"
+              }`}
             >
-              {ct.name}
+              All
             </div>
-          ))}
+
+            {contentTypes.map((ct) => {
+              const isActive = String(ct.id) === selectedType;
+              return (
+                <div
+                  key={ct.id}
+                  onClick={() => {
+                    onChange(String(ct.id));
+                    setIsOpen(false);
+                  }}
+                  className={`px-4 py-2.5 cursor-pointer text-sm font-bold rounded-lg transition-colors ${
+                    isActive
+                      ? "bg-orange-50 text-orange-600"
+                      : "hover:bg-orange-50 text-slate-600"
+                  }`}
+                >
+                  {ct.name}
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
     </div>

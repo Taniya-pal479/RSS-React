@@ -183,11 +183,7 @@ export const ContentTypeManager = () => {
                   </div>
                   <div
                     className="col-span-4 font-bold text-[#1a1a1a] text-[15px] truncate pr-4 cursor-pointer hover:text-orange-600"
-                    onClick={() =>
-                      navigate(
-                        `/category/${categoryId}/content-type/${item.id}`,
-                      )
-                    }
+                    onClick={() => navigate(`/content-type/${item.id}`)}
                   >
                     {displayName}
                   </div>

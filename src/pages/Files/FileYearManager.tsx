@@ -9,7 +9,7 @@ export const FileYearManager = () => {
   const navigate = useNavigate();
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
 
-  const { data, isLoading, isError } = useGetFileIndexQuery(
+  const { data, isLoading, isError, isFetching } = useGetFileIndexQuery(
     {
       groupBy: "year",
       lang: i18n.language,

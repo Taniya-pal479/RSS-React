@@ -268,10 +268,7 @@ const GlobalSearchDropdown = () => {
               renderItem={(item) => (
                 <div
                   onMouseDown={(e) =>
-                    handleNavigation(
-                      e,
-                      `/category/${item.categoryId}/content-type/${item.id}`,
-                    )
+                    handleNavigation(e, `/content-type/${item.id}`)
                   }
                   className="flex items-center gap-3 px-4 py-3 hover:bg-purple-50 cursor-pointer group h-[52px]"
                 >

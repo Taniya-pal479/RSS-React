@@ -270,12 +270,14 @@ const CategoryDetail = () => {
       render: (item: FileObject) => (
         <span
           className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
-            item.itemType === "subcategory"
+            item.displayType === "SUBCATEGORY"
               ? "bg-orange-50 text-orange-600"
               : "bg-blue-50 text-blue-600"
           }`}
         >
-          {item.displayType}
+          {item.displayType === "SUBCATEGORY"
+            ? item.displayType
+            : item.fileType}
         </span>
       ),
     },

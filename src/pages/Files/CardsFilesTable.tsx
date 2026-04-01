@@ -125,11 +125,7 @@ const CardsFilesTable = () => {
             </div>
             <div
               className="flex flex-col cursor-pointer"
-              onClick={() =>
-                navigate(
-                  `/category/${file.categoryId}/content-type/${file.contentTypeId}`,
-                )
-              }
+              onClick={() => navigate(`/content-type/${file.contentTypeId}`)}
             >
               <span className="font-bold text-slate-800 group-hover:text-orange-600 transition-colors line-clamp-1">
                 {file.displayName}

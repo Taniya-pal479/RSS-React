@@ -119,19 +119,16 @@ const ContentTypeDetail = () => {
   const categories = categoriesData?.data || [];
 
   const { data: contentTypesData, isLoading: typesLoading } =
-    useGetContentTypesQuery(
-      {
-        lang: i18n.language,
+    useGetContentTypesQuery({
+      lang: i18n.language,
 
-        skip: page * rowsPerPage,
+      skip: page * rowsPerPage,
 
-        take: rowsPerPage,
-      },
-
-      { skip: !categoryId },
-    );
+      take: rowsPerPage,
+    });
 
   const contentTypes = contentTypesData?.data ?? [];
+  console.log("contttt", contentTypes);
 
   console.log("items", items);
 

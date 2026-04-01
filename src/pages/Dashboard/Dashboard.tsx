@@ -105,7 +105,7 @@ const Dashboard = () => {
   }, [files]);
   console.log("reportsCount", stats.totalDocs);
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="h-full overflow-y-auto   space-y-8 animate-fade-in pb-10 no-scrollbar">
       <div className="flex justify-between items-end">
         <div>
           <h2 className="text-3xl font-bold text-rose-800 tracking-tight">
@@ -170,16 +170,13 @@ const Dashboard = () => {
         ) : stats.recentFiles.length > 0 ? (
           <div className="space-y-4">
             {stats.recentFiles.map((file) => {
-              const catId = file.categoryId;
               const contentId = file.contentTypeId;
 
               return (
                 <div
                   key={file.id}
                   className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors cursor-pointer"
-                  onClick={() =>
-                    navigate(`/category/${catId}/content-type/${contentId}`)
-                  }
+                  onClick={() => navigate(`/content-type/${contentId}`)}
                 >
                   <div className="flex items-center gap-4">
                     <div className="p-2 bg-white rounded-lg shadow-sm text-saffron-600">

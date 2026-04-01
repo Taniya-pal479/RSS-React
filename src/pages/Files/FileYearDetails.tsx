@@ -281,7 +281,7 @@ const FileYearDetails = () => {
   ];
 
   return (
-    <div className="p-8 bg-[#fafafa] min-h-[60vh]">
+    <div className="p-8 bg-[#fafafa] min-h-[60vh] ">
       <nav className="flex items-center gap-2 mb-8 text-sm font-bold">
         <button
           onClick={() => navigate("/")}

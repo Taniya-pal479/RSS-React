@@ -83,7 +83,7 @@ const App = () => {
                 <Route path="/content" element={<ContentTypeManager />} />
                 <Route path="/content/add" element={<ContentTypeForm />} />
                 <Route
-                  path="/category/:categoryId/content-type/:contentTypeId"
+                  path="/content-type/:contentTypeId"
                   element={<ContentTypeDetail />}
                 />
                 <Route path="/results" element={<CardsFilesTable />} />
