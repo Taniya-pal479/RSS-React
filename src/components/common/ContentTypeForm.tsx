@@ -151,99 +151,74 @@ const ContentTypeForm: React.FC = () => {
   const isLoading = isAdding || isUpdating;
 
   return (
-    <div className="w-full max-w-200 mx-auto bg-[#fdfcfb] p-4 md:p-6 min-h-screen">
-      <div className="flex items-center justify-between mb-10">
-        <div className="flex items-center gap-4">
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="p-2 hover:bg-white rounded-full transition-all text-gray-400 hover:text-gray-600 shadow-sm border border-transparent hover:border-gray-100"
-          >
-            <ArrowLeft size={24} />
-          </button>
-          <h1 className="text-xl md:text-[28px] font-bold text-[#1a1a1a]">
-            {id ? t("edit_content_type") : t("add_new_content_type")}
-          </h1>
+    <div className="h-full overflow-y-auto   space-y-8 animate-fade-in pb-10 no-scrollbar">
+      <div className="w-full max-w-200 mx-auto bg-[#fdfcfb] p-4 md:p-6 min-h-screen">
+        <div className="flex items-center justify-between mb-10">
+          <div className="flex items-center gap-4">
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              className="p-2 hover:bg-white rounded-full transition-all text-gray-400 hover:text-gray-600 shadow-sm border border-transparent hover:border-gray-100"
+            >
+              <ArrowLeft size={24} />
+            </button>
+            <h1 className="text-xl md:text-[28px] font-bold text-[#1a1a1a]">
+              {id ? t("edit_content_type") : t("add_new_content_type")}
+            </h1>
+          </div>
         </div>
-      </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="p-5 md:p-8 rounded-3xl md:rounded-4xl bg-white border border-gray-100 shadow-sm space-y-6">
-          <div className="space-y-2">
-            <label className="flex items-center gap-2 text-[13px] font-bold text-gray-400 uppercase tracking-wider">
-              <FileText size={16} /> {t("name")}{" "}
-              <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={translations[globalLang]?.name || ""}
-              onChange={(e) => handleInputChange("name", e.target.value)}
-              className="w-full px-5 py-4 bg-[#f9fafb] border border-gray-200 rounded-[18px] text-[16px] outline-none focus:border-[#f97316] transition-all font-medium"
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="flex items-center gap-2 text-[13px] font-bold text-gray-400 uppercase tracking-wider">
-              <AlignLeft size={16} /> {t("description")}{" "}
-              <span className="text-gray-300 ml-1 font-normal lowercase">
-                ({t("optional")})
-              </span>
-            </label>
-            <textarea
-              value={translations[globalLang]?.description || ""}
-              onChange={(e) => handleInputChange("description", e.target.value)}
-              className="w-full px-5 py-4 bg-[#f9fafb] border border-gray-200 rounded-[18px] text-[16px] outline-none focus:border-[#f97316] transition-all min-h-35 resize-none"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-            <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm space-y-3">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="p-5 md:p-8 rounded-3xl md:rounded-4xl bg-white border border-gray-100 shadow-sm space-y-6">
+            <div className="space-y-2">
               <label className="flex items-center gap-2 text-[13px] font-bold text-gray-400 uppercase tracking-wider">
-                <Layout size={16} /> {t("category")}{" "}
+                <FileText size={16} /> {t("name")}{" "}
                 <span className="text-red-500">*</span>
               </label>
-              <div className="relative">
-                <select
-                  className="w-full pl-4 pr-10 py-3 bg-[#f9fafb] border border-gray-100 rounded-[14px] outline-none focus:border-[#f97316] transition-all appearance-none font-bold text-slate-700"
-                  value={selectedCatId}
-                  onChange={(e) => {
-                    setSelectedCatId(e.target.value);
-                    setSelectedSubCatId("");
-                  }}
-                  required
-                >
-                  <option value="">{t("category_placeholder")}</option>
-                  {categories.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.name}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-                  size={18}
-                />
-              </div>
+              <input
+                type="text"
+                value={translations[globalLang]?.name || ""}
+                onChange={(e) => handleInputChange("name", e.target.value)}
+                className="w-full px-5 py-4 bg-[#f9fafb] border border-gray-200 rounded-[18px] text-[16px] outline-none focus:border-[#f97316] transition-all font-medium"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-[13px] font-bold text-gray-400 uppercase tracking-wider">
+                <AlignLeft size={16} /> {t("description")}{" "}
+                <span className="text-gray-300 ml-1 font-normal lowercase">
+                  ({t("optional")})
+                </span>
+              </label>
+              <textarea
+                value={translations[globalLang]?.description || ""}
+                onChange={(e) =>
+                  handleInputChange("description", e.target.value)
+                }
+                className="w-full px-5 py-4 bg-[#f9fafb] border border-gray-200 rounded-[18px] text-[16px] outline-none focus:border-[#f97316] transition-all min-h-35 resize-none"
+              />
             </div>
 
-            {selectedCatId && subCategories.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm space-y-3">
                 <label className="flex items-center gap-2 text-[13px] font-bold text-gray-400 uppercase tracking-wider">
-                  <Layers size={16} /> {t("subcategory")}{" "}
-                  <span className="text-slate-400 font-normal ml-1">
-                    ({t("optional")})
-                  </span>
+                  <Layout size={16} /> {t("category")}{" "}
+                  <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <select
                     className="w-full pl-4 pr-10 py-3 bg-[#f9fafb] border border-gray-100 rounded-[14px] outline-none focus:border-[#f97316] transition-all appearance-none font-bold text-slate-700"
-                    value={selectedSubCatId}
-                    onChange={(e) => setSelectedSubCatId(e.target.value)}
+                    value={selectedCatId}
+                    onChange={(e) => {
+                      setSelectedCatId(e.target.value);
+                      setSelectedSubCatId("");
+                    }}
+                    required
                   >
-                    <option value="">{t("subcategory_placeholder")}</option>
-                    {subCategories.map((sub) => (
-                      <option key={sub.id} value={sub.id}>
-                        {sub.name}
+                    <option value="">{t("category_placeholder")}</option>
+                    {categories.map((cat) => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.name}
                       </option>
                     ))}
                   </select>
@@ -253,34 +228,63 @@ const ContentTypeForm: React.FC = () => {
                   />
                 </div>
               </div>
-            )}
-          </div>
-        </div>
 
-        <div className="flex flex-col-reverse sm:flex-row justify-end items-center gap-4 pt-4">
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="w-full sm:w-auto px-8 py-4 text-gray-400 font-bold hover:text-gray-600 transition-colors cursor-pointer"
-          >
-            {t("cancel")}
-          </button>
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full sm:w-auto flex items-center justify-center gap-3 px-10 py-4 bg-[#f97316] text-white font-bold rounded-[18px] hover:bg-[#ea580c] transition-all shadow-lg shadow-orange-100 disabled:opacity-50 active:scale-95 cursor-pointer"
-          >
-            {isLoading ? (
-              <Loader2 className="animate-spin" size={22} />
-            ) : (
-              <Save size={22} />
-            )}
-            <span className="text-[17px]">
-              {id ? t("update_content_type") : t("save_content_type")}
-            </span>
-          </button>
-        </div>
-      </form>
+              {selectedCatId && subCategories.length > 0 && (
+                <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm space-y-3">
+                  <label className="flex items-center gap-2 text-[13px] font-bold text-gray-400 uppercase tracking-wider">
+                    <Layers size={16} /> {t("subcategory")}{" "}
+                    <span className="text-slate-400 font-normal ml-1">
+                      ({t("optional")})
+                    </span>
+                  </label>
+                  <div className="relative">
+                    <select
+                      className="w-full pl-4 pr-10 py-3 bg-[#f9fafb] border border-gray-100 rounded-[14px] outline-none focus:border-[#f97316] transition-all appearance-none font-bold text-slate-700"
+                      value={selectedSubCatId}
+                      onChange={(e) => setSelectedSubCatId(e.target.value)}
+                    >
+                      <option value="">{t("subcategory_placeholder")}</option>
+                      {subCategories.map((sub) => (
+                        <option key={sub.id} value={sub.id}>
+                          {sub.name}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+                      size={18}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-col-reverse sm:flex-row justify-end items-center gap-4 pt-4">
+              <button
+                type="button"
+                onClick={() => navigate(-1)}
+                className="w-full sm:w-auto px-8 py-4 text-gray-400 font-bold hover:text-gray-600 transition-colors cursor-pointer"
+              >
+                {t("cancel")}
+              </button>
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full sm:w-auto flex items-center justify-center gap-3 px-10 py-4 bg-[#f97316] text-white font-bold rounded-[18px] hover:bg-[#ea580c] transition-all shadow-lg shadow-orange-100 disabled:opacity-50 active:scale-95 cursor-pointer"
+              >
+                {isLoading ? (
+                  <Loader2 className="animate-spin" size={22} />
+                ) : (
+                  <Save size={22} />
+                )}
+                <span className="text-[17px]">
+                  {id ? t("update_content_type") : t("save_content_type")}
+                </span>
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };
