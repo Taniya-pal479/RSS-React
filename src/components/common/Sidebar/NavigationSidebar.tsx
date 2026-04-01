@@ -9,6 +9,8 @@ import {
   AlertCircle,
   TagIcon,
   Calendar1Icon,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useGetCategoriesQuery } from "../../../services/rssApi";
@@ -17,9 +19,13 @@ import { useAppSelector } from "../../../hook/store";
 
 interface NavigationSidebarProps {
   isOpen: boolean;
+  onToggle: () => void;
 }
 
-const NavigationSidebar: React.FC<NavigationSidebarProps> = ({ isOpen }) => {
+const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
+  isOpen,
+  onToggle,
+}) => {
   const { i18n, t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
@@ -41,6 +47,7 @@ const NavigationSidebar: React.FC<NavigationSidebarProps> = ({ isOpen }) => {
   );
 
   const categories = categoriesData?.data || [];
+  console.log("cacacacac", categories);
 
   const isActive = (path: string) => location.pathname === path;
   const handleToggle = (id: number | string) => {
@@ -52,6 +59,12 @@ const NavigationSidebar: React.FC<NavigationSidebarProps> = ({ isOpen }) => {
       className={`w-64  bg-white border-r border-gray-100 flex flex-col py-6 transition-all duration-300 ease-in-out h-full
       ${isOpen ? "w-64" : "w-0 overflow-hidden border-none"}`}
     >
+      <button
+        onClick={onToggle}
+        className="absolute -right-3 top-20 z-50 w-6 h-6 bg-white border border-gray-200 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-50 cursor-pointer text-gray-400"
+      >
+        {isOpen ? <ChevronLeft size={14} /> : <ChevronRight size={14} />}
+      </button>
       <div className="w-64 flex flex-col h-full py-6">
         <div className="px-6 mb-10">
           <div className="flex items-center gap-3">
@@ -126,7 +139,7 @@ const NavigationSidebar: React.FC<NavigationSidebarProps> = ({ isOpen }) => {
                 <PlusCircle size={16} />
               </button>
             </div>
-            <div className="max-h-[calc(100vh-300px)] overflow-y-auto custom-scrollbar px-1 pb-6">
+            <div className="max-h-[calc(100vh-380px)] overflow-y-auto custom-scrollbar px-1 pb-10">
               {isLoading && (
                 <div className="flex flex-col items-center justify-center py-8 gap-2 text-gray-400">
                   <Loader2 className="animate-spin text-[#F97316]" size={20} />

@@ -15,7 +15,6 @@ const DashboardLayout = () => {
 
   return (
     <div className="flex h-screen bg-[#FDFCF8] font-sans overflow-hidden">
-      {/* Sidebar gets the state */}
       <NavigationSidebar isOpen={isSidebarOpen} />
 
       <div className="flex-1 flex flex-col h-full overflow-hidden">
