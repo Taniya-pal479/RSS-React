@@ -59,12 +59,6 @@ const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
       className={`w-64  bg-white border-r border-gray-100 flex flex-col py-6 transition-all duration-300 ease-in-out h-full
       ${isOpen ? "w-64" : "w-0 overflow-hidden border-none"}`}
     >
-      <button
-        onClick={onToggle}
-        className="absolute -right-3 top-20 z-50 w-6 h-6 bg-white border border-gray-200 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-50 cursor-pointer text-gray-400"
-      >
-        {isOpen ? <ChevronLeft size={14} /> : <ChevronRight size={14} />}
-      </button>
       <div className="w-64 flex flex-col h-full py-6">
         <div className="px-6 mb-10">
           <div className="flex items-center gap-3">
