@@ -16,20 +16,52 @@ import type {
   YearGroup,
   FileIndexResponse,
 } from "../types";
+
+import type {
+  BaseQueryFn,
+  FetchArgs,
+  FetchBaseQueryError,
+} from "@reduxjs/toolkit/query/react";
+import { logout } from "../store/slices/authSlice"; // Adjust path to your authSlice
 import type { RootState } from "../store/store";
+
+const baseQuery = fetchBaseQuery({
+  baseUrl: "https://rss-server-7wyx.onrender.com/",
+  prepareHeaders: (headers, { getState }) => {
+    const token = (getState() as RootState).auth.accessToken;
+    if (token) {
+      headers.set("authorization", `Bearer ${token}`);
+    }
+    return headers;
+  },
+});
+
+// Create a wrapper function to intercept 401 errors
+const baseQueryWithReauth: BaseQueryFn<
+  string | FetchArgs,
+  unknown,
+  FetchBaseQueryError
+> = async (args, api, extraOptions) => {
+  const result = await baseQuery(args, api, extraOptions);
+
+  // If the server returns 401 Unauthorized
+  if (result.error && result.error.status === 401) {
+    console.warn("Session expired or unauthorized. Logging out...");
+
+    // Dispatch the logout action from your authSlice
+    api.dispatch(logout());
+
+    // Optional: Redirect to login page manually if your router doesn't handle isAuthenticated state
+    if (typeof window !== "undefined") {
+      window.location.href = "/login";
+    }
+  }
+  return result;
+};
 
 export const rssApi = createApi({
   reducerPath: "rssApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: "https://rss-server-7wyx.onrender.com/",
-    prepareHeaders: (headers, { getState }) => {
-      const token = (getState() as RootState).auth.accessToken;
-      if (token) {
-        headers.set("authorization", `Bearer ${token}`);
-      }
-      return headers;
-    },
-  }),
+  baseQuery: baseQueryWithReauth,
   tagTypes: ["Category", "SubCategory", "Files", "ContentType"],
   endpoints: (builder) => ({
     login: builder.mutation({

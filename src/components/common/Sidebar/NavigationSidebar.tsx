@@ -45,14 +45,15 @@ const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
     { lang: i18n.language, skip: 0, take: 100 },
     { skip: !isAuthenticated },
   );
-  
 
   const categories = categoriesData?.data || [];
   console.log("cacacacac", categories);
 
   const isActive = (path: string) => location.pathname === path;
   const handleToggle = (id: number | string) => {
-    setOpenCategoryId((prevId) => (prevId === id ? null : id));
+    setOpenCategoryId((prevId) => {
+      return String(prevId) === String(id) ? null : id;
+    });
   };
 
   return (
@@ -71,8 +72,8 @@ const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
               />
             </div>
             <button
-  onClick={onToggle}
- className={`
+              onClick={onToggle}
+              className={`
       /* 1. Vertically Align perfectly to the center of the parent div */
       absolute top-1/2 -translate-y-1/2 
       
@@ -85,72 +86,82 @@ const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
       bg-white border border-gray-200 text-[#F97316] 
       rounded-full shadow-lg transition-all hover:bg-orange-50 hover:shadow-xl hover:-right-4 active:scale-95
     `}
->
-  {isOpen ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
-</button>
+            >
+              {isOpen ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
+            </button>
             {isOpen && (
-               <span className="text-[15px] font-black text-rose-800 uppercase">
-                 {t("sidebarHeading")}
-               </span>
-             )}
+              <span className="text-[15px] font-black text-rose-800 uppercase">
+                {t("sidebarHeading")}
+              </span>
+            )}
           </div>
         </div>
 
         <div className="flex-1 overflow-hidden px-3 custom-scrollbar mb-5 ">
           <div className="space-y-1 mb-2">
-            {isOpen && <button
-              onClick={() => navigate("/dashboard")}
-              className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium transition-all cursor-pointer ${
-                isActive("/dashboard")
-                  ? "bg-saffron-50 text-saffron-500"
-                  : "text-gray-500 hover:bg-gray-50"
-              }`}
-            >
-              <LayoutDashboard size={20} className="text-[#F97316]" />
-              <span>{t("dashboard")}</span>
-            </button>}
+            {isOpen && (
+              <button
+                onClick={() => navigate("/dashboard")}
+                className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium transition-all cursor-pointer ${
+                  isActive("/dashboard")
+                    ? "bg-saffron-50 text-saffron-500"
+                    : "text-gray-500 hover:bg-gray-50"
+                }`}
+              >
+                <LayoutDashboard size={20} className="text-[#F97316]" />
+                <span>{t("dashboard")}</span>
+              </button>
+            )}
           </div>
 
           <div className="space-y-1 mb-1">
-           { isOpen &&<button
-              onClick={() => navigate("/content")}
-              className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium transition-all cursor-pointer ${
-                isActive("/content")
-                  ? "bg-[#FFF7ED] text-[#F97316]"
-                  : "text-gray-500 hover:bg-gray-50"
-              }`}
-            >
-              <TagIcon size={20} className="text-[#F97316]" />
-              <span>{t("sidebar_content_type")}</span>
-            </button>}
+            {isOpen && (
+              <button
+                onClick={() => navigate("/content")}
+                className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium transition-all cursor-pointer ${
+                  isActive("/content")
+                    ? "bg-[#FFF7ED] text-[#F97316]"
+                    : "text-gray-500 hover:bg-gray-50"
+                }`}
+              >
+                <TagIcon size={20} className="text-[#F97316]" />
+                <span>{t("sidebar_content_type")}</span>
+              </button>
+            )}
           </div>
 
           <div className="space-y-1 mb-8">
-           { isOpen && <button
-              onClick={() => navigate("/year")}
-              className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium transition-all cursor-pointer ${
-                isActive("/year")
-                  ? "bg-[#FFF7ED] text-[#F97316]"
-                  : "text-gray-500 hover:bg-gray-50"
-              }`}
-            >
-              <Calendar1Icon size={20} className="text-[#F97316]" />
-              <span>{t("file_directory")}</span>
-            </button>}
+            {isOpen && (
+              <button
+                onClick={() => navigate("/year")}
+                className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium transition-all cursor-pointer ${
+                  isActive("/year")
+                    ? "bg-[#FFF7ED] text-[#F97316]"
+                    : "text-gray-500 hover:bg-gray-50"
+                }`}
+              >
+                <Calendar1Icon size={20} className="text-[#F97316]" />
+                <span>{t("file_directory")}</span>
+              </button>
+            )}
           </div>
 
           <div className="mb-4">
             <div className="flex items-center justify-between px-4 mb-3">
-             {isOpen &&  <h2 className="text-[11px] font-black text-gray-400 uppercase tracking-widest">
-                {t("categories")}
-              </h2>}
-              {isOpen && <button
-                onClick={() => navigate("/add-category")}
-                className="text-[#F97316] hover:bg-orange-50 p-1 rounded-md transition-colors cursor-pointer"
-                title={t("add_category")}
-              >
-                <PlusCircle size={16} />
-              </button>} 
+              {isOpen && (
+                <h2 className="text-[11px] font-black text-gray-400 uppercase tracking-widest">
+                  {t("categories")}
+                </h2>
+              )}
+              {isOpen && (
+                <button
+                  onClick={() => navigate("/add-category")}
+                  className="text-[#F97316] hover:bg-orange-50 p-1 rounded-md transition-colors cursor-pointer"
+                  title={t("add_category")}
+                >
+                  <PlusCircle size={16} />
+                </button>
+              )}
             </div>
             <div className="max-h-[calc(100vh-380px)] overflow-y-auto custom-scrollbar px-1 pb-10">
               {isLoading && (
@@ -178,14 +189,14 @@ const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
                 </div>
               )}
 
-              {!isLoading && !isError && isOpen &&(
+              {!isLoading && !isError && isOpen && (
                 <div className="space-y-1">
                   {categories.length > 0 ? (
                     categories.map((category) => (
                       <SidebarCategoryItem
                         key={category.id}
                         category={category}
-                        isOpen={openCategoryId === category.id}
+                        isCategoryOpen={openCategoryId === category.id}
                         onToggle={() => handleToggle(category.id)}
                       />
                     ))

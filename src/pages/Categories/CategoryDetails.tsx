@@ -28,6 +28,7 @@ import ConfirmToast from "../../components/ui/ConfirmToast";
 import EditFileModal from "../../components/common/EditFileModal";
 
 import { useDownload } from "../../hook/useDownload";
+import TablePagination from "../../components/common/TablePagination";
 
 interface ApiError {
   data?: { message?: string };
@@ -43,9 +44,8 @@ const CategoryDetail = () => {
   const [fileEdit, setFileedit] = useState<FileObject | null>();
   const [deleteCategory] = useDeleteCategoryMutation();
   const [deleteSubCategory] = useDeleteSubCategoryMutation();
-  const [page, setPage] = useState(0);
-  const take = 10;
-  const observerTarget = useRef(null);
+  const [page, setPage] = useState(1); // Start at 1 for our component
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const { data: categoriesData } = useGetCategoriesQuery(
     { lang: i18n.language, skip: 0, take: 100 },
@@ -64,18 +64,14 @@ const CategoryDetail = () => {
 
   console.log("categoryId", categoryId);
 
-  const {
-    data: subCat,
-    isLoading,
-    isFetching: subCatFetching,
-  } = useGetSubCategoriesQuery(
+  const { data: subCat, isLoading } = useGetSubCategoriesQuery(
     {
       categoryId: categoryId as string,
 
       lang: i18n.language,
 
-      skip: page * take,
-      take: take,
+      skip: (page - 1) * rowsPerPage,
+      take: rowsPerPage,
     },
     { refetchOnMountOrArgChange: true },
   );
@@ -96,8 +92,8 @@ const CategoryDetail = () => {
     {
       catId: categoryId!,
       lang: i18n.language,
-      skip: page * take,
-      take: take,
+      skip: (page - 1) * rowsPerPage,
+      take: rowsPerPage,
     },
     {
       skip:
@@ -116,6 +112,12 @@ const CategoryDetail = () => {
   const hasMore =
     (subCat?.total ?? 0) > subCategories.length ||
     (filesData?.total ?? 0) > files.length;
+
+  const totalSubCats = subCat?.total ?? 0;
+  const totalFiles = filesData?.total ?? 0;
+
+  const totalItems = Math.max(totalSubCats, totalFiles);
+  const totalPages = Math.ceil(totalItems / rowsPerPage);
 
   const [deleteFile] = useDeleteFileMutation();
 
@@ -154,30 +156,6 @@ const CategoryDetail = () => {
       toast.error(t("ERROR_DELETING"));
     }
   };
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (
-          entries[0].isIntersecting &&
-          hasMore &&
-          !subCatFetching &&
-          !filesFetching
-        ) {
-          setPage((prev) => prev + 1);
-        }
-      },
-      { threshold: 0.1 },
-    );
-
-    if (observerTarget.current) observer.observe(observerTarget.current);
-    return () => observer.disconnect();
-  }, [hasMore, subCatFetching, filesFetching]);
-
-  //  Reset on category change
-  useEffect(() => {
-    setPage(0);
-  }, [categoryId]);
 
   const combinedData = useMemo(() => {
     if (filesLoading || isLoading) return [];
@@ -455,10 +433,18 @@ const CategoryDetail = () => {
         emptyMessage={t("no_subcategories")}
       />
 
-      <div
-        ref={observerTarget}
-        className="w-full   flex justify-center items-center bg-white"
-      ></div>
+      {!isLoading && !filesLoading && combinedData.length > 0 && (
+        <TablePagination
+          currentPage={page}
+          totalPages={totalPages}
+          rowsPerPage={rowsPerPage}
+          onPageChange={(newPage) => setPage(newPage)}
+          onRowsPerPageChange={(newSize) => {
+            setRowsPerPage(newSize);
+            setPage(1);
+          }}
+        />
+      )}
 
       {fileEdit && (
         <EditFileModal data={fileEdit} onClose={() => setFileedit(null)} />

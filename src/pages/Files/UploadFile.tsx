@@ -84,21 +84,24 @@ const GlobalUpload = () => {
 
   const logicalPath = `/${currentCatName}${currentSubCatName ? `/${currentSubCatName}` : ""}/${currentCTName}/${year || "YYYY"}/${files.length > 0 ? `${files.length} files` : t("placeholder_filename")}`;
 
-  const getFileType = (file: File) => {
+  const getFileType = (file: File): string => {
     const ext = file.name.split(".").pop()?.toUpperCase();
-    const imageExts = ["JPG", "JPEG", "PNG", "WEBP"];
+
+    // Mapping extensions to the exact Swagger allowed values
+    const imageExts = ["JPG", "JPEG", "PNG", "WEBP", "SVG"];
     const videoExts = ["MP4", "MOV", "AVI", "WEBM"];
-    const audioExts = ["MP3", "WAV"];
+    const audioExts = ["MP3", "WAV", "OGG"];
+    const excelExts = ["XLS", "XLSX", "XLSM"];
+    const wordExts = ["DOC", "DOCX"];
 
     if (imageExts.includes(ext!)) return "IMAGE";
     if (videoExts.includes(ext!)) return "VIDEO";
     if (audioExts.includes(ext!)) return "AUDIO";
-
+    if (excelExts.includes(ext!)) return "EXCEL";
+    if (wordExts.includes(ext!)) return "WORD";
     if (ext === "PDF") return "PDF";
-    if (["DOC", "DOCX"].includes(ext!)) return "WORD";
-    if (ext === "TXT") return "TEXT";
     if (ext === "CSV") return "CSV";
-    if (["XLS", "XLSX"].includes(ext!)) return "EXCEL";
+    if (ext === "TXT") return "TEXT";
 
     return "OTHER";
   };
@@ -381,10 +384,8 @@ const GlobalUpload = () => {
               <input
                 type="file"
                 multiple
-                disabled={!isFormValid}
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                 onChange={handleFileChange}
-                required
               />
               <div className="flex flex-col items-center">
                 <div className="w-12 h-12 bg-white shadow-sm rounded-full flex items-center justify-center mb-3">

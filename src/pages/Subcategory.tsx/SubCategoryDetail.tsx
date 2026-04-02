@@ -23,7 +23,7 @@ import ConfirmToast from "../../components/ui/ConfirmToast";
 import type { FileObject, SubCategory } from "../../types";
 import EditFileModal from "../../components/common/EditFileModal";
 import { useDownload } from "../../hook/useDownload";
-import { useRef, useEffect } from "react";
+import TablePagination from "../../components/common/TablePagination";
 
 const SubCategoryDetail = () => {
   const { subCategoryId, categoryId } = useParams<{
@@ -34,45 +34,26 @@ const SubCategoryDetail = () => {
   const { t, i18n } = useTranslation();
   const [fileEdit, setFileedit] = useState<FileObject | null>();
   const { handleDownload } = useDownload();
-  const [page, setPage] = useState(0);
-  const take = 10;
-  const observerTarget = useRef(null);
+  const [page, setPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  const {
-    data: filesData,
-    isLoading: filesLoading,
-    isFetching,
-  } = useGetFilesBySubcategoryQuery(
-    {
-      subCatId: subCategoryId!,
-      lang: i18n.language,
-      skip: page * take,
-      take: take,
-    },
-    {
-      skip: !subCategoryId || subCategoryId === "undefined",
-    },
-  );
+  const { data: filesData, isLoading: filesLoading } =
+    useGetFilesBySubcategoryQuery(
+      {
+        subCatId: subCategoryId!,
+        lang: i18n.language,
+        skip: (page - 1) * rowsPerPage,
+        take: rowsPerPage,
+      },
+      {
+        skip: !subCategoryId || subCategoryId === "undefined",
+      },
+    );
+  const totalFiles = filesData?.total || 0;
+  const totalPages = Math.ceil(totalFiles / rowsPerPage);
   const files = filesData?.data || [];
-  const hasMore = files.length < (filesData?.total || 0);
 
   console.log("faaaa", files);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        // Trigger if bottom reached + more data exists + not currently loading
-        if (entries[0].isIntersecting && hasMore && !isFetching) {
-          setPage((prev) => prev + 1);
-        }
-      },
-      { threshold: 1.0 },
-    );
-
-    if (observerTarget.current) observer.observe(observerTarget.current);
-
-    return () => observer.disconnect();
-  }, [hasMore, isFetching]);
 
   console.log("subCatttt", files);
   console.log("subCatttt", files);
@@ -246,11 +227,19 @@ const SubCategoryDetail = () => {
           emptyMessage={t("no_files_uploaded_yet")}
         />
 
-        {/* Loader UI - Table ke niche center mein */}
-        <div
-          ref={observerTarget}
-          className="w-full   flex justify-center items-center bg-white"
-        ></div>
+        {!filesLoading && files.length > 0 && (
+          <TablePagination
+            currentPage={page}
+            totalPages={totalPages}
+            rowsPerPage={rowsPerPage}
+            onPageChange={(newPage) => setPage(newPage)}
+            onRowsPerPageChange={(newSize) => {
+              setRowsPerPage(newSize);
+              setPage(1); // Always reset to page 1 on size change
+            }}
+          />
+        )}
+
         {fileEdit && (
           <EditFileModal data={fileEdit} onClose={() => setFileedit(null)} />
         )}

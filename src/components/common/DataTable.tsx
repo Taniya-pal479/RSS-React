@@ -45,7 +45,7 @@ const DataTable = <T extends { id: string | number }>({
   return (
     <div
       onScroll={handleScroll}
-      className="bg-white rounded-4xl border border-gray-100 shadow-sm overflow-y-auto  overflow-x-hidden custom-scrollbar  max-h-135 relative  "
+      className="bg-white rounded-4xl  border border-gray-100  rounded-bl-sm rounded-br-sm shadow-sm overflow-y-auto    custom-scrollbar  max-h-135 relative  "
     >
       <table className="w-full text-left border-separate border-spacing-0">
         <thead className="sticky top-0 z-10 bg-white">

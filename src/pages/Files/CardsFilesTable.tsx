@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
@@ -20,6 +20,7 @@ import { useGetAllFilesQuery } from "../../services/rssApi";
 import DataTable, { type Column } from "../../components/common/DataTable";
 import i18n from "../../i18n";
 import type { FileItem, FileObject } from "../../types";
+import TablePagination from "../../components/common/TablePagination";
 
 const CardsFilesTable = () => {
   const { t } = useTranslation();
@@ -29,6 +30,8 @@ const CardsFilesTable = () => {
   const filterType = searchParams.get("type");
   const searchQuery = useAppSelector((state) => state.ui.searchQuery);
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
+  const [page, setPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const { data: filesData, isLoading } = useGetAllFilesQuery(
     {
@@ -45,8 +48,9 @@ const CardsFilesTable = () => {
 
   console.log("faaaaa", files);
   const { handleDownload } = useDownload();
-  const filteredData = useMemo<FileObject[]>(() => {
-    return files.filter((f) => {
+  const { paginatedData, totalFiltered } = useMemo(() => {
+    // 1. First, do the existing filtering logic
+    const filtered = files.filter((f) => {
       const extension = f.fileType;
       const imageExtensions = [
         "JPG",
@@ -61,7 +65,6 @@ const CardsFilesTable = () => {
       const reportExtensions = ["CSV", "XLS", "XLSX", "EXCEL"];
 
       let matchesType = true;
-
       if (filterType === "media") {
         matchesType =
           imageExtensions.includes(extension) ||
@@ -78,8 +81,18 @@ const CardsFilesTable = () => {
 
       return matchesType && matchesSearch;
     });
-  }, [files, filterType, searchQuery]);
-  console.log("filter", filteredData);
+
+    // 2. Then, calculate the slice for pagination
+    const start = (page - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+
+    return {
+      paginatedData: filtered.slice(start, end),
+      totalFiltered: filtered.length,
+    };
+  }, [files, filterType, searchQuery, page, rowsPerPage]);
+
+  const totalPages = Math.ceil(totalFiltered / rowsPerPage);
 
   const getHeaderTitle = () => {
     switch (filterType) {
@@ -203,7 +216,7 @@ const CardsFilesTable = () => {
             {getHeaderTitle()}
           </h1>
           <p className="text-slate-400 font-medium mt-2">
-            {filteredData.length} {t("items_found")}
+            {totalFiltered} {t("items_found")}
             {searchQuery && (
               <>
                 {" "}
@@ -230,10 +243,23 @@ const CardsFilesTable = () => {
       <div className="bg-white rounded-4xl border border-slate-100 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
         <DataTable
           columns={columns}
-          data={filteredData}
+          data={paginatedData}
           isLoading={isLoading}
           emptyMessage={t("no_results_found")}
         />
+
+        {!isLoading && totalFiltered > 0 && (
+          <TablePagination
+            currentPage={page}
+            totalPages={totalPages}
+            rowsPerPage={rowsPerPage}
+            onPageChange={(newPage) => setPage(newPage)}
+            onRowsPerPageChange={(newSize) => {
+              setRowsPerPage(newSize);
+              setPage(1);
+            }}
+          />
+        )}
       </div>
     </div>
   );

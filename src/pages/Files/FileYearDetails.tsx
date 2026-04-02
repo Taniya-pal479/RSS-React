@@ -36,6 +36,7 @@ import SortDropdown from "../../components/ui/SortDropdown";
 
 import OrderDropdown from "../../components/ui/OrderDropdown";
 import { useDebounce } from "../../hook/useDebounce";
+import TablePagination from "../../components/common/TablePagination";
 
 const FileYearDetails = () => {
   const { year } = useParams();
@@ -49,6 +50,10 @@ const FileYearDetails = () => {
   const { handleDownload } = useDownload();
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
   const [searchQuery, setSearchQuery] = useState("");
+  const [page, setPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  const skip = (page - 1) * rowsPerPage;
 
   const debouncedSearch = useDebounce(searchQuery, 500);
 
@@ -61,8 +66,8 @@ const FileYearDetails = () => {
   const { data: filesData, isLoading } = useGetAllFilesQuery(
     {
       lang: i18n.language,
-      skip: 0,
-      take: 1000,
+      skip: skip,
+      take: rowsPerPage,
       sortBy: sortBy,
       order: order ?? "asc",
     },
@@ -77,8 +82,8 @@ const FileYearDetails = () => {
     {
       search: debouncedSearch,
       lang: i18n.language,
-      skip: 0,
-      take: 100,
+      skip: skip,
+      take: rowsPerPage,
       year: year,
     },
     {
@@ -86,25 +91,60 @@ const FileYearDetails = () => {
     },
   );
 
+  const totalFiles = debouncedSearch.trim()
+    ? filterData?.total || 0
+    : filesData?.total || 0;
+
   const allFilterFiles = filterData || [];
   console.log("filter", searchQuery);
 
   console.log("filterdata", allFilterFiles.translations);
 
   const yearFiles = useMemo(() => {
-    if (debouncedSearch.trim()) {
-      return allFilterFiles;
-    }
-    let filtered = allFiles.filter((f) => String(f.year) === String(year));
+    // 1. Start with your base data
+    let processed = debouncedSearch.trim() ? allFilterFiles : allFiles;
 
-    if (selectedType) {
-      filtered = filtered.filter(
-        (f) => String(f.contentTypeId) === String(selectedType),
-      );
+    // 2. Apply the Year Filter (if not searching)
+    if (!debouncedSearch.trim()) {
+      processed = processed.filter((f) => String(f.year) === String(year));
+
+      // 3. Apply Content Type Filter
+      if (selectedType) {
+        processed = processed.filter(
+          (f) => String(f.contentTypeId) === String(selectedType),
+        );
+      }
     }
 
-    return filtered;
-  }, [allFiles, year, allFilterFiles, debouncedSearch, selectedType]);
+    // 4. PAGINATION: Slice the filtered data for the current page
+    const start = (page - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+
+    return processed.slice(start, end);
+  }, [
+    allFiles,
+    year,
+    allFilterFiles,
+    debouncedSearch,
+    selectedType,
+    page,
+    rowsPerPage,
+  ]);
+
+  const filteredTotalCount = useMemo(() => {
+    let processed = debouncedSearch.trim() ? allFilterFiles : allFiles;
+    if (!debouncedSearch.trim()) {
+      processed = processed.filter((f) => String(f.year) === String(year));
+      if (selectedType) {
+        processed = processed.filter(
+          (f) => String(f.contentTypeId) === String(selectedType),
+        );
+      }
+    }
+    return processed.length;
+  }, [allFiles, allFilterFiles, debouncedSearch, year, selectedType]);
+
+  const totalPages = Math.ceil(filteredTotalCount / rowsPerPage);
 
   const { data: contentTypesData } = useGetContentTypesQuery({
     lang: i18n.language,
@@ -361,6 +401,19 @@ const FileYearDetails = () => {
           isLoading={isLoading || (isFetching && searchQuery !== "")}
           emptyMessage={t("no_files_found")}
         />
+
+        {!isLoading && yearFiles.length > 0 && (
+          <TablePagination
+            currentPage={page}
+            totalPages={totalPages}
+            rowsPerPage={rowsPerPage}
+            onPageChange={(newPage) => setPage(newPage)}
+            onRowsPerPageChange={(newSize) => {
+              setRowsPerPage(newSize);
+              setPage(1);
+            }}
+          />
+        )}
 
         {fileEdit && (
           <EditFileModal data={fileEdit} onClose={() => setFileedit(null)} />
