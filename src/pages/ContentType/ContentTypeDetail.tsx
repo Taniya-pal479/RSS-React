@@ -36,7 +36,7 @@ import { useDownload } from "../../hook/useDownload";
 
 import { useAppSelector } from "../../hook/store";
 
-import { useVirtualizer } from "@tanstack/react-virtual";
+import TablePagination from "../../components/common/TablePagination";
 
 const ContentTypeDetail = () => {
   const { categoryId, contentTypeId } = useParams<{
@@ -53,60 +53,27 @@ const ContentTypeDetail = () => {
 
   const isValidId = contentTypeId && contentTypeId !== ":contentTypeId";
 
-  const parentRef = useRef<HTMLElement>(null);
-  const observerTarget = useRef(null);
-
   const { handleDownload } = useDownload();
 
-  const [page, setPage] = useState(0);
-
-  const rowsPerPage = 20;
+  const [page, setPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
 
-  const {
-    data: files,
-    isLoading,
-    isFetching,
-  } = useGetFilesQuery(
+  const { data: files, isLoading } = useGetFilesQuery(
     {
       contentTypeId: contentTypeId!,
       lang: i18n.language,
-      skip: page * rowsPerPage,
+      skip: (page - 1) * rowsPerPage, // Updated
       take: rowsPerPage,
     },
     { skip: !isAuthenticated || !isValidId },
   );
 
   const items = files?.files ?? [];
-  const hasMore = items.length < (files?.total ?? 0);
 
-  const rowVirtualizer = useVirtualizer({
-    count: items.length,
-
-    getScrollElement: () => parentRef.current,
-
-    estimateSize: () => 60, // Height of your detail row
-
-    overscan: 5,
-  });
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasMore && !isFetching) {
-          setPage((prev) => prev + 1);
-        }
-      },
-      { threshold: 1.0 },
-    );
-
-    if (observerTarget.current) {
-      observer.observe(observerTarget.current);
-    }
-
-    return () => observer.disconnect();
-  }, [hasMore, isFetching]);
+  const totalFiles = files?.total ?? 0;
+  const totalPages = Math.ceil(totalFiles / rowsPerPage);
 
   const { data: categoriesData } = useGetCategoriesQuery({
     lang: i18n.language,
@@ -121,10 +88,8 @@ const ContentTypeDetail = () => {
   const { data: contentTypesData, isLoading: typesLoading } =
     useGetContentTypesQuery({
       lang: i18n.language,
-
-      skip: page * rowsPerPage,
-
-      take: rowsPerPage,
+      skip: 0, // Always start from beginning
+      take: 100,
     });
 
   const contentTypes = contentTypesData?.data ?? [];
@@ -324,18 +289,18 @@ const ContentTypeDetail = () => {
           emptyMessage={t("no_files_uploaded_yet")}
         />
 
-        {/* Loader UI - Table ke niche center mein */}
-        {isFetching && page > 0 && (
-          <div className="flex justify-center py-4 border-t border-slate-50">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500"></div>
-          </div>
+        {!isLoading && items.length > 0 && (
+          <TablePagination
+            currentPage={page}
+            totalPages={totalPages}
+            rowsPerPage={rowsPerPage}
+            onPageChange={(newPage) => setPage(newPage)}
+            onRowsPerPageChange={(newSize) => {
+              setRowsPerPage(newSize);
+              setPage(1);
+            }}
+          />
         )}
-
-        {/* Invisible Trigger - Isse layout kharab nahi hoga */}
-        <div
-          ref={observerTarget}
-          className="absolute bottom-10 left-0 w-full h-1 pointer-events-none"
-        />
 
         {fileEdit && (
           <EditFileModal data={fileEdit} onClose={() => setFileedit(null)} />
