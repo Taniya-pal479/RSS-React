@@ -24,9 +24,12 @@ const SidebarCategoryItem = ({
 }: SidebarCategoryItemProps) => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
+  
 
   const handleCategoryClick = () => {
+   if (!isOpen) {
     onToggle();
+  }
     navigate(`/category/${category.id}`);
   };
 
@@ -42,6 +45,7 @@ const SidebarCategoryItem = ({
     { skip: !isAuthenticated || !isOpen },
   );
   const subCategories = subCategoriesData?.result || [];
+  console.log("sbbbb",subCategories)
   return (
     <div className="mb-1">
       <button

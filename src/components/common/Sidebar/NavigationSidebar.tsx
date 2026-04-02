@@ -45,6 +45,7 @@ const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
     { lang: i18n.language, skip: 0, take: 100 },
     { skip: !isAuthenticated },
   );
+  
 
   const categories = categoriesData?.data || [];
   console.log("cacacacac", categories);
@@ -56,30 +57,48 @@ const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
 
   return (
     <aside
-      className={`w-64  bg-white border-r border-gray-100 flex flex-col py-6 transition-all duration-300 ease-in-out h-full
-      ${isOpen ? "w-64" : "w-0 overflow-hidden border-none"}`}
+      className={`  relative bg-white border-r border-gray-100 flex flex-col py-6 transition-all duration-300 ease-in-out h-full
+      ${isOpen ? "w-64" : "w-20 "} `}
     >
-      <div className="w-64 flex flex-col h-full py-6">
-        <div className="px-6 mb-10">
+      <div className={`flex flex-col h-full py-6 ${!isOpen && "items-center"}`}>
+        <div className="px-6 mb-10 flex items-center justify-between relative">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-orange-50 rounded-2xl flex items-center justify-center border border-orange-100/50 shadow-sm shrink-0">
+            <div className="w-10 h-10 bg-orange-50 rounded-2xl flex items-center justify-center shrink-0">
               <img
                 src={flagIcon1}
                 alt="Logo"
                 className="w-6 h-6 object-contain"
               />
             </div>
-            <div className="flex flex-col">
-              <span className="text-[15px] font-black text-rose-800 tracking-tight leading-tight uppercase">
-                {t("sidebarHeading")}
-              </span>
-            </div>
+            <button
+  onClick={onToggle}
+ className={`
+      /* 1. Vertically Align perfectly to the center of the parent div */
+      absolute top-1/2 -translate-y-1/2 
+      
+      /* 2. Horizontally position on the border edge */
+      -right-3.5 
+      
+      /* 3. Appearance: Floating & Saffron theme */
+      z-50 
+      w-7 h-7 flex items-center justify-center 
+      bg-white border border-gray-200 text-[#F97316] 
+      rounded-full shadow-lg transition-all hover:bg-orange-50 hover:shadow-xl hover:-right-4 active:scale-95
+    `}
+>
+  {isOpen ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
+</button>
+            {isOpen && (
+               <span className="text-[15px] font-black text-rose-800 uppercase">
+                 {t("sidebarHeading")}
+               </span>
+             )}
           </div>
         </div>
 
         <div className="flex-1 overflow-hidden px-3 custom-scrollbar mb-5 ">
           <div className="space-y-1 mb-2">
-            <button
+            {isOpen && <button
               onClick={() => navigate("/dashboard")}
               className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium transition-all cursor-pointer ${
                 isActive("/dashboard")
@@ -89,11 +108,11 @@ const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
             >
               <LayoutDashboard size={20} className="text-[#F97316]" />
               <span>{t("dashboard")}</span>
-            </button>
+            </button>}
           </div>
 
           <div className="space-y-1 mb-1">
-            <button
+           { isOpen &&<button
               onClick={() => navigate("/content")}
               className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium transition-all cursor-pointer ${
                 isActive("/content")
@@ -103,11 +122,11 @@ const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
             >
               <TagIcon size={20} className="text-[#F97316]" />
               <span>{t("sidebar_content_type")}</span>
-            </button>
+            </button>}
           </div>
 
           <div className="space-y-1 mb-8">
-            <button
+           { isOpen && <button
               onClick={() => navigate("/year")}
               className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium transition-all cursor-pointer ${
                 isActive("/year")
@@ -117,21 +136,21 @@ const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
             >
               <Calendar1Icon size={20} className="text-[#F97316]" />
               <span>{t("file_directory")}</span>
-            </button>
+            </button>}
           </div>
 
           <div className="mb-4">
             <div className="flex items-center justify-between px-4 mb-3">
-              <h2 className="text-[11px] font-black text-gray-400 uppercase tracking-widest">
+             {isOpen &&  <h2 className="text-[11px] font-black text-gray-400 uppercase tracking-widest">
                 {t("categories")}
-              </h2>
-              <button
+              </h2>}
+              {isOpen && <button
                 onClick={() => navigate("/add-category")}
                 className="text-[#F97316] hover:bg-orange-50 p-1 rounded-md transition-colors cursor-pointer"
                 title={t("add_category")}
               >
                 <PlusCircle size={16} />
-              </button>
+              </button>} 
             </div>
             <div className="max-h-[calc(100vh-380px)] overflow-y-auto custom-scrollbar px-1 pb-10">
               {isLoading && (
@@ -159,7 +178,7 @@ const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
                 </div>
               )}
 
-              {!isLoading && !isError && (
+              {!isLoading && !isError && isOpen &&(
                 <div className="space-y-1">
                   {categories.length > 0 ? (
                     categories.map((category) => (

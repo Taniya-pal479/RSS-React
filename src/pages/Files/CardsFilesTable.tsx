@@ -182,7 +182,7 @@ const CardsFilesTable = () => {
   ];
 
   return (
-    <div className="p-8 bg-[#fafafa] min-h-screen">
+    <div className="p-2 bg-[#fafafa] min-h-screen">
       <nav className="flex items-center gap-2 mb-8 text-sm font-bold">
         <button
           onClick={() => navigate("/")}
