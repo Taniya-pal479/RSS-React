@@ -42,7 +42,7 @@ const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
     isError,
     refetch,
   } = useGetCategoriesQuery(
-    { lang: i18n.language, skip: 0, take: 100 },
+    { lang: i18n.language, skip: 0, take: 1000 },
     { skip: !isAuthenticated },
   );
 

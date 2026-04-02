@@ -12,6 +12,7 @@ import EditContentTypeModal from "../../components/common/EditContentTypeModal";
 import ConfirmToast from "../../components/ui/ConfirmToast";
 import type { ContentTypeMapped } from "../../types";
 import { useAppSelector } from "../../hook/store";
+import TablePagination from "../../components/common/TablePagination";
 
 export const ContentTypeManager = () => {
   const { t, i18n } = useTranslation();
@@ -25,9 +26,8 @@ export const ContentTypeManager = () => {
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
 
   const parentRef = useRef<HTMLDivElement>(null);
-  const [page, setPage] = useState(0);
-  const rowsPerPage = 20;
-
+  const [page, setPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const {
     data: contentTypesData,
     isLoading,
@@ -35,7 +35,7 @@ export const ContentTypeManager = () => {
   } = useGetContentTypesQuery(
     {
       lang: i18n.language,
-      skip: page * rowsPerPage,
+      skip: (page - 1) * rowsPerPage,
       take: rowsPerPage,
     },
     { skip: !isAuthenticated },
@@ -43,6 +43,7 @@ export const ContentTypeManager = () => {
 
   const contentTypes = contentTypesData?.data ?? [];
   const totalCount = contentTypesData?.total ?? 0;
+  const totalPages = Math.ceil(totalCount / rowsPerPage);
 
   console.log("CT", contentTypes);
 
@@ -120,6 +121,7 @@ export const ContentTypeManager = () => {
       </div>
 
       <div className="bg-white rounded-[24px] border border-gray-100 shadow-sm overflow-hidden">
+        {/* Table Header */}
         <div className="grid grid-cols-12 bg-gray-50 border-b border-gray-100 px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">
           <div className="col-span-1">#</div>
           <div className="col-span-4">{t("content_type_name")}</div>
@@ -127,90 +129,69 @@ export const ContentTypeManager = () => {
           <div className="col-span-2 text-right">{t("actions")}</div>
         </div>
 
-        <div
-          ref={parentRef}
-          className="overflow-y-auto custom-scrollbar"
-          style={{ height: "500px" }}
-        >
-          <div
-            style={{
-              height: `${rowVirtualizer.getTotalSize()}px`,
-              width: "100%",
-              position: "relative",
-            }}
-          >
-            {virtualItems.map((virtualRow) => {
-              const item = contentTypes[virtualRow.index];
+        {/* Table Body - Standard Map */}
+        <div className="divide-y divide-gray-50">
+          {contentTypes.map((item, index) => {
+            const activeTranslation = item.translations?.find(
+              (tr) => tr.languageCode === i18n.language,
+            );
+            const displayName = activeTranslation?.name || item.name || "---";
 
-              if (!item) {
-                return (
-                  <div
-                    key={`loading-${virtualRow.index}`}
-                    style={{
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      width: "100%",
-                      height: `${virtualRow.size}px`,
-                      transform: `translateY(${virtualRow.start}px)`,
-                    }}
-                    className="flex items-center px-6 border-b border-gray-50 text-gray-300 italic text-sm"
-                  >
-                    {t("loading")}...
-                  </div>
-                );
-              }
-              const activeTranslation = item.translations?.find(
-                (tr) => tr.languageCode === i18n.language,
-              );
-              const displayName = activeTranslation?.name || item.name || "---";
-
-              return (
-                <div
-                  key={item.id}
-                  style={{
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    width: "100%",
-                    height: `${virtualRow.size}px`,
-                    transform: `translateY(${virtualRow.start}px)`,
-                  }}
-                  className="grid grid-cols-12 items-center px-6 border-b border-gray-50 hover:bg-orange-50/30 transition-colors"
-                >
-                  <div className="col-span-1 text-gray-400 text-sm">
-                    #{virtualRow.index + 1}
-                  </div>
-                  <div
-                    className="col-span-4 font-bold text-[#1a1a1a] text-[15px] truncate pr-4 cursor-pointer hover:text-orange-600"
-                    onClick={() => navigate(`/content-type/${item.id}`)}
-                  >
-                    {displayName}
-                  </div>
-                  <div className="col-span-5 text-gray-400 text-sm truncate pr-4">
-                    {activeTranslation?.description ||
-                      item.description ||
-                      "---"}
-                  </div>
-                  <div className="col-span-2 flex justify-end gap-2">
-                    <button
-                      onClick={() => setSelectedItem(item)}
-                      className="p-2 text-[#f97316] hover:bg-white rounded-lg transition-all"
-                    >
-                      <Edit2 size={16} />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteClick(item.id)}
-                      className="p-2 text-red-500 hover:bg-white rounded-lg transition-all"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
+            return (
+              <div
+                key={item.id}
+                className="grid grid-cols-12 items-center px-6 py-4 hover:bg-orange-50/30 transition-colors"
+              >
+                <div className="col-span-1 text-gray-400 text-sm">
+                  #{(page - 1) * rowsPerPage + index + 1}
                 </div>
-              );
-            })}
-          </div>
+                <div
+                  className="col-span-4 font-bold text-[#1a1a1a] text-[15px] truncate pr-4 cursor-pointer hover:text-orange-600"
+                  onClick={() => navigate(`/content-type/${item.id}`)}
+                >
+                  {displayName}
+                </div>
+                <div className="col-span-5 text-gray-400 text-sm truncate pr-4">
+                  {activeTranslation?.description || item.description || "---"}
+                </div>
+                <div className="col-span-2 flex justify-end gap-2">
+                  <button
+                    onClick={() => setSelectedItem(item)}
+                    className="p-2 text-[#f97316] hover:bg-white rounded-lg transition-all"
+                  >
+                    <Edit2 size={16} />
+                  </button>
+                  <button
+                    onClick={() => handleDeleteClick(item.id)}
+                    className="p-2 text-red-500 hover:bg-white rounded-lg transition-all"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+
+          {/* Empty State */}
+          {!isLoading && contentTypes.length === 0 && (
+            <div className="p-10 text-center text-gray-400">
+              {t("no_results_found")}
+            </div>
+          )}
         </div>
+
+        {!isLoading && contentTypes.length > 0 && (
+          <TablePagination
+            currentPage={page}
+            totalPages={totalPages}
+            rowsPerPage={rowsPerPage}
+            onPageChange={(newPage) => setPage(newPage)}
+            onRowsPerPageChange={(newSize) => {
+              setRowsPerPage(newSize);
+              setPage(1);
+            }}
+          />
+        )}
       </div>
 
       {selectedItem && (

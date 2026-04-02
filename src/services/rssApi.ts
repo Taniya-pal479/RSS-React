@@ -24,6 +24,7 @@ import type {
 } from "@reduxjs/toolkit/query/react";
 import { logout } from "../store/slices/authSlice"; // Adjust path to your authSlice
 import type { RootState } from "../store/store";
+import OrderDropdown from "../components/ui/OrderDropdown";
 
 const baseQuery = fetchBaseQuery({
   baseUrl: "https://rss-server-7wyx.onrender.com/",
@@ -262,9 +263,7 @@ export const rssApi = createApi({
         url: `/content-types/${Number(id)}`,
         method: "DELETE",
       }),
-      invalidatesTags: (_result, _error, arg) => [
-        { type: "ContentType", id: arg.categoryId },
-      ],
+      invalidatesTags: [{ type: "ContentType", id: "LIST" }],
     }),
 
     uploadFile: builder.mutation<void, FormData>({
@@ -477,7 +476,7 @@ export const rssApi = createApi({
         currentArg?.languageCode !== previousArg?.languageCode,
     }),
     getSearchFiles: builder.query({
-      query: ({ search, lang, skip, take, year }) => ({
+      query: ({ search, lang, skip, take, year, sortBy, order }) => ({
         url: "/search/files",
         method: "GET",
         params: {
@@ -486,6 +485,8 @@ export const rssApi = createApi({
           skip: skip || 0,
           take: take || 20,
           year: year,
+          sortBy: sortBy,
+          order: order,
         },
       }),
     }),

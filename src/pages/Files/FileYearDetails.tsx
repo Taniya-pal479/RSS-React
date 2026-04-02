@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-
 import {
   FileText,
   Download,
@@ -17,9 +16,7 @@ import {
 } from "lucide-react";
 
 import DataTable, { type Column } from "../../components/common/DataTable";
-
 import {
-  useGetAllFilesQuery,
   useGetContentTypesQuery,
   useDeleteFileMutation,
   useGetSearchFilesQuery,
@@ -33,7 +30,6 @@ import { useDownload } from "../../hook/useDownload";
 import { useAppSelector } from "../../hook/store";
 import ContentTypeFilter from "../../components/ui/ContentTypeFilter";
 import SortDropdown from "../../components/ui/SortDropdown";
-
 import OrderDropdown from "../../components/ui/OrderDropdown";
 import { useDebounce } from "../../hook/useDebounce";
 import TablePagination from "../../components/common/TablePagination";
@@ -43,118 +39,99 @@ const FileYearDetails = () => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
 
+  // Filter & UI State
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<string>("");
   const [order, setOrder] = useState<"asc" | "desc" | null>(null);
   const [fileEdit, setFileedit] = useState<FileObject | null>(null);
-  const { handleDownload } = useDownload();
-  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  const skip = (page - 1) * rowsPerPage;
-
+  const { handleDownload } = useDownload();
+  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
   const debouncedSearch = useDebounce(searchQuery, 500);
+  const skip = (page - 1) * rowsPerPage;
 
   const sortOptions = [
     { label: t("date_updated"), value: "updatedAt" },
     { label: t("file_size"), value: "fileSize" },
-    { label: t("original_name"), value: "originalName" },
+    { label: t("original_name"), value: "name" },
   ];
 
-  const { data: filesData, isLoading } = useGetAllFilesQuery(
+  /** * QUERY 1: Base Year Data
+   * Fetches the default list for the year with sorting. Skips when searching.
+   */
+  const {
+    data: baseData,
+    isLoading: isBaseLoading,
+    isFetching: isBaseFetching,
+  } = useGetSearchFilesQuery(
     {
+      search: "",
       lang: i18n.language,
-      skip: skip,
+      skip,
       take: rowsPerPage,
-      sortBy: sortBy,
-      order: order ?? "asc",
+      year: year ? Number(year) : undefined,
+      sortBy,
+      order,
     },
-    {
-      skip: !isAuthenticated,
-    },
+    { skip: !isAuthenticated || !!debouncedSearch.trim() },
   );
 
-  const allFiles = filesData?.data || [];
+  /** * QUERY 2: Search Results
+   * Fetches filtered results when user types. Skips when search is empty.
+   */
+  const { data: searchData, isFetching: isSearchFetching } =
+    useGetSearchFilesQuery(
+      {
+        search: debouncedSearch,
+        lang: i18n.language,
+        skip,
+        take: rowsPerPage,
+        year: year ? Number(year) : undefined,
+        sortBy,
+        order,
+      },
+      { skip: !isAuthenticated || !debouncedSearch.trim() },
+    );
 
-  const { data: filterData, isFetching } = useGetSearchFilesQuery(
-    {
-      search: debouncedSearch,
-      lang: i18n.language,
-      skip: skip,
-      take: rowsPerPage,
-      year: year,
-    },
-    {
-      skip: !isAuthenticated || !debouncedSearch.trim(),
-    },
-  );
+  // Switch logic to decide which data to display
+  const isSearching = !!debouncedSearch.trim();
+  const rawFiles = isSearching
+    ? searchData?.files || []
+    : baseData?.files || [];
+  const totalCount = isSearching
+    ? searchData?.total || 0
+    : baseData?.total || 0;
 
-  const totalFiles = debouncedSearch.trim()
-    ? filterData?.total || 0
-    : filesData?.total || 0;
+  // Client-side Content Type filter (Year/Search/Sort/Order are already server-side)
+  const displayFiles = useMemo(() => {
+    if (!selectedType) return rawFiles;
+    return rawFiles.filter(
+      (f) => String(f.contentTypeId) === String(selectedType),
+    );
+  }, [rawFiles, selectedType]);
 
-  const allFilterFiles = filterData || [];
-  console.log("filter", searchQuery);
-
-  console.log("filterdata", allFilterFiles.translations);
-
-  const yearFiles = useMemo(() => {
-    // 1. Start with your base data
-    let processed = debouncedSearch.trim() ? allFilterFiles : allFiles;
-
-    // 2. Apply the Year Filter (if not searching)
-    if (!debouncedSearch.trim()) {
-      processed = processed.filter((f) => String(f.year) === String(year));
-
-      // 3. Apply Content Type Filter
-      if (selectedType) {
-        processed = processed.filter(
-          (f) => String(f.contentTypeId) === String(selectedType),
-        );
-      }
-    }
-
-    // 4. PAGINATION: Slice the filtered data for the current page
-    const start = (page - 1) * rowsPerPage;
-    const end = start + rowsPerPage;
-
-    return processed.slice(start, end);
-  }, [
-    allFiles,
-    year,
-    allFilterFiles,
-    debouncedSearch,
-    selectedType,
-    page,
-    rowsPerPage,
-  ]);
-
-  const filteredTotalCount = useMemo(() => {
-    let processed = debouncedSearch.trim() ? allFilterFiles : allFiles;
-    if (!debouncedSearch.trim()) {
-      processed = processed.filter((f) => String(f.year) === String(year));
-      if (selectedType) {
-        processed = processed.filter(
-          (f) => String(f.contentTypeId) === String(selectedType),
-        );
-      }
-    }
-    return processed.length;
-  }, [allFiles, allFilterFiles, debouncedSearch, year, selectedType]);
-
-  const totalPages = Math.ceil(filteredTotalCount / rowsPerPage);
+  const totalPages = Math.ceil(totalCount / rowsPerPage);
 
   const { data: contentTypesData } = useGetContentTypesQuery({
     lang: i18n.language,
     skip: 0,
     take: 1000,
   });
-
   const contentTypes = contentTypesData?.data ?? [];
 
   const [deleteFile] = useDeleteFileMutation();
+
+  const executeDelete = async (id: number) => {
+    try {
+      await deleteFile(id).unwrap();
+      toast.success(t("DELETED_SUCCESSFULLY"));
+    } catch (err) {
+      toast.error(t("ERROR_DELETING"));
+    }
+  };
 
   const handleDeleteClick = (id: number) => {
     toast(
@@ -165,64 +142,37 @@ const FileYearDetails = () => {
           closeToast={closeToast}
         />
       ),
-      {
-        position: "top-center",
-        autoClose: false,
-        className: "rounded-2xl shadow-2xl border border-gray-100",
-      },
+      { position: "top-center", autoClose: false },
     );
   };
 
-  const executeDelete = async (id: number) => {
-    try {
-      await deleteFile(id).unwrap();
-      toast.success(t("DELETED_SUCCESSFULLY"));
-    } catch (err) {
-      console.log(err);
-      toast.error(t("ERROR_DELETING"));
-    }
-  };
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const columns: Column<any>[] = [
     {
       header: t("file_display_name"),
       key: "fileName",
       className: "w-[35%]",
-      render: (file) => {
-        return (
-          <div className="flex items-center gap-4 py-2">
-            <div className="p-3 bg-orange-50 text-blue-600 rounded-2xl shadow-sm">
-              <FileText size={20} />
-            </div>
-
-            <div className="flex flex-col cursor-pointer">
-              <span
-                className="font-bold text-slate-800 hover:text-orange-600 transition-colors"
-                onClick={() =>
-                  window.open(
-                    file.url ||
-                      `http://localhost:3000/uploads/${file.storageKey}`,
-                    "_blank",
-                  )
-                }
-              >
-                {file.displayName || file.name}
-              </span>
-
-              <span className="text-[10px] text-slate-400 uppercase">
-                {file.mimeType} • {file.extension?.replace(".", "")}
-              </span>
-            </div>
+      render: (file) => (
+        <div className="flex items-center gap-4 py-2">
+          <div className="p-3 bg-orange-50 text-blue-600 rounded-2xl shadow-sm">
+            <FileText size={20} />
           </div>
-        );
-      },
+          <div className="flex flex-col cursor-pointer">
+            <span
+              className="font-bold text-slate-800 hover:text-orange-600 transition-colors"
+              onClick={() => window.open(file.url, "_blank")}
+            >
+              {file.displayName || file.name}
+            </span>
+            <span className="text-[10px] text-slate-400 uppercase">
+              {file.mimeType} • {file.extension?.replace(".", "")}
+            </span>
+          </div>
+        </div>
+      ),
     },
-
     {
       header: t("category"),
-      key: "metadata" as string,
-      className: "w-[20%]",
+      key: "category",
       render: (file: FileObject) => (
         <span className="font-bold text-slate-600">
           {file.metadata?.category || file.category || "---"}
@@ -230,57 +180,29 @@ const FileYearDetails = () => {
       ),
     },
     {
-      header: t("subcategory"),
-      key: "subcategory" as string,
-      className: "w-[20%]",
-      render: (file: FileObject) => (
-        <span className="font-bold text-slate-600">
-          {file.metadata?.subcategory || file.subcategory || "---"}
-        </span>
-      ),
-    },
-
-    {
       header: t("content_type"),
       key: "contentType",
-      className: "w-[20%]",
       render: (file) => {
-        const type = contentTypes.find(
-          (ct) => String(ct.id) === String(file.contentTypeId),
-        );
         return (
           <span className="text-slate-500 font-bold">
-            {type?.name || file.contentType || "---"}
+            {file.contentType || "---"}
           </span>
         );
       },
     },
     {
       header: t("upload_date"),
-
       key: "uploadedAt",
-
-      className: "w-[20%]",
-
-      render: (file) => {
-        const dateOnly = file.uploadedAt
-          ? file.uploadedAt.split("T")[0]
-          : "---";
-        const date = file.createdAt ? file.createdAt.split("T")[0] : "---";
-        return (
-          <div className="flex items-center gap-2 text-slate-500">
-            <Calendar size={14} className="text-slate-300" />
-
-            <span>{searchQuery ? date : dateOnly}</span>
-          </div>
-        );
-      },
+      render: (file) => (
+        <div className="flex items-center gap-2 text-slate-500">
+          <Calendar size={14} className="text-slate-300" />
+          <span>{file.createdAt?.split("T")[0] || "---"}</span>
+        </div>
+      ),
     },
-
     {
       header: t("size"),
       key: "fileSize",
-      className: "w-[15%]",
       render: (file) => (
         <div className="flex items-center gap-2 text-slate-500 font-bold">
           <HardDrive size={14} className="text-slate-300" />
@@ -288,11 +210,10 @@ const FileYearDetails = () => {
         </div>
       ),
     },
-
     {
       header: t("actions"),
       key: "actions",
-      className: "w-[30%] text-right",
+      className: "text-right",
       render: (file) => (
         <div className="flex justify-end gap-2">
           <button
@@ -301,14 +222,12 @@ const FileYearDetails = () => {
           >
             <Download size={18} />
           </button>
-
           <button
             onClick={() => setFileedit(file)}
-            className="p-2 bg-red-50 text-red-500 rounded-xl"
+            className="p-2 bg-blue-50 text-blue-500 rounded-xl"
           >
             <Edit2 size={18} />
           </button>
-
           <button
             onClick={() => handleDeleteClick(file.id)}
             className="p-2 bg-red-50 text-red-500 rounded-xl"
@@ -321,7 +240,7 @@ const FileYearDetails = () => {
   ];
 
   return (
-    <div className="p-8 bg-[#fafafa] min-h-[60vh]  pb-5">
+    <div className="p-8 bg-[#fafafa] min-h-[60vh] pb-5">
       <nav className="flex items-center gap-2 mb-8 text-sm font-bold">
         <button
           onClick={() => navigate("/")}
@@ -329,18 +248,14 @@ const FileYearDetails = () => {
         >
           <Home size={16} />
         </button>
-
         <ChevronRight size={14} className="text-slate-300" />
-
         <button
           onClick={() => navigate("/year")}
           className="text-slate-400 hover:text-orange-500"
         >
           {t("all_files")}
         </button>
-
         <ChevronRight size={14} className="text-slate-300" />
-
         <span className="text-orange-600 uppercase">{year}</span>
       </nav>
 
@@ -350,11 +265,11 @@ const FileYearDetails = () => {
         </h1>
       </div>
 
-      <div className="flex justify-between items-center mb-6 px-4">
-        {/* Search Field */}
-        <div className="relative w-full max-w-sm">
+      <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6 px-4">
+        {/* Search Field - Constrained width so it doesn't squash filters */}
+        <div className="relative w-full md:w-80">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            {isFetching ? (
+            {isSearchFetching ? (
               <Loader2 size={18} className="text-orange-500 animate-spin" />
             ) : (
               <Search size={18} className="text-slate-400" />
@@ -364,24 +279,29 @@ const FileYearDetails = () => {
             type="text"
             placeholder={t("search")}
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="block w-full pl-10 pr-10 py-2 border border-slate-200 rounded-xl bg-white text-sm focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-all"
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setPage(1);
+            }}
+            className="block w-full pl-10 pr-10 py-2.5 border border-slate-200 rounded-xl bg-white text-sm focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-all shadow-sm"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery("")}
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-red-500"
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-red-500 transition-colors"
             >
               <X size={16} />
             </button>
           )}
         </div>
 
-        <div className="flex gap-2">
+        {/* Filter Actions - Grouped and spaced */}
+        <div className="flex flex-wrap items-center gap-3">
           <SortDropdown
             options={sortOptions}
             selectedSort={sortBy}
             onChange={setSortBy}
+            // Note: If your SortDropdown has a 'clearable' prop, set it to false here
           />
           <OrderDropdown
             value={order}
@@ -394,20 +314,21 @@ const FileYearDetails = () => {
           />
         </div>
       </div>
+
       <div className="bg-white rounded-4xl border border-slate-100 shadow-sm overflow-hidden">
         <DataTable
           columns={columns}
-          data={yearFiles}
-          isLoading={isLoading || (isFetching && searchQuery !== "")}
+          data={displayFiles}
+          isLoading={isBaseLoading || isSearchFetching}
           emptyMessage={t("no_files_found")}
         />
 
-        {!isLoading && yearFiles.length > 0 && (
+        {displayFiles.length > 0 && (
           <TablePagination
             currentPage={page}
             totalPages={totalPages}
             rowsPerPage={rowsPerPage}
-            onPageChange={(newPage) => setPage(newPage)}
+            onPageChange={setPage}
             onRowsPerPageChange={(newSize) => {
               setRowsPerPage(newSize);
               setPage(1);

@@ -33,16 +33,23 @@ const SidebarCategoryItem = ({
 
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
 
-  const { data: subCategoriesData, isLoading } = useGetSubCategoriesQuery(
+  const {
+    data: subCategoriesData,
+    isLoading,
+    isFetching,
+  } = useGetSubCategoriesQuery(
     {
       categoryId: category.id,
       lang: i18n.language,
       skip: 0,
-      take: 100,
+      take: 1000,
     },
-    { skip: !isAuthenticated || !isCategoryOpen },
+    {
+      skip: !isAuthenticated || !isCategoryOpen,
+      refetchOnMountOrArgChange: true,
+    },
   );
-  const subCategories = subCategoriesData?.result || [];
+  const subCategories = subCategoriesData?.result ?? [];
 
   return (
     <div className="mb-1">
@@ -76,7 +83,7 @@ const SidebarCategoryItem = ({
 
       {isCategoryOpen && (
         <div className="ml-4 pl-4 border-l border-[#FED7AA] my-1 space-y-1">
-          {isLoading ? (
+          {isLoading || isFetching ? (
             <div className="flex items-center gap-2 px-2 py-1 text-xs text-gray-400">
               <Loader2 size={10} className="animate-spin" /> {t("loading")}...
             </div>

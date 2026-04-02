@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Calendar, ChevronRight, FolderOpen, Loader2 } from "lucide-react";
+import { Calendar, ChevronRight, FolderOpen } from "lucide-react";
 import { useGetFileIndexQuery } from "../../services/rssApi";
 import { useAppSelector } from "../../hook/store";
 
