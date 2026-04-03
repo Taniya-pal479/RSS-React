@@ -46,6 +46,7 @@ const CategoryDetail = () => {
   const [deleteSubCategory] = useDeleteSubCategoryMutation();
   const [page, setPage] = useState(1); // Start at 1 for our component
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const ROWS_PER_TYPE = 10;
 
   const { data: categoriesData } = useGetCategoriesQuery(
     { lang: i18n.language, skip: 0, take: 1000 },
@@ -67,48 +68,31 @@ const CategoryDetail = () => {
   const { data: subCat, isLoading } = useGetSubCategoriesQuery(
     {
       categoryId: categoryId as string,
-
       lang: i18n.language,
-
-      skip: 0,
-      take: 1000,
+      skip: (page - 1) * ROWS_PER_TYPE, // Page 1 skips 0, Page 2 skips 10
+      take: ROWS_PER_TYPE,
     },
     { refetchOnMountOrArgChange: true },
   );
 
-  console.log("subCatt", subCat?.total);
-
-  const subCategories = Array.isArray(subCat) ? subCat : subCat?.result || [];
-
-  const totalSubCats = subCategories.length;
-  const globalStart = (page - 1) * rowsPerPage;
-  const subsOnThisPage = Math.max(
-    0,
-    Math.min(rowsPerPage, totalSubCats - globalStart),
-  );
-  const fileSkip = Math.max(0, globalStart - totalSubCats);
-  const fileTake = rowsPerPage - subsOnThisPage;
+  const subCategories = subCat?.result || [];
+  const totalSubCats = subCat?.total || 0;
+  console.log("subCatt", subCat?.result);
+  console.log("subCatt", subCat);
 
   const { data: filesData, isLoading: filesLoading } =
     useGetFilesByCategoryQuery(
       {
         catId: categoryId!,
         lang: i18n.language,
-        skip: fileSkip,
-        take: fileTake > 0 ? fileTake : 0,
+        skip: (page - 1) * ROWS_PER_TYPE, // Page 1 skips 0, Page 2 skips 10
+        take: ROWS_PER_TYPE,
       },
-      {
-        skip:
-          !categoryId ||
-          isNaN(Number(categoryId)) ||
-          categoryId === ":categoryId",
-
-        refetchOnMountOrArgChange: true,
-      },
+      { skip: !categoryId, refetchOnMountOrArgChange: true },
     );
+
   const files = filesData?.files || [];
   console.log("newFiles", filesData?.total);
-
   console.log("subCatt", subCat?.total);
 
   const totalFiles = filesData?.total ?? 0;
@@ -152,21 +136,9 @@ const CategoryDetail = () => {
   };
 
   const combinedData = useMemo(() => {
-    const noData = subCategories.length === 0 && (files?.length ?? 0) === 0;
-    if (noData && (isLoading || filesLoading)) return [];
-
-    const paginatedSubs = subCategories.slice(
-      globalStart,
-      globalStart + rowsPerPage,
-    );
-    // Files are already correctly paginated by the API (skip/take), just render all
-    const paginatedFiles = (files || []).slice(
-      0,
-      rowsPerPage - paginatedSubs.length,
-    );
-
+    // Just merge the two arrays exactly as they come from the API
     return [
-      ...paginatedSubs.map((sub) => ({
+      ...subCategories.map((sub) => ({
         ...sub,
         tableId: `sub-${sub.id}`,
         displayName: sub.name,
@@ -174,7 +146,7 @@ const CategoryDetail = () => {
         itemType: "subcategory",
         icon: <Folder size={18} className="text-orange-500" />,
       })),
-      ...paginatedFiles.map((file) => ({
+      ...files.map((file) => ({
         ...file,
         tableId: `file-${file.id}`,
         displayName: file.displayName,
@@ -183,9 +155,10 @@ const CategoryDetail = () => {
         icon: <FileText size={18} className="text-blue-500" />,
       })),
     ];
-  }, [subCategories, files, globalStart, rowsPerPage, filesLoading, isLoading]);
-  const totalItems = subCategories.length + (filesData?.total ?? 0);
-  const totalPages = Math.ceil(totalItems / rowsPerPage);
+  }, [subCategories, files]);
+
+  const maxTotal = Math.max(totalSubCats, totalFiles);
+  const totalPages = Math.ceil(maxTotal / ROWS_PER_TYPE);
   console.log("Combined Data", combinedData);
 
   const columns: Column<FileObject>[] = [
@@ -431,7 +404,7 @@ const CategoryDetail = () => {
         emptyMessage={t("no_subcategories")}
       />
 
-      {!isLoading && !filesLoading && combinedData.length > 0 && (
+      {!isLoading && !filesLoading && (totalSubCats > 0 || totalFiles > 0) && (
         <TablePagination
           currentPage={page}
           totalPages={totalPages}

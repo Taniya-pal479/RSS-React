@@ -124,8 +124,9 @@ export const rssApi = createApi({
         `/subcategories/category/${Number(categoryId)}?lang=${lang}&skip=${skip}&take=${take}`,
       keepUnusedDataFor: 300,
 
-      providesTags: (_result, _error, arg) => [
-        { type: "SubCategory", id: `LIST-${arg.categoryId}` }, // ← one tag per category
+      providesTags: (result, error, arg) => [
+        { type: "SubCategory", id: "LIST" },
+        { type: "SubCategory", id: arg.categoryId },
       ],
     }),
 
