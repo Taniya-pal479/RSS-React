@@ -45,11 +45,13 @@ const SidebarCategoryItem = ({
       take: 1000,
     },
     {
-      skip: !isAuthenticated || !isCategoryOpen,
+      skip: !isCategoryOpen,
       refetchOnMountOrArgChange: true,
     },
   );
-  const subCategories = subCategoriesData?.result ?? [];
+  const subCategories = Array.isArray(subCategoriesData)
+    ? subCategoriesData
+    : subCategoriesData?.result || [];
 
   return (
     <div className="mb-1">

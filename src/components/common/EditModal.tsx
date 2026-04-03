@@ -29,12 +29,12 @@ const EditModal = ({ type, data, onClose }: EditModalProps) => {
   const [formData, setFormData] = useState({ name: "", description: "" });
 
   const categoryQuery = useGetCategoriesQuery(
-    { lang: currentLangCode, skip: 0, take: 100 },
+    { lang: currentLangCode, skip: 0, take: 1000 },
     { skip: type !== "category" },
   );
 
   const subCategoryQuery = useGetSubCategoriesQuery(
-    { lang: currentLangCode, categoryId: data?.categoryId, skip: 0, take: 100 },
+    { lang: currentLangCode, categoryId: data?.categoryId, skip: 0, take: 1000 },
     { skip: type !== "subcategory" || !data?.categoryId },
   );
 

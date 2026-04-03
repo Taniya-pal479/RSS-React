@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useRef } from "react";
+import React, { useState, useMemo } from "react";
 
 import { useParams, useNavigate } from "react-router-dom";
 
@@ -15,7 +15,7 @@ import {
   useDeleteFileMutation,
 } from "../../services/rssApi";
 
-import type { Category, FileObject, SubCategory } from "../../types";
+import type { Category, FileItem, FileObject, SubCategory } from "../../types";
 
 import { toast } from "react-toastify";
 
@@ -48,7 +48,7 @@ const CategoryDetail = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const { data: categoriesData } = useGetCategoriesQuery(
-    { lang: i18n.language, skip: 0, take: 100 },
+    { lang: i18n.language, skip: 0, take: 1000 },
 
     {
       skip: !categoryId || isNaN(Number(categoryId)),
@@ -70,54 +70,48 @@ const CategoryDetail = () => {
 
       lang: i18n.language,
 
-      skip: (page - 1) * rowsPerPage,
-      take: rowsPerPage,
+      skip: 0,
+      take: 1000,
     },
     { refetchOnMountOrArgChange: true },
   );
 
   console.log("subCatt", subCat?.total);
 
-  const subCatResponse = subCat?.result || [];
+  const subCategories = Array.isArray(subCat) ? subCat : subCat?.result || [];
 
-  const subCategories = useMemo(() => {
-    return subCatResponse ?? [];
-  }, [subCatResponse]);
-
-  const {
-    data: filesData,
-    isLoading: filesLoading,
-    isFetching: filesFetching,
-  } = useGetFilesByCategoryQuery(
-    {
-      catId: categoryId!,
-      lang: i18n.language,
-      skip: (page - 1) * rowsPerPage,
-      take: rowsPerPage,
-    },
-    {
-      skip:
-        !categoryId ||
-        isNaN(Number(categoryId)) ||
-        categoryId === ":categoryId",
-
-      refetchOnMountOrArgChange: true,
-    },
+  const totalSubCats = subCategories.length;
+  const globalStart = (page - 1) * rowsPerPage;
+  const subsOnThisPage = Math.max(
+    0,
+    Math.min(rowsPerPage, totalSubCats - globalStart),
   );
+  const fileSkip = Math.max(0, globalStart - totalSubCats);
+  const fileTake = rowsPerPage - subsOnThisPage;
+
+  const { data: filesData, isLoading: filesLoading } =
+    useGetFilesByCategoryQuery(
+      {
+        catId: categoryId!,
+        lang: i18n.language,
+        skip: fileSkip,
+        take: fileTake > 0 ? fileTake : 0,
+      },
+      {
+        skip:
+          !categoryId ||
+          isNaN(Number(categoryId)) ||
+          categoryId === ":categoryId",
+
+        refetchOnMountOrArgChange: true,
+      },
+    );
   const files = filesData?.files || [];
   console.log("newFiles", filesData?.total);
 
   console.log("subCatt", subCat?.total);
 
-  const hasMore =
-    (subCat?.total ?? 0) > subCategories.length ||
-    (filesData?.total ?? 0) > files.length;
-
-  const totalSubCats = subCat?.total ?? 0;
   const totalFiles = filesData?.total ?? 0;
-
-  const totalItems = Math.max(totalSubCats, totalFiles);
-  const totalPages = Math.ceil(totalItems / rowsPerPage);
 
   const [deleteFile] = useDeleteFileMutation();
 
@@ -158,45 +152,40 @@ const CategoryDetail = () => {
   };
 
   const combinedData = useMemo(() => {
-    if (filesLoading || isLoading) return [];
+    const noData = subCategories.length === 0 && (files?.length ?? 0) === 0;
+    if (noData && (isLoading || filesLoading)) return [];
 
-    const mixed = [
-      ...(subCategories || []).map((sub: any) => ({
+    const paginatedSubs = subCategories.slice(
+      globalStart,
+      globalStart + rowsPerPage,
+    );
+    // Files are already correctly paginated by the API (skip/take), just render all
+    const paginatedFiles = (files || []).slice(
+      0,
+      rowsPerPage - paginatedSubs.length,
+    );
+
+    return [
+      ...paginatedSubs.map((sub) => ({
         ...sub,
-
         tableId: `sub-${sub.id}`,
-
         displayName: sub.name,
-
-        discription: sub.description,
-
         displayType: "SUBCATEGORY",
-
         itemType: "subcategory",
-
         icon: <Folder size={18} className="text-orange-500" />,
       })),
-
-      ...(files || []).map((file: any) => ({
+      ...paginatedFiles.map((file) => ({
         ...file,
-
         tableId: `file-${file.id}`,
-
         displayName: file.displayName,
-
-        discription: file.description,
-
         displayType: "FILE",
-
         itemType: "file",
-
         icon: <FileText size={18} className="text-blue-500" />,
       })),
     ];
-
-    return mixed;
-  }, [subCategories, files, filesLoading, isLoading]);
-
+  }, [subCategories, files, globalStart, rowsPerPage, filesLoading, isLoading]);
+  const totalItems = subCategories.length + (filesData?.total ?? 0);
+  const totalPages = Math.ceil(totalItems / rowsPerPage);
   console.log("Combined Data", combinedData);
 
   const columns: Column<FileObject>[] = [
@@ -275,7 +264,16 @@ const CategoryDetail = () => {
                 onClick={(e) => {
                   e.stopPropagation();
 
-                  setEditingSub(item);
+                  setEditingSub({
+                    id: item.id,
+
+                    name: item.displayName || item.name || "",
+                    translations:
+                      item.translations?.map((t) => ({
+                        languageCode: t.languageCode,
+                        name: t.displayName || "",
+                      })) || [],
+                  } as unknown as SubCategory);
                 }}
                 className="p-2 hover:text-gray-300 text-[#f97316] transition-colors cursor-pointer"
               >
@@ -426,10 +424,10 @@ const CategoryDetail = () => {
       </div>
 
       <DataTable
-        columns={columns}
+        columns={columns as any}
         onRowClick={handleRowClick}
         data={combinedData}
-        isLoading={isLoading || filesLoading}
+        isLoading={(isLoading || filesLoading) && combinedData.length === 0}
         emptyMessage={t("no_subcategories")}
       />
 

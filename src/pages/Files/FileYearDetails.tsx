@@ -62,11 +62,7 @@ const FileYearDetails = () => {
   /** * QUERY 1: Base Year Data
    * Fetches the default list for the year with sorting. Skips when searching.
    */
-  const {
-    data: baseData,
-    isLoading: isBaseLoading,
-    isFetching: isBaseFetching,
-  } = useGetSearchFilesQuery(
+  const { data: baseData, isLoading: isBaseLoading } = useGetSearchFilesQuery(
     {
       search: "",
       lang: i18n.language,
@@ -109,7 +105,8 @@ const FileYearDetails = () => {
   const displayFiles = useMemo(() => {
     if (!selectedType) return rawFiles;
     return rawFiles.filter(
-      (f) => String(f.contentTypeId) === String(selectedType),
+      (f: { contentTypeId: string }) =>
+        String(f.contentTypeId) === String(selectedType),
     );
   }, [rawFiles, selectedType]);
 
@@ -129,6 +126,7 @@ const FileYearDetails = () => {
       await deleteFile(id).unwrap();
       toast.success(t("DELETED_SUCCESSFULLY"));
     } catch (err) {
+      console.log(err);
       toast.error(t("ERROR_DELETING"));
     }
   };

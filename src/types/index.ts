@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { MouseEvent, ReactNode } from "react";
 
 export interface Language {
   _id?: string;
@@ -216,6 +216,7 @@ export interface SearchItem {
   categoryId?: string | number;
   url?: string;
   mimeType?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
 
@@ -269,6 +270,8 @@ export interface FileItem {
   icon?: React.ReactNode;
 }
 export interface FileObject {
+  originalId: number | string;
+  name: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   type: any;
   contentTypeId: number | string;

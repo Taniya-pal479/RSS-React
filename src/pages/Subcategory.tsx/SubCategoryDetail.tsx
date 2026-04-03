@@ -63,7 +63,7 @@ const SubCategoryDetail = () => {
       categoryId: categoryId as string,
       lang: i18n.language,
       skip: 0,
-      take: 100,
+      take: 1000,
     });
 
   const subCategories = subCategoriesData?.result || [];

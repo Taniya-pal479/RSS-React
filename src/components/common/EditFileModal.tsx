@@ -26,7 +26,7 @@ const EditFileModal = ({ data, onClose }: EditFileModalProps) => {
     {
       contentTypeId: data?.contentTypeId,
       lang: currentLangCode,
-      take: 100,
+      take: 1000,
       skip: 0,
     },
     { skip: !data?.id },
@@ -37,8 +37,8 @@ const EditFileModal = ({ data, onClose }: EditFileModalProps) => {
   const [updateFile, { isLoading: isUpdating }] = useUpdateFileMutation();
 
   const [formData, setFormData] = useState({
-    displayName: "",
-    description: "",
+    displayName: data.displayName || data.name || "",
+    description: data.description || "",
   });
 
   useEffect(() => {

@@ -1,8 +1,8 @@
-import { useState, useRef, useEffect } from "react"; // Added useRef
+import { useState, useRef, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Edit2, Trash2, Plus, Loader2 } from "lucide-react";
-import { useVirtualizer } from "@tanstack/react-virtual"; // Added
+import { useVirtualizer } from "@tanstack/react-virtual";
 import {
   useDeleteContentTypeMutation,
   useGetContentTypesQuery,

@@ -19,7 +19,7 @@ import { useDownload } from "../../hook/useDownload";
 import { useGetAllFilesQuery } from "../../services/rssApi";
 import DataTable, { type Column } from "../../components/common/DataTable";
 import i18n from "../../i18n";
-import type { FileItem, FileObject } from "../../types";
+import type { FileItem } from "../../types";
 import TablePagination from "../../components/common/TablePagination";
 
 const CardsFilesTable = () => {

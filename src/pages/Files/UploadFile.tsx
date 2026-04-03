@@ -32,14 +32,12 @@ const GlobalUpload = () => {
   const [year, setYear] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
-  const [page, setPage] = useState(0);
-  const rowsPerPage = 20;
 
   const { data: categoriesData } = useGetCategoriesQuery(
     {
       lang: i18n.language,
       skip: 0,
-      take: 100,
+      take: 1000,
     },
     { skip: !isAuthenticated },
   );
@@ -48,7 +46,7 @@ const GlobalUpload = () => {
 
   const { data: subCategoriesData, isFetching: isFetchingSubCats } =
     useGetSubCategoriesQuery(
-      { categoryId: selectedCatId, lang: i18n.language, skip: 0, take: 100 },
+      { categoryId: selectedCatId, lang: i18n.language, skip: 0, take: 1000 },
       { skip: !isAuthenticated || !selectedCatId },
     );
 
@@ -57,8 +55,8 @@ const GlobalUpload = () => {
   const { data: contentTypesData } = useGetContentTypesQuery(
     {
       lang: i18n.language,
-      skip: page * rowsPerPage,
-      take: rowsPerPage,
+      skip: 0,
+      take: 1000,
     },
     { skip: !isAuthenticated },
   );
@@ -108,18 +106,16 @@ const GlobalUpload = () => {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const incomingFiles = Array.from(e.target.files || []);
-    const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB in bytes
+    const MAX_FILE_SIZE = 100 * 1024 * 1024;
 
-    // 1. Check if any new file exceeds the limit immediately
     const oversizedFiles = incomingFiles.filter(
       (file) => file.size > MAX_FILE_SIZE,
     );
 
     if (oversizedFiles.length > 0) {
-      // Show error for the first oversized file found
       toast.error(
         `${t("file_too_large") || "File too large"}: ${oversizedFiles[0].name}. ` +
-          `${t("max_limit") || "Max limit is 50MB"}`,
+          `${t("max_limit") || "Max limit is 100MB"}`,
       );
       e.target.value = "";
       return;
@@ -417,7 +413,7 @@ const GlobalUpload = () => {
                     : t("file_input_placeholder")}
                 </p>
                 <p className="text-[10px] text-slate-400 font-bold mt-1 uppercase">
-                  MAX 10 FILES - 50MB PER FILE
+                  MAX 10 FILES - 100MB PER FILE
                 </p>
               </div>
             </div>

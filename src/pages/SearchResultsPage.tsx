@@ -28,7 +28,15 @@ const SearchResultsPage = () => {
     }
   }, [searchQuery, navigate]);
 
-  const { data: files = [], isLoading } = useGetAllFilesQuery(i18n.language);
+  const { data: filesData, isLoading } = useGetAllFilesQuery({
+    lang: i18n.language,
+    skip: 0,
+    take: 1000,
+  });
+
+  const files = filesData?.data || [];
+
+  console.log("filessssss", files);
 
   const filteredResults = useMemo(() => {
     if (!searchQuery) return [];

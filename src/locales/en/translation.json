@@ -97,6 +97,10 @@
   "SUBCATEGORY_DELETED": "Subcategory deleted successfully",
   "archives": "Archives",
 
+  "file_too_large": "File too large",
+  "max_limit": "Max limit is 50MB",
+  "max_files_error": "Maximum 10 files allowed",
+
   "edit_category": "Edit Category",
   "edit_subcategory": "Edit Sub-category",
   "update": "Update",

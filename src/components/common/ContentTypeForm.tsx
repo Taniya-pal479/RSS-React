@@ -61,13 +61,13 @@ const ContentTypeForm: React.FC = () => {
   const { data: categoriesData } = useGetCategoriesQuery({
     lang: i18n.language,
     skip: 0,
-    take: 100,
+    take: 1000,
   });
 
   const categories = categoriesData?.data || [];
 
   const { data: subCategoriesData } = useGetSubCategoriesQuery(
-    { categoryId: selectedCatId, lang: i18n.language, skip: 0, take: 100 },
+    { categoryId: selectedCatId, lang: i18n.language, skip: 0, take: 1000 },
     { skip: !selectedCatId },
   );
 

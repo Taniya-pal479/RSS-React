@@ -7,13 +7,11 @@ import type {
   ContentTypeMapped,
   CreateContentTypePayload,
   FileObject,
-  FilesResponses,
   SearchResponse,
   SubCategoryResponse,
   CategoryResponse,
   AllFilesResponse,
   SubCatFilesResponse,
-  YearGroup,
   FileIndexResponse,
 } from "../types";
 
@@ -24,7 +22,6 @@ import type {
 } from "@reduxjs/toolkit/query/react";
 import { logout } from "../store/slices/authSlice"; // Adjust path to your authSlice
 import type { RootState } from "../store/store";
-import OrderDropdown from "../components/ui/OrderDropdown";
 
 const baseQuery = fetchBaseQuery({
   baseUrl: "https://rss-server-7wyx.onrender.com/",
@@ -125,21 +122,11 @@ export const rssApi = createApi({
     >({
       query: ({ categoryId, lang, skip, take }) =>
         `/subcategories/category/${Number(categoryId)}?lang=${lang}&skip=${skip}&take=${take}`,
-      serializeQueryArgs: ({ queryArgs }) =>
-        `subcats-${queryArgs.categoryId}-${queryArgs.lang}`,
-      merge: (currentCache, newItems, { arg }) => {
-        if (arg.skip === 0) return newItems;
-        const existingIds = new Set(currentCache.result.map((i) => i.id));
-        const uniqueNew = newItems.result.filter((i) => !existingIds.has(i.id));
-        currentCache.result.push(...uniqueNew);
-      },
+      keepUnusedDataFor: 300,
 
       providesTags: (_result, _error, arg) => [
-        { type: "SubCategory", id: arg.categoryId },
+        { type: "SubCategory", id: `LIST-${arg.categoryId}` }, // ← one tag per category
       ],
-      transformResponse: (response: SubCategoryResponse) => {
-        return response;
-      },
     }),
 
     deleteCategory: builder.mutation<{ success: boolean }, string>({
@@ -427,7 +414,7 @@ export const rssApi = createApi({
         `/files/index?groupBy=${groupBy}&lang=${lang}&skip=${skip}&take=${take}`,
 
       // Cache the result based on the specific page/skip/take combination
-      providesTags: (result, error, { groupBy, lang, skip, take }) => [
+      providesTags: (_result, _error, { groupBy, lang, skip, take }) => [
         { type: "Files", id: `INDEX-${groupBy}-${lang}-${skip}-${take}` },
         { type: "Files", id: "LIST" },
       ],

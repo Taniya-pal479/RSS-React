@@ -7,7 +7,7 @@ export interface Column<T> {
   render?: (item: T, index: number) => React.ReactNode;
 }
 
-interface DataTableProps<T> {
+interface DataTableProps<T extends { id: string | number; tableId?: string }> {
   columns: Column<T>[];
   data: T[];
 
@@ -21,7 +21,7 @@ interface DataTableProps<T> {
   onLoadMore?: () => void;
 }
 
-const DataTable = <T extends { id: string | number }>({
+const DataTable = <T extends { id: string | number; tableId?: string }>({
   columns,
   data,
   isLoading,
@@ -73,7 +73,7 @@ const DataTable = <T extends { id: string | number }>({
           ) : data.length > 0 ? (
             data.map((item, index) => (
               <tr
-                key={item.id}
+                key={`${item.tableId || item.id}-${index}`}
                 className="group transition-colors hover:bg-[#f9fafb]"
               >
                 {columns.map((col, idx) => {
