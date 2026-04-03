@@ -1,18 +1,27 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Calendar, ChevronRight, FolderOpen } from "lucide-react";
+import { Calendar, ChevronRight, FolderOpen, Loader2 } from "lucide-react";
 import { useGetFileIndexQuery } from "../../services/rssApi";
 import { useAppSelector } from "../../hook/store";
+import TablePagination from "../../components/common/TablePagination";
 
 export const FileYearManager = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
 
-  const { data, isLoading, isError, isFetching } = useGetFileIndexQuery(
+  // Pagination State
+  const [page, setPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const skip = (page - 1) * rowsPerPage;
+
+  const { data, isLoading, isFetching } = useGetFileIndexQuery(
     {
       groupBy: "year",
       lang: i18n.language,
+      skip: skip,
+      take: rowsPerPage,
     },
     {
       skip: !isAuthenticated,
@@ -20,6 +29,8 @@ export const FileYearManager = () => {
   );
 
   const files = data?.data || [];
+  const totalCount = data?.total || 0;
+  const totalPages = Math.ceil(totalCount / rowsPerPage);
 
   return (
     <div className="p-8 bg-[#fafafa] min-h-[60vh]">
@@ -33,9 +44,13 @@ export const FileYearManager = () => {
             <p className="text-gray-400 text-sm">{t("file_directory_sub")}</p>
           </div>
         </div>
+        {isFetching && (
+          <Loader2 className="text-orange-500 animate-spin" size={24} />
+        )}
       </div>
 
       <div className="bg-white rounded-4xl border border-slate-100 shadow-sm overflow-hidden">
+        {/* Table Header */}
         <div className="grid grid-cols-12 bg-gray-50 border-b border-gray-100 px-10 py-5 text-[11px] font-black text-gray-400 uppercase tracking-widest">
           <div className="col-span-1">#</div>
           <div className="col-span-5">{t("Year")}</div>
@@ -43,8 +58,13 @@ export const FileYearManager = () => {
           <div className="col-span-2 text-right">{t("actions")}</div>
         </div>
 
-        <div className="max-h-[calc(100vh-450px)] overflow-y-auto custom-scrollbar">
-          {files.length > 0 ? (
+        {/* Table Body */}
+        <div className="min-h-[400px]">
+          {isLoading ? (
+            <div className="py-20 flex justify-center items-center">
+              <Loader2 className="text-orange-500 animate-spin" size={40} />
+            </div>
+          ) : files.length > 0 ? (
             <div className="divide-y divide-gray-50">
               {files.map((item, index) => (
                 <div
@@ -52,8 +72,9 @@ export const FileYearManager = () => {
                   onClick={() => navigate(`/year/${item.year}`)}
                   className="grid grid-cols-12 items-center px-10 py-6 hover:bg-orange-50/30 transition-all cursor-pointer group"
                 >
+                  {/* Correct Index Calculation for Pagination */}
                   <div className="col-span-1 text-gray-400 font-bold text-sm">
-                    {String(index + 1).padStart(2, "0")}
+                    {String(skip + index + 1).padStart(2, "0")}
                   </div>
 
                   <div className="col-span-5 flex items-center gap-4 font-bold text-gray-700 text-[15px] group-hover:text-orange-600">
@@ -84,6 +105,22 @@ export const FileYearManager = () => {
             </div>
           )}
         </div>
+
+        {/* Pagination Footer */}
+        {!isLoading && totalCount > 0 && (
+          <div className="border-t border-gray-100">
+            <TablePagination
+              currentPage={page}
+              totalPages={totalPages}
+              rowsPerPage={rowsPerPage}
+              onPageChange={(newPage) => setPage(newPage)}
+              onRowsPerPageChange={(newSize) => {
+                setRowsPerPage(newSize);
+                setPage(1);
+              }}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

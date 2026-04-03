@@ -108,6 +108,22 @@ const GlobalUpload = () => {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const incomingFiles = Array.from(e.target.files || []);
+    const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB in bytes
+
+    // 1. Check if any new file exceeds the limit immediately
+    const oversizedFiles = incomingFiles.filter(
+      (file) => file.size > MAX_FILE_SIZE,
+    );
+
+    if (oversizedFiles.length > 0) {
+      // Show error for the first oversized file found
+      toast.error(
+        `${t("file_too_large") || "File too large"}: ${oversizedFiles[0].name}. ` +
+          `${t("max_limit") || "Max limit is 50MB"}`,
+      );
+      e.target.value = "";
+      return;
+    }
 
     setFiles((prevFiles) => {
       const combinedFiles = [...prevFiles, ...incomingFiles];
@@ -128,7 +144,6 @@ const GlobalUpload = () => {
 
     e.target.value = "";
   };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isFormValid) {

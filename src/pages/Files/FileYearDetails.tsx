@@ -161,7 +161,7 @@ const FileYearDetails = () => {
               className="font-bold text-slate-800 hover:text-orange-600 transition-colors"
               onClick={() => window.open(file.url, "_blank")}
             >
-              {file.displayName || file.name}
+              {file.name}
             </span>
             <span className="text-[10px] text-slate-400 uppercase">
               {file.mimeType} • {file.extension?.replace(".", "")}
@@ -217,13 +217,18 @@ const FileYearDetails = () => {
       render: (file) => (
         <div className="flex justify-end gap-2">
           <button
-            onClick={() => handleDownload(file.url, file.displayName)}
+            onClick={() => handleDownload(file.url, file.name)}
             className="p-2 bg-orange-500 text-white rounded-xl hover:bg-orange-600"
           >
             <Download size={18} />
           </button>
           <button
-            onClick={() => setFileedit(file)}
+            onClick={() =>
+              setFileedit({
+                ...file,
+                displayName: file.displayName || file.name || "",
+              })
+            }
             className="p-2 bg-blue-50 text-blue-500 rounded-xl"
           >
             <Edit2 size={18} />

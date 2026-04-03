@@ -421,12 +421,16 @@ export const rssApi = createApi({
     }),
     getFileIndex: builder.query<
       FileIndexResponse,
-      { groupBy: string; lang: string }
+      { groupBy: string; lang: string; skip: number; take: number }
     >({
-      query: ({ groupBy, lang }) =>
-        `/files/index?groupBy=${groupBy}&lang=${lang}`,
-      // Standard caching; it will refetch if lang or groupBy changes
-      providesTags: () => [{ type: "Files", id: "LIST" }],
+      query: ({ groupBy, lang, skip, take }) =>
+        `/files/index?groupBy=${groupBy}&lang=${lang}&skip=${skip}&take=${take}`,
+
+      // Cache the result based on the specific page/skip/take combination
+      providesTags: (result, error, { groupBy, lang, skip, take }) => [
+        { type: "Files", id: `INDEX-${groupBy}-${lang}-${skip}-${take}` },
+        { type: "Files", id: "LIST" },
+      ],
     }),
 
     deleteFile: builder.mutation<void, string | number>({

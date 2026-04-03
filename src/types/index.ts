@@ -310,6 +310,16 @@ interface YearGroup {
 export interface FileIndexResponse {
   data: YearGroup[];
 }
+
+export interface FileIndexItem {
+  year: number;
+  count: number;
+}
+
+export interface FileIndexResponse {
+  data: FileIndexItem[];
+  total: number; // Add this line
+}
 export interface IngestedFile {
   id: string;
   fileName: string;
