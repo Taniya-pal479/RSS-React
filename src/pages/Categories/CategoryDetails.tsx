@@ -15,7 +15,7 @@ import {
   useDeleteFileMutation,
 } from "../../services/rssApi";
 
-import type { Category, FileItem, FileObject, SubCategory } from "../../types";
+import type { Category, FileObject, SubCategory } from "../../types";
 
 import { toast } from "react-toastify";
 
@@ -34,6 +34,22 @@ interface ApiError {
   data?: { message?: string };
 }
 
+type TableItem =
+  | (SubCategory & {
+      itemType: "subcategory";
+      tableId: string;
+      icon: React.ReactNode;
+      displayType: string;
+      displayName: string;
+    })
+  | (FileObject & {
+      itemType: "file";
+      tableId: string;
+      icon: React.ReactNode;
+      displayType: string;
+      displayName: string;
+    });
+
 const CategoryDetail = () => {
   const { categoryId } = useParams();
   const navigate = useNavigate();
@@ -44,9 +60,11 @@ const CategoryDetail = () => {
   const [fileEdit, setFileedit] = useState<FileObject | null>();
   const [deleteCategory] = useDeleteCategoryMutation();
   const [deleteSubCategory] = useDeleteSubCategoryMutation();
-  const [page, setPage] = useState(1); // Start at 1 for our component
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-  const ROWS_PER_TYPE = 10;
+  const [rowsPerPage, setRowsPerPage] = useState(20); // Start with 20
+  const [page, setPage] = useState(1);
+
+  // We divide by 2 because we are calling TWO different APIs
+  const ROWS_PER_TYPE = Math.floor(rowsPerPage / 2);
 
   const { data: categoriesData } = useGetCategoriesQuery(
     { lang: i18n.language, skip: 0, take: 1000 },
@@ -69,16 +87,13 @@ const CategoryDetail = () => {
     {
       categoryId: categoryId as string,
       lang: i18n.language,
-      skip: (page - 1) * ROWS_PER_TYPE, // Page 1 skips 0, Page 2 skips 10
+      skip: (page - 1) * ROWS_PER_TYPE,
       take: ROWS_PER_TYPE,
     },
     { refetchOnMountOrArgChange: true },
   );
 
-  const subCategories = subCat?.result || [];
   const totalSubCats = subCat?.total || 0;
-  console.log("subCatt", subCat?.result);
-  console.log("subCatt", subCat);
 
   const { data: filesData, isLoading: filesLoading } =
     useGetFilesByCategoryQuery(
@@ -91,11 +106,13 @@ const CategoryDetail = () => {
       { skip: !categoryId, refetchOnMountOrArgChange: true },
     );
 
-  const files = filesData?.files || [];
   console.log("newFiles", filesData?.total);
   console.log("subCatt", subCat?.total);
 
   const totalFiles = filesData?.total ?? 0;
+
+  const maxTotal = Math.max(totalSubCats, totalFiles);
+  const totalPages = Math.ceil(maxTotal / ROWS_PER_TYPE);
 
   const [deleteFile] = useDeleteFileMutation();
 
@@ -136,29 +153,29 @@ const CategoryDetail = () => {
   };
 
   const combinedData = useMemo(() => {
-    // Just merge the two arrays exactly as they come from the API
+    const currentSubs = subCat?.result || [];
+    const currentFiles = filesData?.files || [];
+
     return [
-      ...subCategories.map((sub) => ({
+      ...currentSubs.map((sub) => ({
         ...sub,
         tableId: `sub-${sub.id}`,
         displayName: sub.name,
         displayType: "SUBCATEGORY",
         itemType: "subcategory",
-        icon: <Folder size={18} className="text-orange-500" />,
+        icon: "subcategory",
       })),
-      ...files.map((file) => ({
+      ...currentFiles.map((file) => ({
         ...file,
         tableId: `file-${file.id}`,
         displayName: file.displayName,
         displayType: "FILE",
         itemType: "file",
-        icon: <FileText size={18} className="text-blue-500" />,
+        icon: "file",
       })),
     ];
-  }, [subCategories, files]);
+  }, [subCat, filesData]);
 
-  const maxTotal = Math.max(totalSubCats, totalFiles);
-  const totalPages = Math.ceil(maxTotal / ROWS_PER_TYPE);
   console.log("Combined Data", combinedData);
 
   const columns: Column<FileObject>[] = [
@@ -169,18 +186,27 @@ const CategoryDetail = () => {
 
       className: "px-10 py-6 font-bold text-gray-700",
 
-      render: (item: FileObject) => (
-        <div className="flex items-center gap-3">
-          {item.icon}
+      render: (item: FileObject) => {
+        const IconNode =
+          item.icon === "subcategory" ? (
+            <Folder size={18} className="text-orange-500" />
+          ) : (
+            <FileText size={18} className="text-blue-500" />
+          );
 
-          <span
-            onClick={() => handleRowClick(item)}
-            className="truncate max-w-[250px] cursor-pointer hover:text-orange-600"
-          >
-            {item.displayName}
-          </span>
-        </div>
-      ),
+        return (
+          <div className="flex items-center gap-3">
+            {IconNode}
+
+            <span
+              onClick={() => handleRowClick(item)}
+              className="truncate max-w-[250px] cursor-pointer hover:text-orange-600"
+            >
+              {item.displayName}
+            </span>
+          </div>
+        );
+      },
     },
 
     {
@@ -238,11 +264,12 @@ const CategoryDetail = () => {
                   e.stopPropagation();
 
                   setEditingSub({
-                    id: item.id,
+                    ...item,
 
                     name: item.displayName || item.name || "",
                     translations:
                       item.translations?.map((t) => ({
+                        ...t,
                         languageCode: t.languageCode,
                         name: t.displayName || "",
                       })) || [],
@@ -408,7 +435,8 @@ const CategoryDetail = () => {
         <TablePagination
           currentPage={page}
           totalPages={totalPages}
-          rowsPerPage={rowsPerPage}
+          rowsPerPage={20}
+          options={[20, 40, 100]}
           onPageChange={(newPage) => setPage(newPage)}
           onRowsPerPageChange={(newSize) => {
             setRowsPerPage(newSize);

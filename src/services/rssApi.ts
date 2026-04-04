@@ -122,9 +122,8 @@ export const rssApi = createApi({
     >({
       query: ({ categoryId, lang, skip, take }) =>
         `/subcategories/category/${Number(categoryId)}?lang=${lang}&skip=${skip}&take=${take}`,
-      keepUnusedDataFor: 300,
 
-      providesTags: (result, error, arg) => [
+      providesTags: (_result, _error, arg) => [
         { type: "SubCategory", id: "LIST" },
         { type: "SubCategory", id: arg.categoryId },
       ],
@@ -158,7 +157,7 @@ export const rssApi = createApi({
 
     deleteSubCategory: builder.mutation<{ success: boolean }, string>({
       query: (id) => ({ url: `subcategories/${id}`, method: "DELETE" }),
-      invalidatesTags: ["SubCategory"],
+      invalidatesTags: () => [{ type: "SubCategory", id: "LIST" }],
     }),
 
     updateCategory: builder.mutation<
@@ -219,7 +218,6 @@ export const rssApi = createApi({
             ]
           : [{ type: "ContentType", id: "LIST" }],
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       transformResponse: (response: {
         data: ContentTypeMapped[];
         total: number;
@@ -426,7 +424,7 @@ export const rssApi = createApi({
         url: `files/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["Files"],
+      invalidatesTags: () => [{ type: "Files", id: "LIST" }, "Files"],
     }),
     updateFile: builder.mutation<
       FileObject,
@@ -481,6 +479,7 @@ export const rssApi = createApi({
           order: order,
         },
       }),
+      providesTags: (result) => [{ type: "Files", id: "LIST" }, "Files"],
     }),
   }),
 });

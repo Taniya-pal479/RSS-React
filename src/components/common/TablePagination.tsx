@@ -12,6 +12,7 @@ interface PaginationProps {
   rowsPerPage: number;
   onPageChange: (page: number) => void;
   onRowsPerPageChange: (rows: number) => void;
+  options?: number[];
 }
 
 const TablePagination: React.FC<PaginationProps> = ({
@@ -20,6 +21,7 @@ const TablePagination: React.FC<PaginationProps> = ({
   rowsPerPage,
   onPageChange,
   onRowsPerPageChange,
+  options = [10, 20, 50, 100],
 }) => {
   return (
     <div className="flex items-center justify-between px-6 py-4 bg-white border-t border-gray-100 rounded-b-2xl">
@@ -32,7 +34,7 @@ const TablePagination: React.FC<PaginationProps> = ({
             onChange={(e) => onRowsPerPageChange(Number(e.target.value))}
             className="appearance-none bg-gray-50 border border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-orange-500 focus:border-orange-500 block w-full pl-3 pr-8 py-1.5 cursor-pointer outline-none transition-all"
           >
-            {[10, 20, 50, 100].map((size) => (
+            {options.map((size) => (
               <option key={size} value={size}>
                 {size}
               </option>

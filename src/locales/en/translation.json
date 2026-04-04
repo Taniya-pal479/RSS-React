@@ -100,6 +100,8 @@
   "file_too_large": "File too large",
   "max_limit": "Max limit is 50MB",
   "max_files_error": "Maximum 10 files allowed",
+  "required_fields_missing": "Required fields missing:",
+  "field_required": "This field is required!",
 
   "edit_category": "Edit Category",
   "edit_subcategory": "Edit Sub-category",

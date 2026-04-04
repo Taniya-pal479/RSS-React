@@ -144,6 +144,7 @@ const FileYearDetails = () => {
     );
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const columns: Column<any>[] = [
     {
       header: t("file_display_name"),
@@ -162,7 +163,7 @@ const FileYearDetails = () => {
               {file.name}
             </span>
             <span className="text-[10px] text-slate-400 uppercase">
-              {file.mimeType} • {file.extension?.replace(".", "")}
+              {file.mimeType} • {file.fileType?.replace(".", "")}
             </span>
           </div>
         </div>

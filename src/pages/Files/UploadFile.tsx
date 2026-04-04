@@ -181,6 +181,19 @@ const GlobalUpload = () => {
     }
   };
 
+  const getMissingFieldsMessage = () => {
+    const missing = [];
+    if (!name) missing.push(t("name"));
+    if (!selectedContentTypeId) missing.push(t("content_type"));
+    if (!selectedCatId) missing.push(t("category"));
+    if (!year.trim()) missing.push(t("data_year"));
+    if (files.length === 0) missing.push(t("files"));
+
+    return missing.length > 0
+      ? `${t("required_fields_missing")}: ${missing.join(", ")}`
+      : "";
+  };
+
   return (
     <div className="h-full overflow-y-auto   space-y-8 animate-fade-in pb-10 no-scrollbar">
       <div className="p-8 max-w-3xl mx-auto relative">
@@ -446,20 +459,30 @@ const GlobalUpload = () => {
           </div>
 
           <div className="flex items-center justify-end pt-4">
-            <button
-              type="submit"
-              disabled={isUploading || !isFormValid}
-              className="px-8 py-3 bg-orange-500 text-white text-sm font-bold rounded-xl shadow-lg shadow-orange-100 hover:bg-orange-600 disabled:bg-slate-300 disabled:shadow-none disabled:cursor-not-allowed transition-all flex items-center gap-2"
-            >
-              {isUploading ? (
-                <Loader2 className="animate-spin" size={18} />
-              ) : (
-                <Check size={18} />
+            <div className="relative group">
+              {!isFormValid && (
+                <div className="absolute bottom-full mb-2 right-0 hidden group-hover:block w-64 p-2 bg-red-600 text-white text-[10px] font-bold rounded-lg shadow-xl z-50 animate-in fade-in slide-in-from-bottom-1">
+                  <div className="relative">
+                    {getMissingFieldsMessage()}
+                    <div className="absolute top-full right-4 w-2 h-2 bg-slate-800 rotate-45 -translate-y-1"></div>
+                  </div>
+                </div>
               )}
-              {isUploading
-                ? t("ingesting") || "Ingesting..."
-                : t("btn_validate_queue") || "Start Ingestion"}
-            </button>
+              <button
+                type="submit"
+                disabled={isUploading || !isFormValid}
+                className="px-8 py-3 bg-orange-500 text-white text-sm font-bold rounded-xl shadow-lg shadow-orange-100 hover:bg-orange-600 disabled:bg-slate-300 disabled:shadow-none disabled:cursor-not-allowed transition-all flex items-center gap-2"
+              >
+                {isUploading ? (
+                  <Loader2 className="animate-spin" size={18} />
+                ) : (
+                  <Check size={18} />
+                )}
+                {isUploading
+                  ? t("ingesting") || "Ingesting..."
+                  : t("btn_validate_queue") || "Start Ingestion"}
+              </button>
+            </div>
           </div>
         </form>
       </div>

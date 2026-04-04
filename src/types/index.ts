@@ -1,4 +1,4 @@
-import type { MouseEvent, ReactNode } from "react";
+import type { ReactNode } from "react";
 
 export interface Language {
   _id?: string;
@@ -270,6 +270,7 @@ export interface FileItem {
   icon?: React.ReactNode;
 }
 export interface FileObject {
+  iconType: string;
   originalId: number | string;
   name: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -305,6 +306,7 @@ export interface FileObject {
   itemType?: string;
   displayType?: string;
 }
+export type TableItem = FileObject | SubCategory;
 
 interface YearGroup {
   year: number;
@@ -378,6 +380,7 @@ export interface CategoryResult extends BaseResult {
   type: "category";
   title?: string;
   name?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
 
@@ -385,6 +388,7 @@ export interface SubCategoryResult extends BaseResult {
   type: "subcategory";
   title?: string;
   name?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
 
@@ -392,6 +396,7 @@ export interface ContentResult extends BaseResult {
   type: "content";
   title: string;
   slug: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
 
@@ -401,6 +406,7 @@ export interface FileResult extends BaseResult {
   year?: string;
   url: string;
   mimeType?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
 

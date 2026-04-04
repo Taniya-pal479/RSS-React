@@ -14,10 +14,6 @@ interface DataTableProps<T extends { id: string | number; tableId?: string }> {
   isLoading?: boolean;
   emptyMessage?: string;
   onRowClick?: (item: T) => void;
-  /**
-   * Optional callback fired when the user scrolls to the bottom of the
-   * table container. Useful for infinite-loading scenarios.
-   */
   onLoadMore?: () => void;
 }
 

@@ -45,7 +45,7 @@ const SidebarCategoryItem = ({
       take: 1000,
     },
     {
-      skip: !isCategoryOpen,
+      skip: !isCategoryOpen || !isAuthenticated,
       refetchOnMountOrArgChange: true,
     },
   );

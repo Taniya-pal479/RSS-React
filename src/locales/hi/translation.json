@@ -128,8 +128,10 @@
   "select_file_error": "कृपया पहले एक फ़ाइल चुनें",
 
   "file_too_large": "फ़ाइल का आकार बहुत बड़ा है",
-  "max_limit": "अधिकतम सीमा 50MB है",
+  "max_limit": "अधिकतम सीमा 100MB है",
   "max_files_error": "अधिकतम 10 फ़ाइलों की अनुमति है",
+  "required_fields_missing": "अनिवार्य फ़ील्ड छूटा हुआ है।:",
+  "field_required": "यह फ़ील्ड भरना आवश्यक है। ",
 
   "ingestion_mapping": "इनजेशन मैपिंग",
   "category": "श्रेणी",
