@@ -467,7 +467,7 @@ export const rssApi = createApi({
           order: order,
         },
       }),
-      providesTags: (result) => [{ type: "Files", id: "LIST" }, "Files"],
+      providesTags: () => [{ type: "Files", id: "LIST" }, "Files"],
     }),
   }),
 });
@@ -496,4 +496,5 @@ export const {
   useGlobalSearchQuery,
   useGetSearchFilesQuery,
   useGetFileIndexQuery,
+  useLazyGetAllFilesQuery,
 } = rssApi;

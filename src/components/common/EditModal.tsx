@@ -34,7 +34,12 @@ const EditModal = ({ type, data, onClose }: EditModalProps) => {
   );
 
   const subCategoryQuery = useGetSubCategoriesQuery(
-    { lang: currentLangCode, categoryId: data?.categoryId, skip: 0, take: 1000 },
+    {
+      lang: currentLangCode,
+      categoryId: data?.categoryId,
+      skip: 0,
+      take: 1000,
+    },
     { skip: type !== "subcategory" || !data?.categoryId },
   );
 
@@ -77,6 +82,7 @@ const EditModal = ({ type, data, onClose }: EditModalProps) => {
     const translationPayload: Translation[] = [
       {
         languageCode: currentLangCode,
+        displayName: formData.name.trim(),
         name: formData.name.trim(),
         description: formData.description.trim(),
       },

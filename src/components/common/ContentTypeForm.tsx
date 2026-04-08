@@ -119,6 +119,7 @@ const ContentTypeForm: React.FC = () => {
       .map(([code, data]) => ({
         languageCode: code,
         name: data.name.trim(),
+        displayName: data.name.trim(),
         description: data.description.trim(),
       }));
 

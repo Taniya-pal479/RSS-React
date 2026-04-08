@@ -106,7 +106,6 @@ export const FileYearManager = () => {
           )}
         </div>
 
-        {/* Pagination Footer */}
         {!isLoading && totalCount > 0 && (
           <div className="border-t border-gray-100">
             <TablePagination

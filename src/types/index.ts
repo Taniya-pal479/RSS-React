@@ -325,7 +325,7 @@ export interface FileIndexItem {
 }
 
 export interface FileIndexResponse {
-  data: FileIndexItem[];
+  data: YearGroup[];
   total: number; // Add this line
 }
 export interface IngestedFile {

@@ -27,7 +27,7 @@ const EditContentTypeModal = ({ data, onClose }: EditContentTypeModalProps) => {
     {
       lang: currentLangCode,
 
-      skip: 0,  
+      skip: 0,
       take: 1000,
     },
     { skip: !data?.id },
@@ -68,6 +68,7 @@ const EditContentTypeModal = ({ data, onClose }: EditContentTypeModalProps) => {
       {
         languageCode: currentLangCode,
         name: formData.name.trim(),
+        displayName: formData.name.trim(),
         description: formData.description.trim(),
       },
     ];

@@ -135,6 +135,21 @@ const ContentTypeDetail = () => {
     }
   };
 
+  const handleRowClick = (item: FileObject) => {
+    // Check if the URL is a full external link
+    const isExternal = item.url.startsWith("http");
+
+    if (isExternal) {
+      window.open(item.url, "_blank");
+    } else {
+      // If it's a relative path from the old system,
+      // prepend your base API or S3 URL
+      const baseUrl =
+        "https://rss-file-storage-ayush001.s3.ap-south-1.amazonaws.com/";
+      window.open(`${baseUrl}${item.url}`, "_blank");
+    }
+  };
+
   const currentCategory = useMemo(
     () => categories.find((c) => String(c.id) === String(categoryId)),
     [categories, categoryId],
@@ -163,13 +178,7 @@ const ContentTypeDetail = () => {
           <div className="flex flex-col cursor-pointer ">
             <span
               className="font-bold text-slate-800 group-hover:text-orange-600 transition-colors"
-              onClick={() =>
-                window.open(
-                  file.url ||
-                    `http://localhost:3000/uploads/${file.storageKey}`,
-                  "_blank",
-                )
-              }
+              onClick={() => handleRowClick(file)}
             >
               {file.displayName}
             </span>
