@@ -29,6 +29,7 @@ export interface StatsCardProps {
 }
 
 export interface Translation {
+  displayName: string;
   languageCode: string;
   name: string;
   description?: string;
@@ -309,7 +310,9 @@ export interface FileObject {
 export type TableItem = FileObject | SubCategory;
 
 interface YearGroup {
+  id: number | string;
   year: number;
+  name: string;
   count: number;
 }
 export interface FileIndexResponse {

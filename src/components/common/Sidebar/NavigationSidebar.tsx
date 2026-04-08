@@ -13,7 +13,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useGetCategoriesQuery } from "../../../services/rssApi";
+import { useGetFileIndexQuery } from "../../../services/rssApi";
 import SidebarCategoryItem from "./SidebarCategoryItem";
 import { useAppSelector } from "../../../hook/store";
 
@@ -41,9 +41,16 @@ const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
     isLoading,
     isError,
     refetch,
-  } = useGetCategoriesQuery(
-    { lang: i18n.language, skip: 0, take: 1000 },
-    { skip: !isAuthenticated },
+  } = useGetFileIndexQuery(
+    {
+      groupBy: "category",
+      lang: i18n.language,
+      skip: 0,
+      take: 1000,
+    },
+    {
+      skip: !isAuthenticated,
+    },
   );
 
   const categories = categoriesData?.data || [];
@@ -74,13 +81,8 @@ const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
             <button
               onClick={onToggle}
               className={`
-      /* 1. Vertically Align perfectly to the center of the parent div */
       absolute top-1/2 -translate-y-1/2 
-      
-      /* 2. Horizontally position on the border edge */
       -right-3.5 
-      
-      /* 3. Appearance: Floating & Saffron theme */
       z-50 
       w-7 h-7 flex items-center justify-center 
       bg-white border border-gray-200 text-[#F97316] 

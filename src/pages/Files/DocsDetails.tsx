@@ -22,7 +22,7 @@ import i18n from "../../i18n";
 import type { FileItem } from "../../types";
 import TablePagination from "../../components/common/TablePagination";
 
-const CardsFilesTable = () => {
+const DocsDetails = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
@@ -49,6 +49,7 @@ const CardsFilesTable = () => {
   console.log("faaaaa", files);
   const { handleDownload } = useDownload();
   const { paginatedData, totalFiltered } = useMemo(() => {
+    // 1. First, do the existing filtering logic
     const filtered = files.filter((f) => {
       const extension = f.fileType;
       const imageExtensions = [
@@ -81,6 +82,7 @@ const CardsFilesTable = () => {
       return matchesType && matchesSearch;
     });
 
+    // 2. Then, calculate the slice for pagination
     const start = (page - 1) * rowsPerPage;
     const end = start + rowsPerPage;
 
@@ -263,4 +265,4 @@ const CardsFilesTable = () => {
   );
 };
 
-export default CardsFilesTable;
+export default DocsDetails;

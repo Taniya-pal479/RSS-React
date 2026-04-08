@@ -14,8 +14,8 @@ import { toast } from "react-toastify";
 import {
   useGetCategoriesQuery,
   useGetSubCategoriesQuery,
-  useGetContentTypesQuery,
   useUploadFileMutation,
+  useGetFileIndexQuery,
 } from "../../services/rssApi";
 import { useAppSelector } from "../../hook/store";
 
@@ -42,6 +42,8 @@ const GlobalUpload = () => {
     { skip: !isAuthenticated },
   );
 
+  console.log("category upload", categoriesData);
+
   const categories = categoriesData?.data || [];
 
   const { data: subCategoriesData, isFetching: isFetchingSubCats } =
@@ -52,13 +54,16 @@ const GlobalUpload = () => {
 
   const subCategories = subCategoriesData?.result || [];
 
-  const { data: contentTypesData } = useGetContentTypesQuery(
+  const { data: contentTypesData } = useGetFileIndexQuery(
     {
+      groupBy: "contentType",
       lang: i18n.language,
       skip: 0,
       take: 1000,
     },
-    { skip: !isAuthenticated },
+    {
+      skip: !isAuthenticated,
+    },
   );
   const contentTypes = contentTypesData?.data ?? [];
 

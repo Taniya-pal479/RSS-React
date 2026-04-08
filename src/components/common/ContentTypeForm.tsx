@@ -259,7 +259,7 @@ const ContentTypeForm: React.FC = () => {
                     </div>
                   </div>
                 ) : (
-                  <Loader2 className="animate-spin" size={22} />
+                  <Loader2 className="animate-spin text-[#F97316]" size={21} />
                 ))}
             </div>
 

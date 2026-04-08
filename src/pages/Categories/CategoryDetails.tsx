@@ -34,21 +34,17 @@ interface ApiError {
   data?: { message?: string };
 }
 
-type TableItem =
-  | (SubCategory & {
-      itemType: "subcategory";
-      tableId: string;
-      icon: React.ReactNode;
-      displayType: string;
-      displayName: string;
-    })
-  | (FileObject & {
-      itemType: "file";
-      tableId: string;
-      icon: React.ReactNode;
-      displayType: string;
-      displayName: string;
-    });
+interface BaseTableItem {
+  tableId: string;
+  displayName: string;
+  displayType: "SUBCATEGORY" | "FILE";
+  icon: "subcategory" | "file";
+}
+
+// Create the Discriminated Union
+type CombinedTableItem =
+  | (SubCategory & BaseTableItem & { itemType: "subcategory" })
+  | (FileObject & BaseTableItem & { itemType: "file" });
 
 const CategoryDetail = () => {
   const { categoryId } = useParams();
@@ -60,10 +56,9 @@ const CategoryDetail = () => {
   const [fileEdit, setFileedit] = useState<FileObject | null>();
   const [deleteCategory] = useDeleteCategoryMutation();
   const [deleteSubCategory] = useDeleteSubCategoryMutation();
-  const [rowsPerPage, setRowsPerPage] = useState(20); // Start with 20
+  const [rowsPerPage, setRowsPerPage] = useState(20);
   const [page, setPage] = useState(1);
 
-  // We divide by 2 because we are calling TWO different APIs
   const ROWS_PER_TYPE = Math.floor(rowsPerPage / 2);
 
   const { data: categoriesData } = useGetCategoriesQuery(
@@ -100,7 +95,7 @@ const CategoryDetail = () => {
       {
         catId: categoryId!,
         lang: i18n.language,
-        skip: (page - 1) * ROWS_PER_TYPE, // Page 1 skips 0, Page 2 skips 10
+        skip: (page - 1) * ROWS_PER_TYPE,
         take: ROWS_PER_TYPE,
       },
       { skip: !categoryId, refetchOnMountOrArgChange: true },
@@ -152,33 +147,57 @@ const CategoryDetail = () => {
     }
   };
 
-  const combinedData = useMemo(() => {
+  const combinedData = useMemo((): CombinedTableItem[] => {
     const currentSubs = subCat?.result || [];
     const currentFiles = filesData?.files || [];
 
-    return [
-      ...currentSubs.map((sub) => ({
+    const mappedSubs = currentSubs.map(
+      (sub): CombinedTableItem => ({
         ...sub,
         tableId: `sub-${sub.id}`,
-        displayName: sub.name,
+        displayName: sub.name || "",
         displayType: "SUBCATEGORY",
         itemType: "subcategory",
         icon: "subcategory",
-      })),
-      ...currentFiles.map((file) => ({
+      }),
+    );
+
+    const mappedFiles = currentFiles.map(
+      (file): CombinedTableItem => ({
         ...file,
         tableId: `file-${file.id}`,
         displayName: file.displayName,
         displayType: "FILE",
         itemType: "file",
         icon: "file",
-      })),
-    ];
+      }),
+    );
+
+    return [...mappedSubs, ...mappedFiles];
   }, [subCat, filesData]);
 
   console.log("Combined Data", combinedData);
 
-  const columns: Column<FileObject>[] = [
+  const handleRowClick = (item: CombinedTableItem) => {
+    if (item.itemType === "subcategory") {
+      navigate(`/category/${categoryId}/subcategory/${item.id}`);
+    } else {
+      // Check if the URL is a full external link
+      const isExternal = item.url.startsWith("http");
+
+      if (isExternal) {
+        window.open(item.url, "_blank");
+      } else {
+        // If it's a relative path from the old system,
+        // prepend your base API or S3 URL
+        const baseUrl =
+          "https://rss-file-storage-ayush001.s3.ap-south-1.amazonaws.com/";
+        window.open(`${baseUrl}${item.url}`, "_blank");
+      }
+    }
+  };
+
+  const columns: Column<CombinedTableItem>[] = [
     {
       header: t("name_label"),
 
@@ -186,7 +205,7 @@ const CategoryDetail = () => {
 
       className: "px-10 py-6 font-bold text-gray-700",
 
-      render: (item: FileObject) => {
+      render: (item) => {
         const IconNode =
           item.icon === "subcategory" ? (
             <Folder size={18} className="text-orange-500" />
@@ -199,7 +218,7 @@ const CategoryDetail = () => {
             {IconNode}
 
             <span
-              onClick={() => handleRowClick(item)}
+              onClick={() => handleRowClick(item as CombinedTableItem)}
               className="truncate max-w-[250px] cursor-pointer hover:text-orange-600"
             >
               {item.displayName}
@@ -216,7 +235,7 @@ const CategoryDetail = () => {
 
       className: "px-10 py-6 text-gray-500 text-sm",
 
-      render: (item: FileObject) =>
+      render: (item) =>
         item.description ? (
           <span className="text-gray-400 text-[14px] line-clamp-1">
             {item.description}
@@ -229,11 +248,11 @@ const CategoryDetail = () => {
     {
       header: t("type"),
 
-      key: "displayType" as keyof FileObject,
+      key: "tableId" as keyof CombinedTableItem,
 
       className: "px-10 py-6",
 
-      render: (item: FileObject) => (
+      render: (item) => (
         <span
           className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
             item.displayType === "SUBCATEGORY"
@@ -243,7 +262,7 @@ const CategoryDetail = () => {
         >
           {item.displayType === "SUBCATEGORY"
             ? item.displayType
-            : item.fileType}
+            : (item as FileObject).fileType}
         </span>
       ),
     },
@@ -251,11 +270,11 @@ const CategoryDetail = () => {
     {
       header: t("actions"),
 
-      key: "actions" as keyof FileObject,
+      key: "tableId" as keyof CombinedTableItem,
 
       className: "px-10 py-6 text-right",
 
-      render: (item: FileObject) => (
+      render: (item) => (
         <div className="flex justify-end items-center gap-4">
           {item.itemType === "subcategory" ? (
             <>
@@ -290,7 +309,10 @@ const CategoryDetail = () => {
           ) : (
             <>
               <button
-                onClick={() => handleDownload(item.url, item.displayName)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDownload(item.url, item.displayName);
+                }}
                 className="p-2 bg-orange-500 text-white rounded-xl hover:bg-orange-600 transition-all shadow-md shadow-orange-100 cursor-pointer"
               >
                 <Download size={18} />
@@ -370,14 +392,6 @@ const CategoryDetail = () => {
     );
   };
 
-  const handleRowClick = (item: FileObject) => {
-    if (item.itemType === "subcategory") {
-      navigate(`/category/${categoryId}/subcategory/${item.id}`);
-    } else {
-      window.open(item.url, "_blank");
-    }
-  };
-
   return (
     <div className="p-8 bg-[#fafafa] min-h-[60vh]">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
@@ -424,7 +438,7 @@ const CategoryDetail = () => {
       </div>
 
       <DataTable
-        columns={columns as any}
+        columns={columns}
         onRowClick={handleRowClick}
         data={combinedData}
         isLoading={(isLoading || filesLoading) && combinedData.length === 0}
@@ -435,8 +449,12 @@ const CategoryDetail = () => {
         <TablePagination
           currentPage={page}
           totalPages={totalPages}
-          rowsPerPage={20}
-          options={[20, 40, 100]}
+          rowsPerPage={totalFiles > 0 && totalSubCats > 0 ? 20 : 10}
+          options={
+            totalFiles > 0 && totalSubCats > 0
+              ? [20, 40, 100]
+              : [10, 20, 40, 100]
+          }
           onPageChange={(newPage) => setPage(newPage)}
           onRowsPerPageChange={(newSize) => {
             setRowsPerPage(newSize);

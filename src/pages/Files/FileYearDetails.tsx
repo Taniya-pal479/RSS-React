@@ -102,13 +102,8 @@ const FileYearDetails = () => {
     : baseData?.total || 0;
 
   // Client-side Content Type filter (Year/Search/Sort/Order are already server-side)
-  const displayFiles = useMemo(() => {
-    if (!selectedType) return rawFiles;
-    return rawFiles.filter(
-      (f: { contentTypeId: string }) =>
-        String(f.contentTypeId) === String(selectedType),
-    );
-  }, [rawFiles, selectedType]);
+
+  console.log("selected", selectedType);
 
   const totalPages = Math.ceil(totalCount / rowsPerPage);
 
@@ -118,6 +113,20 @@ const FileYearDetails = () => {
     take: 1000,
   });
   const contentTypes = contentTypesData?.data ?? [];
+
+  const displayFiles = useMemo(() => {
+    if (!selectedType) return rawFiles;
+
+    const selectedTypeName = contentTypes.find(
+      (ct) => String(ct.id) === String(selectedType),
+    )?.name;
+
+    if (!selectedTypeName) return rawFiles;
+
+    return rawFiles.filter((f: any) => {
+      return f.contentType === selectedTypeName;
+    });
+  }, [rawFiles, selectedType, contentTypes]);
 
   const [deleteFile] = useDeleteFileMutation();
 
@@ -222,12 +231,18 @@ const FileYearDetails = () => {
             <Download size={18} />
           </button>
           <button
-            onClick={() =>
+            onClick={() => {
+              const ctId = contentTypes.find(
+                (ct) => ct.name === file.contentType,
+              )?.id;
+
               setFileedit({
                 ...file,
+
+                contentTypeId: ctId || file.contentTypeId,
                 displayName: file.displayName || file.name || "",
-              })
-            }
+              });
+            }}
             className="p-2 bg-blue-50 text-blue-500 rounded-xl"
           >
             <Edit2 size={18} />

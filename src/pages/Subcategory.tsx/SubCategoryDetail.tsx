@@ -112,12 +112,17 @@ const SubCategoryDetail = () => {
           </div>
           <div
             className="flex flex-col cursor-pointer "
-            onClick={() =>
-              window.open(
-                file.url || `http://localhost:3000/uploads/${file.storageKey}`,
-                "_blank",
-              )
-            }
+            onClick={() => {
+              const isExternal = file.url.startsWith("http");
+
+              if (isExternal) {
+                window.open(file.url, "_blank");
+              } else {
+                const baseUrl =
+                  "https://rss-file-storage-ayush001.s3.ap-south-1.amazonaws.com/";
+                window.open(`${baseUrl}${file.url}`, "_blank");
+              }
+            }}
           >
             <span className="font-bold text-slate-800  hover:text-orange-600">
               {file.displayName}

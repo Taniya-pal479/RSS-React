@@ -276,18 +276,6 @@ export const rssApi = createApi({
       serializeQueryArgs: ({ endpointName, queryArgs }) => {
         return `${endpointName}-${queryArgs.contentTypeId}`;
       },
-      merge: (currentCache, newItems, { arg }) => {
-        if (arg.skip === 0) {
-          return newItems;
-        }
-        const existingIds = new Set(currentCache.files.map((item) => item.id));
-        const uniqueNewItems = newItems.files.filter(
-          (item) => !existingIds.has(item.id),
-        );
-
-        currentCache.files.push(...uniqueNewItems);
-        currentCache.total = newItems.total;
-      },
 
       forceRefetch({ currentArg, previousArg }) {
         return currentArg !== previousArg;
