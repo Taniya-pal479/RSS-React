@@ -123,7 +123,7 @@ const FileYearDetails = () => {
 
     if (!selectedTypeName) return rawFiles;
 
-    return rawFiles.filter((f: any) => {
+    return rawFiles.filter((f: FileObject) => {
       return f.contentType === selectedTypeName;
     });
   }, [rawFiles, selectedType, contentTypes]);

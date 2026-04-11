@@ -54,7 +54,6 @@ const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
   );
 
   const categories = categoriesData?.data || [];
-  console.log("cacacacac", categories);
 
   const isActive = (path: string) => location.pathname === path;
   const handleToggle = (id: number | string) => {

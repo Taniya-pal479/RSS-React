@@ -20,7 +20,8 @@ import type {
   FetchArgs,
   FetchBaseQueryError,
 } from "@reduxjs/toolkit/query/react";
-import { logout } from "../store/slices/authSlice"; // Adjust path to your authSlice
+
+import { logout } from "../store/slices/authSlice";
 import type { RootState } from "../store/store";
 
 const baseQuery = fetchBaseQuery({
@@ -60,7 +61,7 @@ const baseQueryWithReauth: BaseQueryFn<
 export const rssApi = createApi({
   reducerPath: "rssApi",
   baseQuery: baseQueryWithReauth,
-  tagTypes: ["Category", "SubCategory", "Files", "ContentType"],
+  tagTypes: ["Category", "SubCategory", "Files", "ContentType", "count"],
   endpoints: (builder) => ({
     login: builder.mutation({
       query: (credentials) => ({
@@ -83,7 +84,6 @@ export const rssApi = createApi({
         }
 
         if (currentCache?.data && newItems?.data) {
-          // Only push if we actually have new items to add
           if (newItems.data.length > 0) {
             const existingIds = new Set(
               currentCache.data.map((item) => item.id),
@@ -97,6 +97,7 @@ export const rssApi = createApi({
           }
         }
       },
+
       forceRefetch({ currentArg, previousArg }) {
         return currentArg?.skip !== previousArg?.skip;
       },
@@ -241,6 +242,7 @@ export const rssApi = createApi({
         { type: "ContentType", id: "LIST" },
       ],
     }),
+
     deleteContentType: builder.mutation<
       { success: boolean },
       { id: number; categoryId: number | string }
@@ -300,13 +302,21 @@ export const rssApi = createApi({
         take?: number;
         sortBy?: string;
         order?: string;
+        type?: string;
       }
     >({
-      query: ({ contentTypeId, lang, skip, take, sortBy, order }) => {
+      query: ({ contentTypeId, lang, skip, take, sortBy, order, type }) => {
         let url = `/files?lang=${lang}&skip=${skip}&take=${take}&sortBy=${sortBy}&order=${order}`;
+
+        if (type) {
+          url += `&type=${type}`;
+        }
 
         if (contentTypeId) {
           url = `/files/content-types/${contentTypeId}?lang=${lang}&skip=${skip}&take=${take}`;
+          if (type) {
+            url += `&type=${type}`;
+          }
         }
         return url;
       },
@@ -318,22 +328,6 @@ export const rssApi = createApi({
               "Files",
             ]
           : ["Files"],
-
-      serializeQueryArgs: ({ queryArgs }) => {
-        return { contentTypeId: queryArgs.contentTypeId, lang: queryArgs.lang };
-      },
-
-      merge: (currentCache, newItems, { arg }) => {
-        if (arg.skip === 0) {
-          return newItems;
-        }
-        currentCache.data.push(...newItems.data);
-        currentCache.total = newItems.total;
-      },
-
-      forceRefetch({ currentArg, previousArg }) {
-        return currentArg !== previousArg;
-      },
     }),
 
     getFilesBySubcategory: builder.query<
@@ -347,14 +341,6 @@ export const rssApi = createApi({
         return `files-${queryArgs.subCatId}-${queryArgs.lang}`;
       },
 
-      merge: (currentCache, newItems, { arg }) => {
-        if (arg.skip === 0) {
-          return newItems;
-        }
-
-        currentCache.data.push(...newItems.data);
-        currentCache.total = newItems.total;
-      },
       forceRefetch: ({ currentArg, previousArg }) => {
         return currentArg !== previousArg;
       },
@@ -393,6 +379,7 @@ export const rssApi = createApi({
         { type: "Files", id: "LIST" },
       ],
     }),
+
     getFileIndex: builder.query<
       FileIndexResponse,
       { groupBy: string; lang: string; skip: number; take: number }
@@ -412,8 +399,9 @@ export const rssApi = createApi({
         url: `files/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: () => [{ type: "Files", id: "LIST" }, "Files"],
+      invalidatesTags: () => [{ type: "Files", id: "LIST" }, "Files", "count"],
     }),
+
     updateFile: builder.mutation<
       FileObject,
       { id: string | number; body: FileObject }
@@ -423,7 +411,7 @@ export const rssApi = createApi({
         method: "PATCH",
         body: body,
       }),
-      invalidatesTags: ["Files"],
+      invalidatesTags: ["Files", "count"],
     }),
 
     contentFiles: builder.query<FileObject, { id?: string; lang: string }>({
@@ -453,6 +441,7 @@ export const rssApi = createApi({
         currentArg?.search !== previousArg?.search ||
         currentArg?.languageCode !== previousArg?.languageCode,
     }),
+
     getSearchFiles: builder.query({
       query: ({ search, lang, skip, take, year, sortBy, order }) => ({
         url: "/search/files",
@@ -468,6 +457,20 @@ export const rssApi = createApi({
         },
       }),
       providesTags: () => [{ type: "Files", id: "LIST" }, "Files"],
+    }),
+
+    getFileStats: builder.query<
+      {
+        totalMedia: number;
+        totalDocs: number;
+        totalReports: number;
+        totalFiles: number;
+      },
+      void
+    >({
+      query: () => "/files/stats",
+
+      providesTags: ["count"],
     }),
   }),
 });
@@ -497,4 +500,5 @@ export const {
   useGetSearchFilesQuery,
   useGetFileIndexQuery,
   useLazyGetAllFilesQuery,
+  useGetFileStatsQuery,
 } = rssApi;

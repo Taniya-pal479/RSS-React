@@ -93,9 +93,6 @@ const ContentTypeDetail = () => {
     });
 
   const contentTypes = contentTypesData?.data ?? [];
-  console.log("contttt", contentTypes);
-
-  console.log("items", items);
 
   const [deleteFile] = useDeleteFileMutation();
 

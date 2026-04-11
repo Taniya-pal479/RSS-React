@@ -50,7 +50,6 @@ export const FileYearManager = () => {
       </div>
 
       <div className="bg-white rounded-4xl border border-slate-100 shadow-sm overflow-hidden">
-        {/* Table Header */}
         <div className="grid grid-cols-12 bg-gray-50 border-b border-gray-100 px-10 py-5 text-[11px] font-black text-gray-400 uppercase tracking-widest">
           <div className="col-span-1">#</div>
           <div className="col-span-5">{t("Year")}</div>
@@ -58,7 +57,6 @@ export const FileYearManager = () => {
           <div className="col-span-2 text-right">{t("actions")}</div>
         </div>
 
-        {/* Table Body */}
         <div className="min-h-[400px]">
           {isLoading ? (
             <div className="py-20 flex justify-center items-center">
@@ -72,7 +70,6 @@ export const FileYearManager = () => {
                   onClick={() => navigate(`/year/${item.year}`)}
                   className="grid grid-cols-12 items-center px-10 py-6 hover:bg-orange-50/30 transition-all cursor-pointer group"
                 >
-                  {/* Correct Index Calculation for Pagination */}
                   <div className="col-span-1 text-gray-400 font-bold text-sm">
                     {String(skip + index + 1).padStart(2, "0")}
                   </div>

@@ -76,8 +76,6 @@ const CategoryDetail = () => {
     (c: Category) => Number(c.id) === Number(categoryId),
   );
 
-  console.log("categoryId", categoryId);
-
   const { data: subCat, isLoading } = useGetSubCategoriesQuery(
     {
       categoryId: categoryId as string,
@@ -100,9 +98,6 @@ const CategoryDetail = () => {
       },
       { skip: !categoryId, refetchOnMountOrArgChange: true },
     );
-
-  console.log("newFiles", filesData?.total);
-  console.log("subCatt", subCat?.total);
 
   const totalFiles = filesData?.total ?? 0;
 
@@ -175,8 +170,6 @@ const CategoryDetail = () => {
 
     return [...mappedSubs, ...mappedFiles];
   }, [subCat, filesData]);
-
-  console.log("Combined Data", combinedData);
 
   const handleRowClick = (item: CombinedTableItem) => {
     if (item.itemType === "subcategory") {
@@ -321,8 +314,6 @@ const CategoryDetail = () => {
               <button
                 onClick={() => {
                   setFileedit(item);
-
-                  console.log(item);
                 }}
                 className="p-2 hover:text-gray-300 text-[#f97316] transition-colors cursor-pointer"
               >

@@ -21,7 +21,6 @@ const EditFileModal = ({ data, onClose }: EditFileModalProps) => {
   const [currentLangCode, setCurrentLangCode] = useState("en");
   const [isLangOpen, setIsLangOpen] = useState(false);
 
-  console.log("data", data.contentTypeId);
   const { data: refreshedListData, isFetching } = useGetFilesQuery(
     {
       contentTypeId: data?.contentTypeId,
@@ -32,7 +31,6 @@ const EditFileModal = ({ data, onClose }: EditFileModalProps) => {
     { skip: !data?.id },
   );
   const refreshedList = refreshedListData?.files ?? [];
-  console.log(refreshedList);
 
   const [updateFile, { isLoading: isUpdating }] = useUpdateFileMutation();
 

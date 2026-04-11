@@ -25,7 +25,6 @@ const TablePagination: React.FC<PaginationProps> = ({
 }) => {
   return (
     <div className="flex items-center justify-between px-6 py-4 bg-white border-t border-gray-100 rounded-b-2xl">
-      {/* Left Side: Rows Per Page */}
       <div className="flex items-center gap-3">
         <span className="text-sm font-medium text-gray-500">Rows per page</span>
         <div className="relative">

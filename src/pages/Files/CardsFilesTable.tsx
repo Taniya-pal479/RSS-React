@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
@@ -33,64 +33,23 @@ const CardsFilesTable = () => {
   const [page, setPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  const { data: filesData, isLoading } = useGetAllFilesQuery(
+  const { data: filesData, isFetching } = useGetAllFilesQuery(
     {
       lang: i18n.language,
-      skip: 0,
-      take: 1000,
+      skip: (page - 1) * rowsPerPage,
+      take: rowsPerPage,
+      type: filterType || "",
+      sortBy: "updatedAt",
+      order: "desc",
     },
-    {
-      skip: !isAuthenticated,
-    },
+    { skip: !isAuthenticated },
   );
 
   const files = filesData?.data || [];
+  const totalFiles = filesData?.total || 0;
+  const totalPages = Math.ceil(totalFiles / rowsPerPage);
 
-  console.log("faaaaa", files);
   const { handleDownload } = useDownload();
-  const { paginatedData, totalFiltered } = useMemo(() => {
-    const filtered = files.filter((f) => {
-      const extension = f.fileType;
-      const imageExtensions = [
-        "JPG",
-        "JPEG",
-        "PNG",
-        "WEBP",
-        "VIDEO",
-        "AUDIO",
-        "IMAGE",
-      ];
-      const docExtensions = ["PDF", "DOC", "DOCX", "TXT", "TEXT", "WORD"];
-      const reportExtensions = ["CSV", "XLS", "XLSX", "EXCEL"];
-
-      let matchesType = true;
-      if (filterType === "media") {
-        matchesType =
-          imageExtensions.includes(extension) ||
-          f.mimeType?.startsWith("image/");
-      } else if (filterType === "reports") {
-        matchesType = reportExtensions.includes(extension);
-      } else if (filterType === "docs") {
-        matchesType = docExtensions.includes(extension);
-      }
-
-      const matchesSearch = searchQuery
-        ? f.displayName.toLowerCase().includes(searchQuery.toLowerCase())
-        : true;
-
-      return matchesType && matchesSearch;
-    });
-
-    const start = (page - 1) * rowsPerPage;
-    const end = start + rowsPerPage;
-
-    return {
-      paginatedData: filtered.slice(start, end),
-      totalFiltered: filtered.length,
-    };
-  }, [files, filterType, searchQuery, page, rowsPerPage]);
-
-  const totalPages = Math.ceil(totalFiltered / rowsPerPage);
 
   const getHeaderTitle = () => {
     switch (filterType) {
@@ -214,7 +173,7 @@ const CardsFilesTable = () => {
             {getHeaderTitle()}
           </h1>
           <p className="text-slate-400 font-medium mt-2">
-            {totalFiltered} {t("items_found")}
+            {isFetching ? 0 : filesData?.total} {t("items_found")}
             {searchQuery && (
               <>
                 {" "}
@@ -241,12 +200,12 @@ const CardsFilesTable = () => {
       <div className="bg-white rounded-4xl border border-slate-100 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
         <DataTable
           columns={columns}
-          data={paginatedData}
-          isLoading={isLoading}
+          data={files}
+          isLoading={isFetching}
           emptyMessage={t("no_results_found")}
         />
 
-        {!isLoading && totalFiltered > 0 && (
+        {!isFetching && (
           <TablePagination
             currentPage={page}
             totalPages={totalPages}

@@ -42,8 +42,6 @@ const GlobalUpload = () => {
     { skip: !isAuthenticated },
   );
 
-  console.log("category upload", categoriesData);
-
   const categories = categoriesData?.data || [];
 
   const { data: subCategoriesData, isFetching: isFetchingSubCats } =
@@ -66,8 +64,6 @@ const GlobalUpload = () => {
     },
   );
   const contentTypes = contentTypesData?.data ?? [];
-
-  console.log("contentTypes upload", contentTypes);
 
   const isFormValid =
     name &&
@@ -171,8 +167,6 @@ const GlobalUpload = () => {
     files.forEach((file) => {
       formData.append("files", file);
     });
-
-    console.log("formData", formData);
 
     try {
       await ingestFile(formData).unwrap();

@@ -10,7 +10,6 @@ export const useFetchAllFiles = (lang: string) => {
   const PAGE_SIZE = 1000;
 
   useEffect(() => {
-    // Start the recursive process by fetching the first page
     trigger({ lang, skip: 0, take: PAGE_SIZE });
   }, [lang, trigger]);
 
@@ -18,9 +17,8 @@ export const useFetchAllFiles = (lang: string) => {
     if (result.isSuccess && result.data) {
       const { data, total } = result.data;
 
-      // Append new data to our master list
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setAllData((prev) => {
-        // Prevent duplicates if the effect runs twice
         const existingIds = new Set(prev.map((item) => item.id));
         const uniqueNew = data.filter((item) => !existingIds.has(item.id));
         return [...prev, ...uniqueNew];
@@ -28,9 +26,14 @@ export const useFetchAllFiles = (lang: string) => {
 
       const nextSkip = allData.length + data.length;
 
-      // Check if we need to fetch more
       if (nextSkip < total) {
-        trigger({ lang, skip: nextSkip, take: PAGE_SIZE });
+        trigger({
+          lang,
+          skip: nextSkip,
+          take: PAGE_SIZE,
+          sortBy: "updatedAt",
+          order: "desc",
+        });
       } else {
         setIsFullyLoaded(true);
       }

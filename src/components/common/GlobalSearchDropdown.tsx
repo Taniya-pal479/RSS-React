@@ -158,7 +158,7 @@ const GlobalSearchDropdown = () => {
       setSkip((prev) => prev + take);
     }
   };
-  console.log("searchData", searchData);
+
   const filteredData = useMemo(() => {
     const results = (searchData ?? []) as GlobalSearchResult[];
 
@@ -167,7 +167,6 @@ const GlobalSearchDropdown = () => {
       (i) => i.type === "file" && i.year?.toString() === debouncedSearch,
     );
 
-    console.log("filteredData results", results);
     return {
       categories: results.filter(
         (i): i is CategoryResult => i.type === "category",

@@ -1,5 +1,5 @@
 // Dictionary for UI text
-export const uiTranslations: Record<string, any> = {
+export const uiTranslations: Record<string, string> = {
   en: {
     // Dashboard
     overview: "Overview",
@@ -11,16 +11,17 @@ export const uiTranslations: Record<string, any> = {
     noChange: "no change",
     recentFiles: "Recently Added Files",
     noFilesTitle: "No files uploaded yet",
-    noFilesDesc: "Your document repository is currently empty. Get started by uploading your first file.",
+    noFilesDesc:
+      "Your document repository is currently empty. Get started by uploading your first file.",
     browse: "Browse from computer",
     viewAll: "View All",
-    
+
     // Sidebar fallback
     categories: "Categories",
     settings: "Settings",
     dashboard: "Dashboard",
     languages: "Languages",
-    years: "Years"
+    years: "Years",
   },
   hi: {
     // Dashboard
@@ -42,6 +43,6 @@ export const uiTranslations: Record<string, any> = {
     settings: "सेटिंग्स",
     dashboard: "डैशबोर्ड",
     languages: "भाषाएं",
-    years: "वर्ष"
-  }
+    years: "वर्ष",
+  },
 };

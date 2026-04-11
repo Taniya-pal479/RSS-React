@@ -36,8 +36,6 @@ const SearchResultsPage = () => {
 
   const files = filesData?.data || [];
 
-  console.log("filessssss", files);
-
   const filteredResults = useMemo(() => {
     if (!searchQuery) return [];
     return files.filter((file) =>

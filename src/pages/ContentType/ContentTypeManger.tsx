@@ -45,8 +45,6 @@ export const ContentTypeManager = () => {
   const totalCount = contentTypesData?.total ?? 0;
   const totalPages = Math.ceil(totalCount / rowsPerPage);
 
-  console.log("CT", contentTypes);
-
   const [deleteContentType] = useDeleteContentTypeMutation();
 
   const rowVirtualizer = useVirtualizer({

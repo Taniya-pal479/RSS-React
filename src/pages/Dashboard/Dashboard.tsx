@@ -9,7 +9,10 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { useGetAllFilesQuery } from "../../services/rssApi";
+import {
+  useGetAllFilesQuery,
+  useGetFileStatsQuery,
+} from "../../services/rssApi";
 import {
   StatsCardSkeleton,
   FileRowSkeleton,
@@ -26,21 +29,28 @@ const Dashboard = () => {
 
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
 
-  const { data: filesData, isLoading } = useGetAllFilesQuery(
+  const {
+    data: filesData,
+
+    isFetching,
+  } = useGetAllFilesQuery(
     {
       lang: i18n.language,
       skip: 0,
-      take: 100,
+      take: 5,
+      order: "desc",
+      sortBy: "updatedAt",
     },
     {
       skip: !isAuthenticated,
     },
   );
 
+  const { data: allCount, isFetching: isCardFetching } = useGetFileStatsQuery();
+
   const files = useMemo(() => {
     return filesData?.data || [];
   }, [filesData]);
-  console.log("docsall", files);
 
   const getFileIcon = (fileName: string) => {
     const ext = fileName?.split(".").pop()?.toUpperCase() || "";
@@ -56,54 +66,20 @@ const Dashboard = () => {
   };
 
   const stats = useMemo(() => {
-    console.log("Processing Files for Stats:", files.length);
+    const mediaCount = files.filter((f) =>
+      ["IMAGE", "VIDEO", "AUDIO"].includes(f.fileType),
+    ).length;
+    const reportsCount = files.filter((f) =>
+      ["CSV", "EXCEL"].includes(f.fileType),
+    ).length;
+    const docsCount = files.filter((f) =>
+      ["PDF", "WORD", "TEXT"].includes(f.fileType),
+    ).length;
+    const recentFiles = files.slice(0, 5);
 
-    const mediaCount = files.filter((f) => {
-      const extension = f.fileType;
-      const imageExtensions = [
-        "IMAGE",
-        "AUDIO",
-        "VIDEO",
-        "PNG",
-        "WEBP",
-        "MP3",
-        "MP4",
-      ];
-
-      return (
-        imageExtensions.includes(extension || "") ||
-        ["IMAGE", "AUDIO", "VIDEO"].includes(f.type?.toUpperCase()) ||
-        f.mimeType?.startsWith("image/")
-      );
-    }).length;
-
-    console.log("Media Found:", mediaCount);
-
-    const reportsCount = files.filter((f) => {
-      const ext = f.originalName?.split(".").pop()?.toUpperCase() || "";
-      const reportExtensions = ["CSV", "XLS", "XLSX", "EXCEL"];
-      return reportExtensions.includes(ext);
-    }).length;
-
-    const otherCount = files.filter((f) => {
-      const ext = f.fileType;
-      const otherExtensions = ["OTHER"];
-      return otherExtensions.includes(ext);
-    }).length;
-
-    const totalDocs = files.length - mediaCount - reportsCount - otherCount;
-    console.log("RRRR", totalDocs);
-
-    const recentFiles = [...files]
-      .sort(
-        (a, b) =>
-          new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime(),
-      )
-      .slice(0, 5);
-
-    return { totalDocs, mediaCount, recentFiles, reportsCount };
+    return { totalDocs: docsCount, mediaCount, reportsCount, recentFiles };
   }, [files]);
-  console.log("reportsCount", stats.totalDocs);
+
   return (
     <div className="h-full overflow-y-auto   space-y-8 animate-fade-in pb-10 no-scrollbar">
       <div className="flex justify-between items-end">
@@ -116,14 +92,14 @@ const Dashboard = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {isLoading ? (
+        {isFetching ? (
           [1, 2, 3].map((i) => <StatsCardSkeleton key={i} />)
         ) : (
           <>
             {" "}
             <StatsCard
               label={t("total_documents")}
-              value={isLoading ? "..." : stats.totalDocs}
+              value={isCardFetching ? "..." : allCount?.totalDocs || 0}
               icon={<FileText size={24} />}
               subText={t("stats_subtext")}
               color="text-saffron-600"
@@ -131,7 +107,7 @@ const Dashboard = () => {
             />
             <StatsCard
               label={t("total_media")}
-              value={isLoading ? "..." : stats.mediaCount}
+              value={isCardFetching ? "..." : allCount?.totalMedia || 0}
               icon={<ImageIcon size={24} />}
               subText={t("stats_subtext")}
               color="text-saffron-600"
@@ -139,7 +115,7 @@ const Dashboard = () => {
             />
             <StatsCard
               label={t("active_reports")}
-              value={isLoading ? "..." : stats.reportsCount}
+              value={isCardFetching ? "..." : allCount?.totalReports || 0}
               icon={<BarChart3 size={24} />}
               trendColor="text-gray-400 bg-gray-50"
               subText={t("no_change")}
@@ -165,7 +141,7 @@ const Dashboard = () => {
           </button>
         </div>
 
-        {isLoading ? (
+        {isFetching ? (
           [1, 2, 3, 4, 5].map((i) => <FileRowSkeleton key={i} />)
         ) : stats.recentFiles.length > 0 ? (
           <div className="space-y-4">

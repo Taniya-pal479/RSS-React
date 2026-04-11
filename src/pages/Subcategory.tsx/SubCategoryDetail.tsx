@@ -53,11 +53,6 @@ const SubCategoryDetail = () => {
   const totalPages = Math.ceil(totalFiles / rowsPerPage);
   const files = filesData?.data || [];
 
-  console.log("faaaa", files);
-
-  console.log("subCatttt", files);
-  console.log("subCatttt", files);
-
   const { data: subCategoriesData, isLoading: subCatLoading } =
     useGetSubCategoriesQuery({
       categoryId: categoryId as string,

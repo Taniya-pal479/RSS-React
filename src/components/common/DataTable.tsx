@@ -32,7 +32,7 @@ const DataTable = <T extends { id: string | number; tableId?: string }>({
       return;
     }
     const target = e.currentTarget;
-    // when we've scrolled within 20px of the bottom, fire the callback
+
     if (target.scrollHeight - target.scrollTop <= target.clientHeight + 20) {
       onLoadMore();
     }
