@@ -1,4 +1,11 @@
-import { useMemo, useState, useRef, useEffect, type ReactNode } from "react";
+import {
+  useMemo,
+  useState,
+  useRef,
+  useEffect,
+  type ReactNode,
+  startTransition,
+} from "react";
 import { useNavigate } from "react-router-dom";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import {
@@ -20,18 +27,10 @@ import type {
   CategoryResult,
   ContentResult,
   GlobalSearchResult,
+  SearchResultItem,
   SubCategoryResult,
 } from "../../types/index";
 import i18n from "../../i18n";
-
-// --- TYPES ---
-interface SearchResultItem {
-  id: string | number;
-  title?: string;
-  type?: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: any;
-}
 
 interface SearchResultSectionProps<T> {
   title: string;
@@ -146,8 +145,9 @@ const GlobalSearchDropdown = () => {
   console.log("allFiles", allFiles);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setSkip(0);
+    startTransition(() => {
+      setSkip(0);
+    });
   }, [debouncedSearch]);
   const handleLoadMore = () => {
     if (

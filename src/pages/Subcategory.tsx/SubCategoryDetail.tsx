@@ -10,6 +10,7 @@ import {
   Home,
   ChevronRight,
   Edit3,
+  Plus,
 } from "lucide-react";
 import DataTable, { type Column } from "../../components/common/DataTable";
 import {
@@ -207,16 +208,26 @@ const SubCategoryDetail = () => {
         </span>
       </nav>
 
-      <div className="mb-10 flex items-center gap-5">
-        <div className="w-3 h-14 bg-linear-to-b from-orange-400 to-orange-600 rounded-full shadow-lg shadow-orange-200" />
-        <div>
-          <h1 className="text-4xl font-black text-slate-900 uppercase">
-            {currentSubCategory ? currentSubCategory.name : t("loading")}
-          </h1>
-          <p className="text-gray-400 font-bold text-sm">
-            {files.length} {t("items_found")}
-          </p>
+      <div className="mb-10 flex items-center justify-between gap-5">
+        <div className="flex items-center gap-5">
+          <div className="w-3 h-14 bg-linear-to-b from-orange-400 to-orange-600 rounded-full shadow-lg shadow-orange-200" />
+          <div>
+            <h1 className="text-4xl font-black text-slate-900 uppercase">
+              {currentSubCategory ? currentSubCategory.name : t("loading")}
+            </h1>
+            <p className="text-gray-400 font-bold text-sm">
+              {files.length} {t("items_found")}
+            </p>
+          </div>
         </div>
+
+        <button
+          onClick={() => navigate("/upload")}
+          className="flex items-center gap-2 px-5 py-2.5 bg-saffron-600 text-white font-bold rounded-xl shadow-lg hover:bg-saffron-700 transition-all active:scale-95 cursor-pointer"
+        >
+          <Plus size={18} />
+          {t("upload_file") || "Add Ingestion"}
+        </button>
       </div>
 
       <div className="bg-white rounded-4xl border border-slate-100 shadow-sm overflow-hidden">

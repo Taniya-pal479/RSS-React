@@ -77,9 +77,7 @@ const ContentTypeDetail = () => {
 
   const { data: categoriesData } = useGetCategoriesQuery({
     lang: i18n.language,
-
     skip: 0,
-
     take: 100,
   });
 
@@ -88,7 +86,7 @@ const ContentTypeDetail = () => {
   const { data: contentTypesData, isLoading: typesLoading } =
     useGetContentTypesQuery({
       lang: i18n.language,
-      skip: 0, // Always start from beginning
+      skip: 0,
       take: 100,
     });
 
@@ -133,14 +131,11 @@ const ContentTypeDetail = () => {
   };
 
   const handleRowClick = (item: FileObject) => {
-    // Check if the URL is a full external link
     const isExternal = item.url.startsWith("http");
 
     if (isExternal) {
       window.open(item.url, "_blank");
     } else {
-      // If it's a relative path from the old system,
-      // prepend your base API or S3 URL
       const baseUrl =
         "https://rss-file-storage-ayush001.s3.ap-south-1.amazonaws.com/";
       window.open(`${baseUrl}${item.url}`, "_blank");

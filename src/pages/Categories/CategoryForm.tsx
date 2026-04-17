@@ -63,8 +63,8 @@ const CategoryForm = ({ mode }: { mode: "category" | "subcategory" }) => {
     e.preventDefault();
 
     const translationPayload: Translation[] = Object.entries(translations)
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      .filter(([_, data]) => data.name.trim() !== "")
+
+      .filter(([, data]) => data.name.trim() !== "")
       .map(([code, data]) => ({
         languageCode: code,
         name: data.name.trim(),

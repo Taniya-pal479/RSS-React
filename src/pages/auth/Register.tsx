@@ -34,7 +34,6 @@ const RegisterPage = () => {
         </div>
 
         <form onSubmit={handleRegister} className="space-y-5">
-          {/* Full Name Field */}
           <div className="relative">
             <User
               className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
@@ -51,7 +50,6 @@ const RegisterPage = () => {
             />
           </div>
 
-          {/* Email Field */}
           <div className="relative">
             <Mail
               className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
@@ -68,7 +66,6 @@ const RegisterPage = () => {
             />
           </div>
 
-          {/* Password Field */}
           <div className="relative">
             <Lock
               className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"

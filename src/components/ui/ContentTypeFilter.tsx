@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import { ChevronDown, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import type { YearGroup } from "../../types";
 
 type Props = {
-  contentTypes: any[];
+  contentTypes: YearGroup[];
   selectedType: string | null;
   onChange: (value: string | null) => void;
 };

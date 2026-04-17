@@ -48,9 +48,7 @@ const TopBar: React.FC<TopBarProps> = ({ onToggleSidebar }) => {
   return (
     <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-gray-100 px-6 py-4 flex items-center justify-between">
       <header className="h-16 flex items-center px-6 bg-white border-none border-slate-100 ">
-        <button onClick={onToggleSidebar} className="p-2">
-          {/* Hamburger Icon */}
-        </button>
+        <button onClick={onToggleSidebar} className="p-2"></button>
       </header>
 
       <div className="flex items-center gap-4">

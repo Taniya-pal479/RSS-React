@@ -31,6 +31,8 @@ const authSlice = createSlice({
       state.isAuthenticated = Boolean(accessToken);
       localStorage.setItem("accessToken", accessToken);
       localStorage.setItem("userType", type);
+
+      console.log(accessToken);
     },
 
     logout: (state) => {

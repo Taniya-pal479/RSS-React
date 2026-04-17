@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, startTransition } from "react";
 import { useTranslation } from "react-i18next";
 import { X, Globe, Check, ChevronDown, Save, Loader2 } from "lucide-react";
 import { toast } from "react-toastify";
@@ -53,14 +53,15 @@ const EditFileModal = ({ data, onClose }: EditFileModalProps) => {
           formData.displayName !== newName ||
           formData.description !== newDesc
         ) {
-          setFormData({
-            displayName: newName,
-            description: newDesc,
+          startTransition(() => {
+            setFormData({
+              displayName: newName,
+              description: newDesc,
+            });
           });
         }
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshedList, data.id]);
 
   const handleUpdate = async (e: React.FormEvent) => {
@@ -69,9 +70,9 @@ const EditFileModal = ({ data, onClose }: EditFileModalProps) => {
     try {
       await updateFile({
         id: data.id,
-        // Create a clean body. Do NOT send empty strings for fileName, url, etc.
+
         body: {
-          ...data, // Start with existing file data so you don't lose anything
+          ...data,
           translations: [
             {
               languageCode: currentLangCode,
@@ -79,7 +80,6 @@ const EditFileModal = ({ data, onClose }: EditFileModalProps) => {
               description: formData.description.trim(),
             },
           ],
-          // Remove the hardcoded empty strings you had before
         } as FileObject,
       }).unwrap();
 

@@ -57,7 +57,6 @@ const TablePagination: React.FC<PaginationProps> = ({
         </div>
       </div>
 
-      {/* Right Side: Controls */}
       <div className="flex items-center gap-6">
         <span className="text-sm font-bold text-gray-700">
           Page <span className="text-orange-600">{currentPage}</span> of{" "}
@@ -91,7 +90,6 @@ const TablePagination: React.FC<PaginationProps> = ({
   );
 };
 
-// Internal helper for buttons
 const PaginationButton = ({
   onClick,
   disabled,

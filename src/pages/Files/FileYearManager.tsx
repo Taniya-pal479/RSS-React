@@ -11,7 +11,6 @@ export const FileYearManager = () => {
   const navigate = useNavigate();
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
 
-  // Pagination State
   const [page, setPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const skip = (page - 1) * rowsPerPage;

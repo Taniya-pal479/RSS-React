@@ -7,6 +7,11 @@ export interface Language {
   isActive: boolean;
 }
 
+export interface ApiError {
+  status?: number;
+  data?: { message?: string };
+}
+
 export interface User {
   email: string;
   role: string;
@@ -66,6 +71,14 @@ export interface SubFilesRespons {
   total: number;
 }
 
+export interface SimpleSubCategory {
+  id: number;
+  name: string;
+  displayName?: string;
+  translations?: Translation[];
+  description?: string;
+}
+
 export interface SubCategory {
   categoryId: string | number;
   id: number | string;
@@ -81,6 +94,7 @@ export interface SubCategory {
 
 export interface Category {
   id: number | string;
+  categoryId: string | number;
   slug?: string;
   name?: string | null;
   description?: string | null;
@@ -119,7 +133,7 @@ export interface CreateFilePayload {
 }
 
 export interface CreateSubCategoryPayload {
-  categoryId: number;
+  categoryId: string | number;
   slug?: string;
   translations: Translation[];
 }
@@ -205,9 +219,25 @@ export interface ContentTypeMapped {
     category?: string;
     subcategory?: string;
   };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  translations?: any[];
+  year: number;
+  count: number;
+  translations?: Translation[];
 }
+type TableValue =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | FileObject
+  | SubCategory;
+export interface SearchResultItem {
+  id: string | number;
+  title?: string;
+  type?: string;
+  [key: string]: TableValue;
+}
+
 export interface SearchItem {
   id: string | number;
   type: "category" | "subcategory" | "content" | "file";
@@ -217,8 +247,8 @@ export interface SearchItem {
   categoryId?: string | number;
   url?: string;
   mimeType?: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: any;
+
+  [key: string]: unknown;
 }
 
 export interface SearchResponse {
@@ -274,8 +304,8 @@ export interface FileObject {
   iconType: string;
   originalId: number | string;
   name: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  type: any;
+
+  type: number | string;
   contentTypeId: number | string;
   contentType: number | string;
   categoryId: number | string;
@@ -309,8 +339,9 @@ export interface FileObject {
 }
 export type TableItem = FileObject | SubCategory;
 
-interface YearGroup {
+export interface YearGroup {
   id: number | string;
+  categoryId: string | number;
   year: number;
   name: string;
   count: number;
@@ -326,7 +357,7 @@ export interface FileIndexItem {
 
 export interface FileIndexResponse {
   data: YearGroup[];
-  total: number; // Add this line
+  total: number;
 }
 export interface IngestedFile {
   id: string;
@@ -358,11 +389,11 @@ export interface SubCatFilesResponse {
   skip: number;
   take: number;
 }
-// Define the base properties shared by all results
+
 export interface BaseResult {
   id: number;
   type: "category" | "subcategory" | "content" | "file";
-  lang?: string; // This is the key for filtering language
+  lang?: string;
   categoryId?: number;
   uploadedAt?: string;
 }
@@ -378,7 +409,6 @@ export type Props = {
   onChange: (value: string) => void;
 };
 
-// Define specific shapes
 export interface CategoryResult extends BaseResult {
   type: "category";
   title?: string;
@@ -413,7 +443,6 @@ export interface FileResult extends BaseResult {
   [key: string]: any;
 }
 
-// The union type for the whole array
 export type GlobalSearchResult =
   | CategoryResult
   | ContentResult

@@ -4,7 +4,16 @@ import { useParams, useNavigate } from "react-router-dom";
 
 import { useTranslation } from "react-i18next";
 
-import { Plus, Trash2, Edit3, Folder, FileText, Download } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  Edit3,
+  Folder,
+  FileText,
+  Download,
+  ImageIcon,
+  BarChart3,
+} from "lucide-react";
 
 import {
   useGetCategoriesQuery,
@@ -41,7 +50,6 @@ interface BaseTableItem {
   icon: "subcategory" | "file";
 }
 
-// Create the Discriminated Union
 type CombinedTableItem =
   | (SubCategory & BaseTableItem & { itemType: "subcategory" })
   | (FileObject & BaseTableItem & { itemType: "file" });
@@ -98,6 +106,7 @@ const CategoryDetail = () => {
       },
       { skip: !categoryId, refetchOnMountOrArgChange: true },
     );
+  console.log(filesData);
 
   const totalFiles = filesData?.total ?? 0;
 
@@ -175,14 +184,11 @@ const CategoryDetail = () => {
     if (item.itemType === "subcategory") {
       navigate(`/category/${categoryId}/subcategory/${item.id}`);
     } else {
-      // Check if the URL is a full external link
       const isExternal = item.url.startsWith("http");
 
       if (isExternal) {
         window.open(item.url, "_blank");
       } else {
-        // If it's a relative path from the old system,
-        // prepend your base API or S3 URL
         const baseUrl =
           "https://rss-file-storage-ayush001.s3.ap-south-1.amazonaws.com/";
         window.open(`${baseUrl}${item.url}`, "_blank");
@@ -193,28 +199,42 @@ const CategoryDetail = () => {
   const columns: Column<CombinedTableItem>[] = [
     {
       header: t("name_label"),
-
       key: "displayName",
-
       className: "px-10 py-6 font-bold text-gray-700",
-
       render: (item) => {
-        const IconNode =
-          item.icon === "subcategory" ? (
-            <Folder size={18} className="text-orange-500" />
-          ) : (
-            <FileText size={18} className="text-blue-500" />
-          );
+        const isImg = item.itemType === "file" && item.fileType === "IMAGE";
+        const isReport = item.itemType === "file" && item.fileType === "REPORT";
+        const isSubcategory = item.itemType === "subcategory";
 
         return (
-          <div className="flex items-center gap-3">
-            {IconNode}
+          <div className="flex items-center gap-4">
+            <div
+              className={`p-2.5 rounded-xl shadow-sm transition-colors ${
+                isSubcategory
+                  ? "bg-orange-50 text-orange-600"
+                  : isImg
+                    ? "bg-orange-50 text-orange-600"
+                    : isReport
+                      ? "bg-green-50 text-green-600"
+                      : "bg-blue-50 text-blue-600"
+              }`}
+            >
+              {isSubcategory ? (
+                <Folder size={20} />
+              ) : isImg ? (
+                <ImageIcon size={20} />
+              ) : isReport ? (
+                <BarChart3 size={20} />
+              ) : (
+                <FileText size={20} />
+              )}
+            </div>
 
             <span
-              onClick={() => handleRowClick(item as CombinedTableItem)}
-              className="truncate max-w-[250px] cursor-pointer hover:text-orange-600"
+              onClick={() => handleRowClick(item)}
+              className="truncate max-w-[250px] cursor-pointer hover:text-orange-600 transition-colors"
             >
-              {item.displayName}
+              {item.displayLabel || item.displayName}
             </span>
           </div>
         );
@@ -424,6 +444,13 @@ const CategoryDetail = () => {
             className="flex items-center gap-2 px-7 py-4 bg-[#f97316] text-white font-bold rounded-2xl shadow-lg hover:bg-[#ea580c] transition-all cursor-pointer"
           >
             <Plus size={22} strokeWidth={3} /> <span>{t("Add_new")}</span>
+          </button>
+          <button
+            onClick={() => navigate("/upload")}
+            className="flex items-center gap-2 px-5 py-2.5 bg-saffron-600 text-white font-bold rounded-xl shadow-lg hover:bg-saffron-700 transition-all active:scale-95 cursor-pointer"
+          >
+            <Plus size={18} />
+            {t("upload_file") || "Add Ingestion"}
           </button>
         </div>
       </div>

@@ -35,7 +35,6 @@ const baseQuery = fetchBaseQuery({
   },
 });
 
-// Create a wrapper function to intercept 401 errors
 const baseQueryWithReauth: BaseQueryFn<
   string | FetchArgs,
   unknown,
@@ -43,14 +42,11 @@ const baseQueryWithReauth: BaseQueryFn<
 > = async (args, api, extraOptions) => {
   const result = await baseQuery(args, api, extraOptions);
 
-  // If the server returns 401 Unauthorized
   if (result.error && result.error.status === 401) {
     console.warn("Session expired or unauthorized. Logging out...");
 
-    // Dispatch the logout action from your authSlice
     api.dispatch(logout());
 
-    // Optional: Redirect to login page manually if your router doesn't handle isAuthenticated state
     if (typeof window !== "undefined") {
       window.location.href = "/login";
     }
@@ -330,6 +326,26 @@ export const rssApi = createApi({
           : ["Files"],
     }),
 
+    getCombinedCategoryData: builder.query<
+      {
+        categoryId: number;
+        data: (FileObject | SubCategory)[];
+        total: number;
+        skip: number;
+        take: number;
+      },
+      { categoryId: string | number; lang: string; skip: number; take: number }
+    >({
+      query: ({ categoryId, lang, skip, take }) =>
+        `/categories/${categoryId}/combined?lang=${lang}&skip=${skip}&take=${take}`,
+
+      providesTags: (_result, _error, arg) => [
+        { type: "Category", id: arg.categoryId },
+        { type: "SubCategory", id: "LIST" },
+        { type: "Files", id: "LIST" },
+      ],
+    }),
+
     getFilesBySubcategory: builder.query<
       SubCatFilesResponse,
       { subCatId: string | number; lang: string; take: number; skip: number }
@@ -387,10 +403,11 @@ export const rssApi = createApi({
       query: ({ groupBy, lang, skip, take }) =>
         `/files/index?groupBy=${groupBy}&lang=${lang}&skip=${skip}&take=${take}`,
 
-      // Cache the result based on the specific page/skip/take combination
       providesTags: (_result, _error, { groupBy, lang, skip, take }) => [
         { type: "Files", id: `INDEX-${groupBy}-${lang}-${skip}-${take}` },
         { type: "Files", id: "LIST" },
+        { type: "Category", id: "List" },
+        "ContentType",
       ],
     }),
 
@@ -501,4 +518,5 @@ export const {
   useGetFileIndexQuery,
   useLazyGetAllFilesQuery,
   useGetFileStatsQuery,
+  useGetCombinedCategoryDataQuery,
 } = rssApi;

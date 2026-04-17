@@ -5,8 +5,6 @@ import uiReducer from "./slices/uiSlice";
 import authReducer from "./slices/authSlice";
 import { rtkQueryLogger } from "./logger";
 
-//import { rtkQueryLogger } from './logger';
-
 export const store = configureStore({
   reducer: {
     [rssApi.reducerPath]: rssApi.reducer,

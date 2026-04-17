@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, startTransition } from "react";
 import { useTranslation } from "react-i18next";
 import { X, Globe, Check, ChevronDown, Save, Loader2 } from "lucide-react";
 import { toast } from "react-toastify";
@@ -8,7 +8,7 @@ import {
   useGetCategoriesQuery,
   useGetSubCategoriesQuery,
 } from "../../services/rssApi";
-import type { Translation } from "../../types";
+import type { SubCategory, Translation } from "../../types";
 
 const SUPPORTED_LANGS = [
   { code: "en", name: "English" },
@@ -17,8 +17,8 @@ const SUPPORTED_LANGS = [
 
 interface EditModalProps {
   type: "category" | "subcategory";
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  data: any;
+
+  data: SubCategory;
   onClose: () => void;
 }
 
@@ -66,14 +66,15 @@ const EditModal = ({ type, data, onClose }: EditModalProps) => {
         const newDesc = currentItem.description || "";
 
         if (formData.name !== newName || formData.description !== newDesc) {
-          setFormData({
-            name: newName,
-            description: newDesc,
+          startTransition(() => {
+            setFormData({
+              name: newName,
+              description: newDesc,
+            });
           });
         }
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshedList, data.id]);
 
   const handleUpdate = async (e: React.FormEvent) => {

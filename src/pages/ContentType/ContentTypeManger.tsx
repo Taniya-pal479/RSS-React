@@ -119,7 +119,6 @@ export const ContentTypeManager = () => {
       </div>
 
       <div className="bg-white rounded-[24px] border border-gray-100 shadow-sm overflow-hidden">
-        {/* Table Header */}
         <div className="grid grid-cols-12 bg-gray-50 border-b border-gray-100 px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">
           <div className="col-span-1">#</div>
           <div className="col-span-4">{t("content_type_name")}</div>
@@ -127,7 +126,6 @@ export const ContentTypeManager = () => {
           <div className="col-span-2 text-right">{t("actions")}</div>
         </div>
 
-        {/* Table Body - Standard Map */}
         <div className="divide-y divide-gray-50">
           {contentTypes.map((item, index) => {
             const activeTranslation = item.translations?.find(
@@ -170,7 +168,6 @@ export const ContentTypeManager = () => {
             );
           })}
 
-          {/* Empty State */}
           {!isLoading && contentTypes.length === 0 && (
             <div className="p-10 text-center text-gray-400">
               {t("no_results_found")}

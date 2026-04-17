@@ -39,7 +39,6 @@ const FileYearDetails = () => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
 
-  // Filter & UI State
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<string>("");
   const [order, setOrder] = useState<"asc" | "desc" | null>(null);
@@ -59,9 +58,6 @@ const FileYearDetails = () => {
     { label: t("original_name"), value: "name" },
   ];
 
-  /** * QUERY 1: Base Year Data
-   * Fetches the default list for the year with sorting. Skips when searching.
-   */
   const { data: baseData, isLoading: isBaseLoading } = useGetSearchFilesQuery(
     {
       search: "",
@@ -75,9 +71,6 @@ const FileYearDetails = () => {
     { skip: !isAuthenticated || !!debouncedSearch.trim() },
   );
 
-  /** * QUERY 2: Search Results
-   * Fetches filtered results when user types. Skips when search is empty.
-   */
   const { data: searchData, isFetching: isSearchFetching } =
     useGetSearchFilesQuery(
       {
@@ -92,7 +85,6 @@ const FileYearDetails = () => {
       { skip: !isAuthenticated || !debouncedSearch.trim() },
     );
 
-  // Switch logic to decide which data to display
   const isSearching = !!debouncedSearch.trim();
   const rawFiles = isSearching
     ? searchData?.files || []
@@ -100,8 +92,6 @@ const FileYearDetails = () => {
   const totalCount = isSearching
     ? searchData?.total || 0
     : baseData?.total || 0;
-
-  // Client-side Content Type filter (Year/Search/Sort/Order are already server-side)
 
   console.log("selected", selectedType);
 
@@ -285,7 +275,6 @@ const FileYearDetails = () => {
       </div>
 
       <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6 px-4">
-        {/* Search Field - Constrained width so it doesn't squash filters */}
         <div className="relative w-full md:w-80">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             {isSearchFetching ? (
@@ -314,13 +303,11 @@ const FileYearDetails = () => {
           )}
         </div>
 
-        {/* Filter Actions - Grouped and spaced */}
         <div className="flex flex-wrap items-center gap-3">
           <SortDropdown
             options={sortOptions}
             selectedSort={sortBy}
             onChange={setSortBy}
-            // Note: If your SortDropdown has a 'clearable' prop, set it to false here
           />
           <OrderDropdown
             value={order}

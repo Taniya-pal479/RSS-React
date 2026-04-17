@@ -1,6 +1,6 @@
-import React, { Component, type ErrorInfo, type ReactNode } from 'react';
-import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
-import { t } from 'i18next'; // Direct import for Class Components
+import React, { Component, type ErrorInfo, type ReactNode } from "react";
+import { AlertTriangle, RefreshCw, Home } from "lucide-react";
+import { t } from "i18next";
 
 interface Props {
   children: ReactNode;
@@ -28,7 +28,7 @@ export class ErrorBoundary extends Component<Props, State> {
     this.setState({ error, errorInfo });
 
     if (import.meta.env.DEV) {
-      console.error('ErrorBoundary caught an error:', error, errorInfo);
+      console.error("ErrorBoundary caught an error:", error, errorInfo);
     }
 
     if (this.props.onError) {
@@ -41,7 +41,7 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   private logErrorToService = (error: Error, errorInfo: ErrorInfo) => {
-    console.error('Production error logged:', {
+    console.error("Production error logged:", {
       error: error.toString(),
       stack: error.stack,
       componentStack: errorInfo.componentStack,
@@ -56,7 +56,7 @@ export class ErrorBoundary extends Component<Props, State> {
   };
 
   private handleGoHome = () => {
-    window.location.href = '/';
+    window.location.href = "/";
   };
 
   private handleReload = () => {
@@ -72,16 +72,18 @@ export class ErrorBoundary extends Component<Props, State> {
       return (
         <div className="min-h-screen flex items-center justify-center p-4 bg-slate-50">
           <div className="w-full max-w-md bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
-            
             <div className="p-6 text-center">
               <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-red-50">
                 <AlertTriangle className="h-8 w-8 text-red-600" />
               </div>
               <h2 className="text-2xl font-bold text-slate-900 mb-2">
-                {t('error_boundary.title', 'Something went wrong')}
+                {t("error_boundary.title", "Something went wrong")}
               </h2>
               <p className="text-slate-500 text-sm">
-                {t('error_boundary.message', 'An unexpected error occurred. We apologize for the inconvenience.')}
+                {t(
+                  "error_boundary.message",
+                  "An unexpected error occurred. We apologize for the inconvenience.",
+                )}
               </p>
             </div>
 
@@ -89,16 +91,25 @@ export class ErrorBoundary extends Component<Props, State> {
               {import.meta.env.DEV && this.state.error && (
                 <details className="rounded-lg bg-slate-100 p-4 border border-slate-200 overflow-hidden">
                   <summary className="cursor-pointer text-sm font-semibold text-slate-700">
-                    {t('error_boundary.details_title', 'Error Details (Development Only)')}
+                    {t(
+                      "error_boundary.details_title",
+                      "Error Details (Development Only)",
+                    )}
                   </summary>
                   <div className="mt-3 text-[10px] font-mono text-red-700 bg-white p-2 rounded border border-slate-200 max-h-40 overflow-auto">
-                    <p className="font-bold mb-1 underline">{t('error_boundary.error_label', 'Error')}:</p>
+                    <p className="font-bold mb-1 underline">
+                      {t("error_boundary.error_label", "Error")}:
+                    </p>
                     <p className="mb-3">{this.state.error.toString()}</p>
-                    
+
                     {this.state.error.stack && (
                       <>
-                        <p className="font-bold mb-1 underline">{t('error_boundary.stack_label', 'Stack Trace')}:</p>
-                        <pre className="whitespace-pre-wrap">{this.state.error.stack}</pre>
+                        <p className="font-bold mb-1 underline">
+                          {t("error_boundary.stack_label", "Stack Trace")}:
+                        </p>
+                        <pre className="whitespace-pre-wrap">
+                          {this.state.error.stack}
+                        </pre>
                       </>
                     )}
                   </div>
@@ -112,23 +123,23 @@ export class ErrorBoundary extends Component<Props, State> {
                 className="flex items-center justify-center w-full bg-slate-900 hover:bg-slate-800 text-white font-medium py-2.5 rounded-lg transition-colors shadow-sm"
               >
                 <RefreshCw className="mr-2 h-4 w-4" />
-                {t('error_boundary.retry_button', 'Try Again')}
+                {t("error_boundary.retry_button", "Try Again")}
               </button>
-              
+
               <div className="flex gap-3 w-full">
                 <button
                   onClick={this.handleGoHome}
                   className="flex items-center justify-center flex-1 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-medium py-2 rounded-lg transition-colors"
                 >
                   <Home className="mr-2 h-4 w-4" />
-                  {t('error_boundary.home_button', 'Home')}
+                  {t("error_boundary.home_button", "Home")}
                 </button>
                 <button
                   onClick={this.handleReload}
                   className="flex items-center justify-center flex-1 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-medium py-2 rounded-lg transition-colors"
                 >
                   <RefreshCw className="mr-2 h-4 w-4" />
-                  {t('error_boundary.reload_button', 'Reload')}
+                  {t("error_boundary.reload_button", "Reload")}
                 </button>
               </div>
             </div>
@@ -144,7 +155,7 @@ export class ErrorBoundary extends Component<Props, State> {
 export function withErrorBoundary<P extends object>(
   Component: React.ComponentType<P>,
   fallback?: ReactNode,
-  onError?: (error: Error, errorInfo: ErrorInfo) => void
+  onError?: (error: Error, errorInfo: ErrorInfo) => void,
 ) {
   const WrappedComponent = (props: P) => (
     <ErrorBoundary fallback={fallback} onError={onError}>

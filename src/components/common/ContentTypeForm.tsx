@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, startTransition } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
@@ -75,12 +75,13 @@ const ContentTypeForm: React.FC = () => {
 
   useEffect(() => {
     if (itemToEdit && selectedCatId === "") {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setSelectedCatId(String(itemToEdit.categoryId));
+      startTransition(() => {
+        setSelectedCatId(String(itemToEdit.categoryId));
 
-      setSelectedSubCatId(
-        itemToEdit.subcategory ? String(itemToEdit.subcategory) : "",
-      );
+        setSelectedSubCatId(
+          itemToEdit.subcategory ? String(itemToEdit.subcategory) : "",
+        );
+      });
 
       const newTrans = {
         en: { name: "", description: "" },
@@ -99,7 +100,9 @@ const ContentTypeForm: React.FC = () => {
           description: itemToEdit.description || "",
         };
       }
-      setTranslations(newTrans);
+      startTransition(() => {
+        setTranslations(newTrans);
+      });
     }
   }, [itemToEdit, globalLang, selectedCatId]);
 

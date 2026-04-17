@@ -15,7 +15,6 @@ import {
   useGetCategoriesQuery,
   useGetSubCategoriesQuery,
   useUploadFileMutation,
-  useGetFileIndexQuery,
 } from "../../services/rssApi";
 import { useAppSelector } from "../../hook/store";
 
@@ -28,7 +27,6 @@ const GlobalUpload = () => {
   const [des, setDes] = useState("");
   const [selectedCatId, setSelectedCatId] = useState("");
   const [selectedSubCatId, setSelectedSubCatId] = useState("");
-  const [selectedContentTypeId, setSelectedContentTypeId] = useState("");
   const [year, setYear] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
@@ -52,22 +50,8 @@ const GlobalUpload = () => {
 
   const subCategories = subCategoriesData?.result || [];
 
-  const { data: contentTypesData } = useGetFileIndexQuery(
-    {
-      groupBy: "contentType",
-      lang: i18n.language,
-      skip: 0,
-      take: 1000,
-    },
-    {
-      skip: !isAuthenticated,
-    },
-  );
-  const contentTypes = contentTypesData?.data ?? [];
-
   const isFormValid =
     name &&
-    selectedContentTypeId &&
     selectedCatId &&
     year.trim() !== "" &&
     files.length > 0 &&
@@ -77,16 +61,12 @@ const GlobalUpload = () => {
     categories.find((c) => String(c.id) === selectedCatId)?.name || "...";
   const currentSubCatName =
     subCategories.find((s) => String(s.id) === selectedSubCatId)?.name || "";
-  const currentCTName =
-    contentTypes.find((ct) => String(ct.id) === selectedContentTypeId)?.name ||
-    "...";
 
-  const logicalPath = `/${currentCatName}${currentSubCatName ? `/${currentSubCatName}` : ""}/${currentCTName}/${year || "YYYY"}/${files.length > 0 ? `${files.length} files` : t("placeholder_filename")}`;
+  // Updated logical path to remove currentCTName
+  const logicalPath = `/${currentCatName}${currentSubCatName ? `/${currentSubCatName}` : ""}/${year || "YYYY"}/${files.length > 0 ? `${files.length} files` : t("placeholder_filename")}`;
 
   const getFileType = (file: File): string => {
     const ext = file.name.split(".").pop()?.toUpperCase();
-
-    // Mapping extensions to the exact Swagger allowed values
     const imageExts = ["JPG", "JPEG", "PNG", "WEBP", "SVG"];
     const videoExts = ["MP4", "MOV", "AVI", "WEBM"];
     const audioExts = ["MP3", "WAV", "OGG"];
@@ -124,23 +104,21 @@ const GlobalUpload = () => {
 
     setFiles((prevFiles) => {
       const combinedFiles = [...prevFiles, ...incomingFiles];
-
       if (combinedFiles.length > 10) {
         toast.error(t("max_files_error") || "Maximum 10 files allowed");
         return prevFiles;
       }
-
       const uniqueFiles = combinedFiles.filter(
         (file, index, self) =>
           index ===
           self.findIndex((f) => f.name === file.name && f.size === file.size),
       );
-
       return uniqueFiles;
     });
 
     e.target.value = "";
   };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isFormValid) {
@@ -149,7 +127,7 @@ const GlobalUpload = () => {
     }
 
     const formData = new FormData();
-    formData.append("contentTypeId", selectedContentTypeId);
+    // Removed selectedContentTypeId from append
     formData.append("categoryId", String(selectedCatId));
     formData.append("subcategoryId", String(selectedSubCatId));
     formData.append("displayName", name);
@@ -183,7 +161,6 @@ const GlobalUpload = () => {
   const getMissingFieldsMessage = () => {
     const missing = [];
     if (!name) missing.push(t("name"));
-    if (!selectedContentTypeId) missing.push(t("content_type"));
     if (!selectedCatId) missing.push(t("category"));
     if (!year.trim()) missing.push(t("data_year"));
     if (files.length === 0) missing.push(t("files"));
@@ -194,7 +171,7 @@ const GlobalUpload = () => {
   };
 
   return (
-    <div className="h-full overflow-y-auto   space-y-8 animate-fade-in pb-10 no-scrollbar">
+    <div className="h-full overflow-y-auto space-y-8 animate-fade-in pb-10 no-scrollbar">
       <div className="p-8 max-w-3xl mx-auto relative">
         <div className="flex items-start justify-between mb-8">
           <div className="flex gap-4">
@@ -223,31 +200,7 @@ const GlobalUpload = () => {
           className="space-y-8 bg-white p-8 rounded-2xl shadow-sm border border-slate-100"
         >
           <div className="grid grid-cols-2 gap-x-8 gap-y-6">
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700">
-                {t("content_type")} <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <select
-                  className={`w-full pl-4 pr-10 py-2.5 bg-white border-2 rounded-xl text-sm font-bold appearance-none outline-none transition-all ${selectedContentTypeId ? "border-orange-50" : "border-slate-200"}`}
-                  value={selectedContentTypeId}
-                  onChange={(e) => setSelectedContentTypeId(e.target.value)}
-                  required
-                >
-                  <option value="">Select Content Type</option>
-                  {contentTypes.map((ct) => (
-                    <option key={ct.id} value={ct.id}>
-                      {ct.name}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-orange-400 pointer-events-none"
-                  size={16}
-                />
-              </div>
-            </div>
-
+            {/* Category Dropdown (Moved to start) */}
             <div className="space-y-2">
               <label className="text-sm font-bold text-slate-700">
                 {t("category")} <span className="text-red-500">*</span>
@@ -276,6 +229,7 @@ const GlobalUpload = () => {
               </div>
             </div>
 
+            {/* Subcategory or Year */}
             {isFetchingSubCats || subCategories.length > 0 ? (
               <>
                 <div className="col-span-1">
@@ -361,6 +315,7 @@ const GlobalUpload = () => {
                 required
               />
             </div>
+
             <div className="col-span-1 space-y-2">
               <label className="text-sm font-bold text-slate-700">
                 {t("description")}{" "}

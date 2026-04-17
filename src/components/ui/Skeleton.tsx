@@ -21,16 +21,14 @@ export const StatsCardSkeleton = () => (
 export const FileRowSkeleton = () => (
   <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
     <div className="flex items-center gap-4">
-      {/* File Icon placeholder */}
       <SkeletonBase className="h-10 w-10 rounded-lg" />
       <div className="space-y-2">
-        {/* Display Name placeholder */}
         <SkeletonBase className="h-4 w-48" />
-        {/* Date placeholder */}
+
         <SkeletonBase className="h-3 w-20" />
       </div>
     </div>
-    {/* Arrow placeholder */}
+
     <SkeletonBase className="h-5 w-5 rounded-full" />
   </div>
 );

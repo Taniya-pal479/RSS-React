@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, startTransition } from "react";
 import { useTranslation } from "react-i18next";
 import { X, Globe, Check, ChevronDown, Save, Loader2 } from "lucide-react";
 import { toast } from "react-toastify";
@@ -51,14 +51,15 @@ const EditContentTypeModal = ({ data, onClose }: EditContentTypeModalProps) => {
         const newDesc = currentItem.description || "";
 
         if (formData.name !== newName || formData.description !== newDesc) {
-          setFormData({
-            name: newName,
-            description: newDesc,
+          startTransition(() => {
+            setFormData({
+              name: newName,
+              description: newDesc,
+            });
           });
         }
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshedList, data.id]);
 
   const handleUpdate = async (e: React.FormEvent) => {

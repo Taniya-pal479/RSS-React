@@ -6,6 +6,8 @@ import { useAppDispatch } from "../../hook/store";
 import { setCredentials } from "../../store/slices/authSlice";
 import { Mail, Lock, Loader2, AlertCircle, Eye, EyeOff } from "lucide-react";
 import flagIcon1 from "../../../src/assets/flagIcon1.png";
+import type { ApiError } from "../../types";
+import { toast } from "react-toastify";
 
 const Login = () => {
   const { t } = useTranslation();
@@ -54,9 +56,14 @@ const Login = () => {
       dispatch(setCredentials(result));
       console.log("login.....");
       navigate("/dashboard", { replace: true });
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (err: unknown) {
-      setErrors({ general: t("invalid_credentials_msg") });
+    } catch (err) {
+      const error = err as ApiError;
+
+      if (error.data?.message) {
+        toast.error(t(error.data.message));
+      } else {
+        setErrors({ general: t("invalid_credentials_msg") });
+      }
     }
   };
 
