@@ -225,7 +225,7 @@ const CategoryDetail = () => {
               {isSubcategory ? (
                 <Folder size={20} />
               ) : isImg ? (
-                <ImageIcon size={20} />
+                (<ImageIcon size={20} />)
               ) : isReport ? (
                 <BarChart3 size={20} />
               ) : (

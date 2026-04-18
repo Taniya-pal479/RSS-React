@@ -14,7 +14,15 @@ import {
   Folder,
   ImageIcon,
   BarChart3,
+  FileImage,
+  FileVideo,
+  FileAudio,
+  FileSpreadsheet,
+  FileArchive,
+  FileCode,
+  File,
 } from "lucide-react";
+
 import DataTable, { type Column } from "../../components/common/DataTable";
 import {
   useGetFilesBySubcategoryQuery,
@@ -130,16 +138,41 @@ const SubCategoryDetail = () => {
     );
   };
 
+  const getFileIcon = (ext: string) => {
+    if (!ext) return File;
+
+    const imageExts = ["JPG", "JPEG", "PNG", "WEBP", "SVG"];
+    const videoExts = ["MP4", "MOV", "AVI", "WEBM"];
+    const audioExts = ["MP3", "WAV", "OGG"];
+    const excelExts = ["XLS", "XLSX", "XLSM", "CSV"];
+    const codeExts = ["JS", "TS", "HTML", "CSS", "JSON", "XML"];
+    const archiveExts = ["ZIP", "RAR", "7Z"];
+
+    if (imageExts.includes(ext)) return FileImage;
+    if (videoExts.includes(ext)) return FileVideo;
+    if (audioExts.includes(ext)) return FileAudio;
+    if (excelExts.includes(ext)) return FileSpreadsheet;
+    if (archiveExts.includes(ext)) return FileArchive;
+    if (codeExts.includes(ext)) return FileCode;
+    if (ext === "PDF" || ext === "DOC" || ext === "DOCX" || ext === "TXT")
+      return FileText;
+
+    return File; // default
+  };
+
   const columns: Column<FileObject>[] = [
     {
       header: t("file_display_name"),
       key: "fileName",
       className: "w-[40%]",
       render: (file) => {
+        const exturl = file.url || "";
+        const ext = exturl.split(".").pop()?.split(/\?|#/)[0]?.toUpperCase();
+        console.log(ext, "exxt");
+        const Icon = getFileIcon(ext);
         const isImg = file.itemType === "file" && file.fileType === "IMAGE";
         const isReport = file.itemType === "file" && file.fileType === "REPORT";
         const isSubcategory = file.itemType === "subcategory";
-
         return (
           <div className="flex items-center gap-4 py-2">
             <div
@@ -153,15 +186,7 @@ const SubCategoryDetail = () => {
                       : "bg-blue-50 text-blue-600"
               }`}
             >
-              {isSubcategory ? (
-                <Folder size={20} />
-              ) : isImg ? (
-                <ImageIcon size={20} />
-              ) : isReport ? (
-                <BarChart3 size={20} />
-              ) : (
-                <FileText size={20} />
-              )}
+              <Icon />
             </div>
             <div
               className="flex flex-col cursor-pointer "
