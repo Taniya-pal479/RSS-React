@@ -11,12 +11,17 @@ import {
   ChevronRight,
   Edit3,
   Plus,
+  Folder,
+  ImageIcon,
+  BarChart3,
 } from "lucide-react";
 import DataTable, { type Column } from "../../components/common/DataTable";
 import {
   useGetFilesBySubcategoryQuery,
   useGetSubCategoriesQuery,
   useDeleteFileMutation,
+  useGetSubCategoriesChildrenQuery,
+  useGetSubCategoryByIdQuery,
 } from "../../services/rssApi";
 import { format } from "date-fns";
 import { toast } from "react-toastify";
@@ -37,6 +42,11 @@ const SubCategoryDetail = () => {
   const { handleDownload } = useDownload();
   const [page, setPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const { data: subCategoryData } = useGetSubCategoryByIdQuery({
+    subCategoryId: Number(subCategoryId),
+    lang: i18n.language,
+  });
+  console.log("id", subCategoryId);
 
   const { data: filesData, isLoading: filesLoading } =
     useGetFilesBySubcategoryQuery(
@@ -55,14 +65,15 @@ const SubCategoryDetail = () => {
   const files = filesData?.data || [];
 
   const { data: subCategoriesData, isLoading: subCatLoading } =
-    useGetSubCategoriesQuery({
-      categoryId: categoryId as string,
+    useGetSubCategoriesChildrenQuery({
+      parentId: subCategoryId,
       lang: i18n.language,
       skip: 0,
       take: 1000,
     });
 
   const subCategories = subCategoriesData?.result || [];
+
   const currentSubCategory = useMemo(
     () =>
       subCategories.find(
@@ -71,6 +82,29 @@ const SubCategoryDetail = () => {
     [subCategories, subCategoryId],
   );
 
+  const combinedData = useMemo(() => {
+    const currentSubs = subCategoriesData?.data || [];
+    const currentFiles = filesData?.data || [];
+
+    const mappedSubs = currentSubs.map((sub: any) => ({
+      ...sub,
+      tableId: `sub-${sub.id}`,
+      displayName: sub.name || "",
+      itemType: "subcategory",
+    }));
+
+    const mappedFiles = currentFiles.map((file: any) => ({
+      ...file,
+      tableId: `file-${file.id}`,
+      displayName: file.displayName,
+      itemType: "file",
+    }));
+
+    return [...mappedSubs, ...mappedFiles];
+  }, [subCategoriesData, filesData]);
+
+  console.log(combinedData);
+
   const [deleteFile] = useDeleteFileMutation();
 
   const executeDelete = async (id: number) => {
@@ -78,7 +112,7 @@ const SubCategoryDetail = () => {
       await deleteFile(id).unwrap();
       toast.success(t("DELETED_SUCCESSFULLY"));
     } catch (err) {
-      console.log(err);
+      console.error(err);
       toast.error(t("ERROR_DELETING"));
     }
   };
@@ -101,56 +135,119 @@ const SubCategoryDetail = () => {
       header: t("file_display_name"),
       key: "fileName",
       className: "w-[40%]",
-      render: (file) => (
-        <div className="flex items-center gap-4 py-2">
-          <div className="p-3 bg-orange-50 text-blue-600 rounded-2xl">
-            <FileText size={20} />
-          </div>
-          <div
-            className="flex flex-col cursor-pointer "
-            onClick={() => {
-              const isExternal = file.url.startsWith("http");
+      render: (file) => {
+        const isImg = file.itemType === "file" && file.fileType === "IMAGE";
+        const isReport = file.itemType === "file" && file.fileType === "REPORT";
+        const isSubcategory = file.itemType === "subcategory";
 
-              if (isExternal) {
-                window.open(file.url, "_blank");
-              } else {
-                const baseUrl =
-                  "https://rss-file-storage-ayush001.s3.ap-south-1.amazonaws.com/";
-                window.open(`${baseUrl}${file.url}`, "_blank");
-              }
-            }}
-          >
-            <span className="font-bold text-slate-800  hover:text-orange-600">
-              {file.displayName}
-            </span>
-            <span className="text-[10px] text-slate-400 font-black uppercase italic">
-              {file.mimeType}
-            </span>
+        return (
+          <div className="flex items-center gap-4 py-2">
+            <div
+              className={`p-2.5 rounded-xl shadow-sm transition-colors ${
+                isSubcategory
+                  ? "bg-orange-50 text-orange-600"
+                  : isImg
+                    ? "bg-orange-50 text-orange-600"
+                    : isReport
+                      ? "bg-green-50 text-green-600"
+                      : "bg-blue-50 text-blue-600"
+              }`}
+            >
+              {isSubcategory ? (
+                <Folder size={20} />
+              ) : isImg ? (
+                <ImageIcon size={20} />
+              ) : isReport ? (
+                <BarChart3 size={20} />
+              ) : (
+                <FileText size={20} />
+              )}
+            </div>
+            <div
+              className="flex flex-col cursor-pointer "
+              onClick={() => {
+                if (file?.itemType === "subcategory") {
+                  console.log("clicked link");
+                  navigate(`/category/${categoryId}/subcategory/${file.id}`);
+                } else {
+                  const isExternal = file.url.startsWith("http");
+
+                  if (isExternal) {
+                    window.open(file.url, "_blank");
+                  } else {
+                    const baseUrl =
+                      "https://rss-file-storage-ayush001.s3.ap-south-1.amazonaws.com/";
+                    window.open(`${baseUrl}${file.url}`, "_blank");
+                  }
+                }
+              }}
+            >
+              <span className="font-bold text-slate-800  hover:text-orange-600">
+                {file.displayName}
+              </span>
+              <span className="text-[10px] text-slate-400 font-black uppercase italic">
+                {file.mimeType}
+              </span>
+            </div>
           </div>
-        </div>
-      ),
+        );
+      },
     },
+    {
+      header: t("type"),
+
+      key: "tableId",
+
+      className: "px-10 py-6",
+
+      render: (item) => {
+        const exturl = item.url || "";
+        const ext = exturl.split(".").pop()?.split(/\?|#/)[0]?.toUpperCase();
+
+        return (
+          <span
+            className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
+              item.itemType === "subcategory"
+                ? "bg-orange-50 text-orange-600"
+                : "bg-blue-50 text-blue-600"
+            }`}
+          >
+            {item.itemType === "subcategory" ? item.itemType : ext}
+          </span>
+        );
+      },
+    },
+
     {
       header: t("size"),
       key: "fileSize",
       className: "w-[15%]",
-      render: (file) => (
-        <div className="flex items-center gap-2 text-slate-500 font-bold">
-          <HardDrive size={14} className="text-slate-300" />
-          {(file.fileSize / 1024).toFixed(1)} KB
-        </div>
-      ),
+      render: (file) => {
+        return (
+          <div className="flex items-center gap-2 text-slate-500 font-bold">
+            <HardDrive size={14} className="text-slate-300" />
+            {file.fileSize ? `${(file.fileSize / 1024).toFixed(1)}KB` : "---"}
+          </div>
+        );
+      },
     },
+
     {
       header: t("upload_date"),
       key: "uploadedAt",
       className: "w-[20%]",
-      render: (file) => (
-        <div className="flex items-center gap-2 text-slate-500">
-          <Calendar size={14} className="text-slate-300" />
-          <span>{format(new Date(file.uploadedAt), "MMMM do, yyyy")}</span>
-        </div>
-      ),
+      render: (file) => {
+        return (
+          <div className="flex items-center gap-2 text-slate-500">
+            <Calendar size={14} className="text-slate-300" />
+            {file?.itemType !== "subcategory" ? (
+              <span>{format(new Date(file.uploadedAt), "MMMM do, yyyy")}</span>
+            ) : (
+              <span>-</span>
+            )}
+          </div>
+        );
+      },
     },
     {
       header: t("actions"),
@@ -204,7 +301,7 @@ const SubCategoryDetail = () => {
         </button>
         <ChevronRight size={14} className="text-slate-300" />
         <span className="text-orange-600 uppercase tracking-widest">
-          {currentSubCategory?.name || t("loading")}
+          {subCategoryData?.name || t("loading")}
         </span>
       </nav>
 
@@ -213,27 +310,39 @@ const SubCategoryDetail = () => {
           <div className="w-3 h-14 bg-linear-to-b from-orange-400 to-orange-600 rounded-full shadow-lg shadow-orange-200" />
           <div>
             <h1 className="text-4xl font-black text-slate-900 uppercase">
-              {currentSubCategory ? currentSubCategory.name : t("loading")}
+              {subCategoryData ? subCategoryData.name : t("loading")}
             </h1>
             <p className="text-gray-400 font-bold text-sm">
               {files.length} {t("items_found")}
             </p>
           </div>
         </div>
-
-        <button
-          onClick={() => navigate("/upload")}
-          className="flex items-center gap-2 px-5 py-2.5 bg-saffron-600 text-white font-bold rounded-xl shadow-lg hover:bg-saffron-700 transition-all active:scale-95 cursor-pointer"
-        >
-          <Plus size={18} />
-          {t("upload_file") || "Add Ingestion"}
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() =>
+              navigate(
+                `/category/${categoryId}/subcategory/${subCategoryId}/add-subcategory`,
+              )
+            }
+            className="flex items-center gap-2 px-5 py-2.5 bg-saffron-600 text-white font-bold rounded-xl shadow-lg hover:bg-saffron-700 transition-all active:scale-95 cursor-pointer"
+          >
+            <Plus size={22} strokeWidth={3} />
+            <span>{t("Add_new_subcategory")}</span>
+          </button>
+          <button
+            onClick={() => navigate(`/upload/${categoryId}/${subCategoryId}`)}
+            className="flex items-center gap-2 px-5 py-2.5 bg-saffron-600 text-white font-bold rounded-xl shadow-lg hover:bg-saffron-700 transition-all active:scale-95 cursor-pointer"
+          >
+            <Plus size={18} />
+            {t("upload_file") || "Add Ingestion"}
+          </button>
+        </div>
       </div>
 
       <div className="bg-white rounded-4xl border border-slate-100 shadow-sm overflow-hidden">
         <DataTable
           columns={columns}
-          data={files}
+          data={combinedData}
           isLoading={filesLoading || subCatLoading}
           emptyMessage={t("no_files_uploaded_yet")}
         />

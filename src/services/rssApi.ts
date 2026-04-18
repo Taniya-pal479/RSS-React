@@ -125,6 +125,36 @@ export const rssApi = createApi({
         { type: "SubCategory", id: arg.categoryId },
       ],
     }),
+   getSubCategoryById: builder.query<SubCategory, { subCategoryId: number; lang: string }>({
+  query: ({ subCategoryId, lang }) => 
+    `/subcategories/${subCategoryId}?lang=${lang}`,
+  providesTags: (_result, _error, arg) => [
+    { type: "SubCategory", id: arg.subCategoryId },
+  ],
+}),
+    getSubCategoriesChildren: builder.query<
+      SubCategoryResponse,
+      {
+        parentId: string | number | undefined;
+        lang: string;
+        skip: number;
+        take: number;
+      }
+    >({
+      query: ({ parentId, lang, skip, take }) => ({
+        url: `/subcategories/children`,
+        params: {
+          parentId: Number(parentId),
+          lang,
+          skip,
+          take,
+        },
+      }),
+      providesTags: (_result, _error, arg) => [
+        { type: "SubCategory", id: "LIST" },
+        { type: "SubCategory", id: arg.parentId },
+      ],
+    }),
 
     deleteCategory: builder.mutation<{ success: boolean }, string>({
       query: (id) => ({ url: `categories/${id}`, method: "DELETE" }),
@@ -148,7 +178,7 @@ export const rssApi = createApi({
       }),
       invalidatesTags: (_result, _error, arg) => [
         "Category",
-        { type: "SubCategory", id: arg.categoryId },
+        { type: "SubCategory", id: arg.parentId ?? arg.categoryId },
       ],
     }),
 
@@ -519,4 +549,6 @@ export const {
   useLazyGetAllFilesQuery,
   useGetFileStatsQuery,
   useGetCombinedCategoryDataQuery,
+  useGetSubCategoriesChildrenQuery,
+  useGetSubCategoryByIdQuery,
 } = rssApi;

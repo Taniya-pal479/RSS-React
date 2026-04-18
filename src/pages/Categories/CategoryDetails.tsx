@@ -202,6 +202,9 @@ const CategoryDetail = () => {
       key: "displayName",
       className: "px-10 py-6 font-bold text-gray-700",
       render: (item) => {
+        const exturl = item.url || "";
+        const ext = exturl.split(".").pop()?.split(/\?|#/)[0]?.toUpperCase();
+
         const isImg = item.itemType === "file" && item.fileType === "IMAGE";
         const isReport = item.itemType === "file" && item.fileType === "REPORT";
         const isSubcategory = item.itemType === "subcategory";
@@ -234,7 +237,7 @@ const CategoryDetail = () => {
               onClick={() => handleRowClick(item)}
               className="truncate max-w-[250px] cursor-pointer hover:text-orange-600 transition-colors"
             >
-              {item.displayLabel || item.displayName}
+              {item.displayName}
             </span>
           </div>
         );
@@ -443,10 +446,11 @@ const CategoryDetail = () => {
             onClick={() => navigate(`/add-subcategory/${categoryId}`)}
             className="flex items-center gap-2 px-7 py-4 bg-[#f97316] text-white font-bold rounded-2xl shadow-lg hover:bg-[#ea580c] transition-all cursor-pointer"
           >
-            <Plus size={22} strokeWidth={3} /> <span>{t("Add_new")}</span>
+            <Plus size={22} strokeWidth={3} />{" "}
+            <span>{t("Add_new_subcategory")}</span>
           </button>
           <button
-            onClick={() => navigate("/upload")}
+            onClick={() => navigate(`/upload/${categoryId}`)}
             className="flex items-center gap-2 px-5 py-2.5 bg-saffron-600 text-white font-bold rounded-xl shadow-lg hover:bg-saffron-700 transition-all active:scale-95 cursor-pointer"
           >
             <Plus size={18} />

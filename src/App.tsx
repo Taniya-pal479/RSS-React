@@ -68,6 +68,10 @@ const App = () => {
                   element={<CategoryForm mode="category" />}
                 />
                 <Route
+                  path="/category/:categoryId/subcategory/:subCategoryId/add-subcategory"
+                  element={<CategoryForm mode="subcategory" />}
+                />
+                <Route
                   path="/add-subcategory/:categoryId"
                   element={<CategoryForm mode="subcategory" />}
                 />
@@ -79,7 +83,10 @@ const App = () => {
                   path="/category/:categoryId/subcategory/:subCategoryId"
                   element={<SubCategoryDetail />}
                 />
-                <Route path="/upload" element={<UploadFile />} />
+                <Route
+                  path="/upload/:categoryId?/:subCategoryId?"
+                  element={<UploadFile />}
+                />
                 <Route path="/content" element={<ContentTypeManager />} />
                 <Route path="/content/add" element={<ContentTypeForm />} />
                 <Route

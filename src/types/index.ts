@@ -34,7 +34,7 @@ export interface StatsCardProps {
 }
 
 export interface Translation {
-  displayName: string;
+  displayName?: string;
   languageCode: string;
   name: string;
   description?: string;
@@ -55,7 +55,8 @@ export interface FormTranslations {
 }
 
 export interface SubCategoryResponse {
-  result: SubCategory[];
+  name: ReactI18NextChildren | Iterable<ReactI18NextChildren>;
+  data: SubCategory[];
   total: number;
 }
 export interface CategoryResponse {
@@ -90,6 +91,7 @@ export interface SubCategory {
   updatedAt?: string;
   total?: number;
   result?: SubCategory[];
+  currentName: string;
 }
 
 export interface Category {
@@ -133,6 +135,7 @@ export interface CreateFilePayload {
 }
 
 export interface CreateSubCategoryPayload {
+  parentId?: string | number;
   categoryId: string | number;
   slug?: string;
   translations: Translation[];
@@ -300,6 +303,7 @@ export interface FileItem {
   contentTypeId: string | number;
   icon?: React.ReactNode;
 }
+
 export interface FileObject {
   iconType: string;
   originalId: number | string;

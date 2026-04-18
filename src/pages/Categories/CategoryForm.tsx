@@ -17,32 +17,26 @@ import type { Translation } from "../../types";
 import { toast } from "react-toastify";
 
 const SUPPORTED_LANGS = [
-  {
-    code: "en",
-    name: "English",
-    filename: "Category Name",
-    description: "Description",
-  },
-  {
-    code: "hi",
-    name: "हिन्दी",
-    filename: "श्रेणी का नाम",
-    description: "विवरण",
-  },
+  { code: "en", name: "English" },
+  { code: "hi", name: "हिन्दी" },
 ];
 
 const CategoryForm = ({ mode }: { mode: "category" | "subcategory" }) => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
-  const { categoryId } = useParams();
+
+  // Get both IDs from URL. subCategoryId is present for N-level nesting.
+  const { categoryId, subCategoryId } = useParams<{
+    categoryId: string;
+    subCategoryId?: string;
+  }>();
 
   const [addCategory, { isLoading: isCatLoading }] = useAddCategoryMutation();
   const [addSubCategory, { isLoading: isSubLoading }] =
     useAddSubCategoryMutation();
-  const isLoading = isCatLoading || isSubLoading;
-  const globalLang = i18n.language;
 
-  const [currentLangCode, setCurrentLangCode] = useState(globalLang);
+  const isLoading = isCatLoading || isSubLoading;
+  const [currentLangCode, setCurrentLangCode] = useState(i18n.language);
   const [isLangOpen, setIsLangOpen] = useState(false);
 
   const [translations, setTranslations] = useState<
@@ -63,12 +57,10 @@ const CategoryForm = ({ mode }: { mode: "category" | "subcategory" }) => {
     e.preventDefault();
 
     const translationPayload: Translation[] = Object.entries(translations)
-
       .filter(([, data]) => data.name.trim() !== "")
       .map(([code, data]) => ({
         languageCode: code,
         name: data.name.trim(),
-        displayName: data.name.trim(),
         description: data.description.trim(),
       }));
 
@@ -77,36 +69,33 @@ const CategoryForm = ({ mode }: { mode: "category" | "subcategory" }) => {
       return;
     }
 
-    const slug = (translations.en.name || translations.hi.name)
-      .toLowerCase()
-      .replace(/\s+/g, "-")
-      .replace(/[^\w-]+/g, "");
-
     try {
-      let targetId: string | number;
-
       if (mode === "category") {
         const result = await addCategory({
-          slug,
           translations: translationPayload,
         }).unwrap();
-        targetId = result.id;
+
+        toast.success(t("save_success"));
+        navigate(`/category/${result.id}`);
       } else {
+        const parentId = subCategoryId ? Number(subCategoryId) : 0;
+
         await addSubCategory({
           categoryId: Number(categoryId),
-          slug,
+          parentId: parentId,
           translations: translationPayload,
         }).unwrap();
-        targetId = categoryId!;
-      }
 
-      toast.success(t("save_success"));
-      navigate(`/category/${targetId}`, {
-        state: { name: translations[currentLangCode].name },
-      });
+        toast.success(t("save_success"));
+        if (subCategoryId) {
+          navigate(`/category/${categoryId}/subcategory/${subCategoryId}`);
+        } else {
+          navigate(`/category/${categoryId}`);
+        }
+      }
     } catch (err) {
-      console.log(err);
-      toast.error("Failed to save");
+      console.error("Submission Error:", err);
+      toast.error(t("save_error") || "Failed to save record");
     }
   };
 
@@ -118,7 +107,7 @@ const CategoryForm = ({ mode }: { mode: "category" | "subcategory" }) => {
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate(-1)}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
           >
             <ArrowLeft size={24} />
           </button>
@@ -127,11 +116,11 @@ const CategoryForm = ({ mode }: { mode: "category" | "subcategory" }) => {
           </h1>
         </div>
 
-        <div className="relative hidden">
+        <div className="relative">
           <button
             type="button"
             onClick={() => setIsLangOpen(!isLangOpen)}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-50/50 border border-gray-200 rounded-full text-sm font-medium text-gray-700 hover:bg-gray-100 transition-all"
+            className="flex items-center gap-2 px-4 py-2 bg-gray-50/50 border border-gray-200 rounded-full text-sm font-medium text-gray-700 hover:bg-gray-100 transition-all cursor-pointer"
           >
             <Globe size={18} className="text-[#f97316]" />
             {currentLang?.name}
@@ -147,7 +136,7 @@ const CategoryForm = ({ mode }: { mode: "category" | "subcategory" }) => {
                     setCurrentLangCode(lang.code);
                     setIsLangOpen(false);
                   }}
-                  className="w-full flex items-center justify-between px-4 py-2.5 text-sm text-left hover:bg-orange-50 transition-colors"
+                  className="w-full flex items-center justify-between px-4 py-2.5 text-sm text-left hover:bg-orange-50 transition-colors cursor-pointer"
                 >
                   {lang.name}
                   {translations[lang.code]?.name && (

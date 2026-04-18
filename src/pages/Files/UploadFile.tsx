@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
   Upload,
@@ -22,11 +22,16 @@ const GlobalUpload = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [ingestFile, { isLoading: isUploading }] = useUploadFileMutation();
-
+  const { subCategoryId, categoryId } = useParams<{
+    subCategoryId: string;
+    categoryId: string;
+  }>();
   const [name, setName] = useState("");
   const [des, setDes] = useState("");
-  const [selectedCatId, setSelectedCatId] = useState("");
-  const [selectedSubCatId, setSelectedSubCatId] = useState("");
+  // const [selectedCatId, setSelectedCatId] = useState("");
+  // const [selectedSubCatId, setSelectedSubCatId] = useState("");
+  const [selectedCatId, setSelectedCatId] = useState(categoryId || "");
+  const [selectedSubCatId, setSelectedSubCatId] = useState(subCategoryId || "");
   const [year, setYear] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
@@ -201,108 +206,99 @@ const GlobalUpload = () => {
         >
           <div className="grid grid-cols-2 gap-x-8 gap-y-6">
             {/* Category Dropdown (Moved to start) */}
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700">
-                {t("category")} <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <select
-                  className="w-full pl-4 pr-10 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-600 appearance-none focus:ring-2 focus:ring-orange-500 outline-none transition-all"
-                  value={selectedCatId}
-                  onChange={(e) => {
-                    setSelectedCatId(e.target.value);
-                    setSelectedSubCatId("");
-                  }}
-                  required
-                >
-                  <option value="">{t("category_placeholder")}</option>
-                  {categories.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.name}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-                  size={16}
-                />
-              </div>
-            </div>
-
-            {/* Subcategory or Year */}
-            {isFetchingSubCats || subCategories.length > 0 ? (
+            {!categoryId && !subCategoryId && (
               <>
-                <div className="col-span-1">
-                  {isFetchingSubCats ? (
-                    <div className="space-y-2 animate-pulse">
-                      <div className="h-4 w-24 bg-slate-200 rounded"></div>
-                      <div className="flex items-center justify-center w-full h-10.5 bg-slate-50 border border-slate-100 rounded-xl">
-                        <Loader2
-                          className="animate-spin text-orange-400"
-                          size={20}
-                        />
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="space-y-2 animate-in fade-in slide-in-from-top-1 duration-300">
-                      <label className="text-sm font-bold text-slate-700">
-                        {t("subcategory")}{" "}
-                        <span className="text-slate-400 font-normal ml-1">
-                          ({t("optional")})
-                        </span>
-                      </label>
-                      <div className="relative">
-                        <select
-                          className="w-full pl-4 pr-10 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-600 appearance-none focus:ring-2 focus:ring-orange-500 outline-none transition-all"
-                          value={selectedSubCatId}
-                          onChange={(e) => setSelectedSubCatId(e.target.value)}
-                        >
-                          <option value="">
-                            {t("subcategory_placeholder")}
-                          </option>
-                          {subCategories.map((sub) => (
-                            <option key={sub.id} value={sub.id}>
-                              {sub.name}
-                            </option>
-                          ))}
-                        </select>
-                        <ChevronDown
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-                          size={16}
-                        />
-                      </div>
-                    </div>
-                  )}
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-slate-700">
+                    {t("category")} <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <select
+                      className="w-full pl-4 pr-10 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-600 appearance-none focus:ring-2 focus:ring-orange-500 outline-none transition-all"
+                      value={selectedCatId}
+                      onChange={(e) => {
+                        setSelectedCatId(e.target.value);
+                        setSelectedSubCatId("");
+                      }}
+                      required
+                    >
+                      <option value="">{t("category_placeholder")}</option>
+                      {categories.map((cat) => (
+                        <option key={cat.id} value={cat.id}>
+                          {cat.name}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+                      size={16}
+                    />
+                  </div>
                 </div>
 
-                <div className="col-span-1 space-y-2">
-                  <label className="text-sm font-bold text-slate-700">
-                    {t("data_year")} <span className="text-rose-500">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    placeholder="e.g. 2024"
-                    className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-orange-500 transition-all"
-                    value={year}
-                    onChange={(e) => setYear(e.target.value)}
-                  />
-                </div>
+                {/* Subcategory or Year */}
+                {isFetchingSubCats ||
+                  (subCategories.length > 0 && (
+                    <div className="col-span-1">
+                      {isFetchingSubCats ? (
+                        <div className="space-y-2 animate-pulse">
+                          <div className="h-4 w-24 bg-slate-200 rounded"></div>
+                          <div className="flex items-center justify-center w-full h-10.5 bg-slate-50 border border-slate-100 rounded-xl">
+                            <Loader2
+                              className="animate-spin text-orange-400"
+                              size={20}
+                            />
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="space-y-2 animate-in fade-in slide-in-from-top-1 duration-300">
+                          <label className="text-sm font-bold text-slate-700">
+                            {t("subcategory")}{" "}
+                            <span className="text-slate-400 font-normal ml-1">
+                              ({t("optional")})
+                            </span>
+                          </label>
+                          <div className="relative">
+                            <select
+                              className="w-full pl-4 pr-10 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-600 appearance-none focus:ring-2 focus:ring-orange-500 outline-none transition-all"
+                              value={selectedSubCatId}
+                              onChange={(e) =>
+                                setSelectedSubCatId(e.target.value)
+                              }
+                            >
+                              <option value="">
+                                {t("subcategory_placeholder")}
+                              </option>
+                              {subCategories.map((sub) => (
+                                <option key={sub.id} value={sub.id}>
+                                  {sub.name}
+                                </option>
+                              ))}
+                            </select>
+                            <ChevronDown
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+                              size={16}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
               </>
-            ) : (
-              <div className="col-span-1 space-y-2">
-                <label className="text-sm font-bold text-slate-700">
-                  {t("data_year")} <span className="text-rose-500">*</span>
-                </label>
-                <input
-                  type="number"
-                  placeholder="e.g. 2024"
-                  className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-orange-500 transition-all"
-                  value={year}
-                  onChange={(e) => setYear(e.target.value)}
-                />
-              </div>
             )}
 
+            <div className="col-span-1 space-y-2">
+              <label className="text-sm font-bold text-slate-700">
+                {t("data_year")} <span className="text-rose-500">*</span>
+              </label>
+              <input
+                type="number"
+                placeholder="e.g. 2024"
+                className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-orange-500 transition-all"
+                value={year}
+                onChange={(e) => setYear(e.target.value)}
+              />
+            </div>
             <div className="col-span-1 space-y-2">
               <label className="text-sm font-bold text-slate-700">
                 {t("name")} <span className="text-rose-500">*</span>
